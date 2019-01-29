@@ -1,0 +1,280 @@
+= OpenVino-Driver-Behaviour
+:idprefix:
+:idseparator: -
+:sectanchors:
+:sectlinks:
+:sectnumlevels: 6
+:sectnums:
+:toc: macro
+:toclevels: 6
+:toc-title: Table of Contents
+
+https://travis-ci.org/incluit/OpenVino-Driver-Behaviour#[image:https://travis-ci.org/incluit/OpenVino-Driver-Behaviour.svg?branch=master[Build
+Status]]
+https://sonarcloud.io/dashboard?id=incluit_OpenVino-For-SmartCity[image:https://sonarcloud.io/api/project_badges/measure?project=incluit_OpenVino-For-SmartCity&metric=alert_status[Sonarcloud
+Status]]
+
+toc::[]
+
+== Foreword
+This is a follow-up on the OpenVino's inference tutorials:
+
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_r4_0
+
+We will work on and extend this tutorial as a demo app for smart cities,
+specifically for near misses detection.
+
+== Introduction
+
+This project consists on showcasing the advantages of the Intel's OpenVINO toolkit. We will develop a __Near Misses__ case scenario, where we will detect vehicles and pedestrians and estimate a metric of a crossroad's dangerousness. For that, we will use the OpenVINO toolkit and OpenCV, all written in `{cpp}`.
+
+As mentioned previously, we will take the https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_r4_0/car_detection_tutorial/step_4[step 4] as a starting point, as it provides us with the options to run and stack different models synchronously or asynchronously. Once the proper models for vehicle and pedestrian detection are defined, we proceed to develop a feature to let the user define the different areas of interest (in this case, sidewalks and streets) that will help in identifying dangerous situations later on. Then, we will work on object tracking to recognize the same object across successive frames, giving us the ability to estimate trajectories, speeds and positions of the objects. Finally, we will have to define what are considered __dangerous situations__ and check that the system detects them correctly.
+
+== Prerequisites
+
+To run the application in this tutorial, the OpenVINO™ toolkit and its dependencies must already be installed and verified using the included demos. Installation instructions may be found at: https://software.intel.com/en-us/articles/OpenVINO-Install-Linux
+
+If to be used, any optional hardware must also be installed and verified including:
+
+* USB camera - Standard USB Video Class (UVC) camera.
+
+* GPU - normally embedded with supported Intel® CPUs and requires drivers and updated Linux kernel to run
+
+* VPU - USB Intel® Movidius™ Neural Compute Stick and what is being referred to as "Myriad"
+
+A summary of what is needed:
+
+=== Hardware
+
+* Target and development platforms meeting the requirements described in the "System Requirements" section of the OpenVINO™ toolkit documentation which may be found at: https://software.intel.com/openvino-toolkit[https://software.intel.com/en-us/openvino-toolkit]
+
+**Note**: While writing this tutorial, an Intel® i7-8550U with Intel® HD graphics 520 GPU was used as both the development and target platform.
+
+* Optional:
+
+** Intel® Movidius™ Neural Compute Stick
+
+** USB UVC camera
+
+** GPU support
+
+=== Software
+
+* OpenVINO™ toolkit supported Linux operating system. This tutorial was run on 64-bit Ubuntu 16.04.1 LTS updated to kernel 4.15.0-43 following the OpenVINO™ toolkit installation instructions.
+
+* The latest OpenVINO™ toolkit installed and verified. This tutorial was written using version 2018 R4.0.
+
+* Git(git) for downloading from the GitHub repository.
+
+* BOOST library. To install on Ubuntu, run:
+
+[source,bash]
+----
+apt-get install libboost-dev
+----
+
+=== Checks
+
+By now you should have completed the Linux installation guide for the OpenVINO™ toolkit, however before continuing, please ensure:
+
+* That after installing the OpenVINO™ toolkit you have run the supplied demo samples 
+
+* If you have and intend to use a GPU: You have installed and tested the GPU drivers 
+
+* If you have and intend to use a USB camera: You have connected and tested the USB camera 
+
+* If you have and intend to use a Myriad: You have connected and tested the USB Intel® Movidius™ Neural Compute Stick
+
+* That your development platform is connected to a network and has Internet access. To download all the files for this tutorial, you will need to access GitHub on the Internet. 
+
+== Build
+
+**1.** Clone the repository at desired location:
+
+[source,bash]
+----
+git clone https://github.com/incluit/OpenVino-For-SmartCity.git
+----
+
+**2.** The first step is to configure the build environment for the OpenCV
+toolkit by sourcing the "setupvars.sh" script.
+
+[source,bash]
+----
+source  /opt/intel/computer_vision_sdk/bin/setupvars.sh
+----
+
+**3.** Change to the top git repository:
+
+[source,bash]
+----
+cd OpenVino-For-SmartCity
+----
+
+**4.** Create a directory to build the tutorial in and change to it.
+
+[source,bash]
+----
+mkdir build
+cd build
+----
+
+**5.** Compile:
+
+[source,bash]
+----
+cmake -DCMAKE_BUILD_TYPE=Release ../
+make
+----
+
+== Usage
+
+=== Run
+
+==== Detection
+
+**1.** Before running each of the following sections, be sure to source the
+helper script. That will make it easier to use environment variables
+instead of long names to the models:
+
+[source,bash]
+----
+source ../scripts/setupenv.sh 
+----
+
+**2.** First, let us see how it works on a single image file using default
+synchronous mode.
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -i ../data/car_1.bmp
+----
+
+**3.** For video files:
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -i ../data/video1_640x320.mp4
+----
+
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/detection.gif[detection]
+
+**4.** You can also run the command in asynchronous mode using the option
+"-n_async 2":
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -i ../data/NewVideo2.mp4 -n_async 2
+----
+
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/detection2.gif[detection2]
+
+**5.** You can also load the models into the **GPU** or **MYRIAD**:
+
+**Note**: In order to run this section, the **GPU** and/or **MYRIAD** are required to be present and correctly configured.
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp GPU -i ../data/NewVideo2.mp4
+----
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp MYRIAD -i ../data/NewVideo2.mp4
+----
+
+==== Other models
+
+You can also experiment by using different detection models, being the ones available up to now:
+
+. person-vehicle-bike-detection-crossroad-0078
+** `-m_vp $vehicle2{16,32}`
+. vehicle-detection-adas-0002 together with person-detection-retail-0013 or pedestrian-detection-adas-0002:
+** `-m $mVDR{16,32}` and `-m_p $person{1,2}{16,32}`
+. frozen_yolo_v3
+** `-m_y $yolo16`
+
+By default they will be loaded into the CPU, so remember to pass the corresponding argument:
+
+* `-d_vp {CPU,GPU,MYRIAD}`
+
+* `-d {CPU,GPU,MYRIAD}` and `-d_p {CPU,GPU,MYRIAD}`
+
+* `-d_y {CPU,GPU,MYRIAD}`
+
+The first 2 are included with the OpenVINO toolkit, while the last one is the compiled version of the public https://github.com/pjreddie/darknet[yolo] general detection model. You can do this yourself by following this https://software.intel.com/en-us/articles/OpenVINO-Using-TensorFlow[Intel's guide] or download our compiled http://bit.ly/2QN2TT7[binary] and http://bit.ly/2sw4Idn[xml]. You will need to move these files to the `data` directory inside your OpenVino-For-SmartCity path.
+
+==== Tracking
+
+To enable tracking you should run the command with the `-tracking` argument:
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp GPU -i ../data/NewVideo2.mp4 -n_async 16 -tracking
+----
+
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/tracking.gif[tracking]
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/tracking2.gif[tracking2]
+
+==== Collisions
+
+To detect collisions you should run the command with the `-tracking` + `-collision` arguments:
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp GPU -i ../data/video82.mp4 -n_async 16 -tracking -collision
+----
+
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision.gif[collision]
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision2.gif[collision2]
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision3.gif[collision3]
+
+=== Performance on detection
+
+**Note**: In order to run this section, the GPU is required to be present and correctly configured.
+
+While **person-vehicle-bike-detection-crossroad-0078** and **yolo_v3** detect better in most cases, they have the disadvantage of being too slow for processing, achieving 20 fps and 8 fps respectively. On the other hand, if we can use 2 lighter models to detect different objects, we can parallelize the processing in different devices and take advantage of the asynchronous mode, as follows:
+
+**1.** First we run in synchronous mode and then asynchronously with increasing -n_async values using the commands:
+
+[source,bash]
+----
+./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 1
+./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 2
+./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 4
+./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 8
+./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 16
+----
+
+**2.** Asynchronous mode should be faster by some amount for `-n_async 2` then a little more for `-n_async 4` and `-n_async 8`, then not as noticeable for `-n_async 16`. The improvements come from the CPU running in parallel more and more with the GPU. The absence of improvement shows when the CPU is doing less in parallel and is waiting on the other devices. This is referred to as “diminishing returns” and will vary across devices and inference models.
+
+**3.** We run a performance analysis by running each 9 combinations of model/device/precision with `-n_async 16`. The following graph shows the results:
+
+image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/Vehicle%20and%20Pedestrian%20detection%20performance.png[performance]
+
+=== Observations on Models and Performance
+
+While the 2 light combined models work way faster than the heavy single ones, they're restricted in terms of perspective, making them unavailable for most use cases where the camera is not positioned in a way that they can detect properly. That is why we recommend using any of the other 2 for further implementations and analyses.
+
+== To Do
+
+=== README
+
+* [x] Short README with usage examples
+* [x] Travis + Sonarcloud
+* [ ] Include diagrams and images
+* [ ] Elaborate on the wiki
+
+=== Development
+
+* [x] Try with different models
+* [x] Detect vehicles and pedestrians
+* [x] Draw Areas of Interest
+* [x] Object Tracking
+* [x] Object Trajectories
+* [x] Fix labels for the other models
+* [x] Calculate objects velocities
+* [x] Calculate objects accelerations
+* [x] Detect collisions
+* [ ] Elaborate on dangerous situations to be detected (near misses)
+* [ ] Detect these situations
