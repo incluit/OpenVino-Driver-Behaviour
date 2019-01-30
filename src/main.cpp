@@ -46,8 +46,18 @@
 
 #include <opencv2/opencv.hpp>
 
-using namespace InferenceEngine;
+#include <dlib/image_processing/frontal_face_detector.h>
+#include <dlib/image_processing/render_face_detections.h>
+#include <dlib/image_processing.h>
+#include <dlib/gui_widgets.h>
+#include <dlib/image_io.h>
+#include <dlib/opencv.h>
 
+using namespace InferenceEngine;
+static dlib::rectangle openCVRectToDlib(cv::Rect r)
+{
+  return dlib::rectangle((long)r.tl().x, (long)r.tl().y, (long)r.br().x - 1, (long)r.br().y - 1);
+}
 
 bool ParseAndCheckCommandLine(int argc, char *argv[]) {
     // ---------------------------Parsing and validation of input args--------------------------------------
@@ -83,6 +93,12 @@ bool ParseAndCheckCommandLine(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     try {
+
+        dlib::shape_predictor sp;
+        dlib::deserialize("/home/m/Downloads/shape_predictor_68_face_landmarks.dat") >> sp;
+        std::vector<dlib::full_object_detection> shapes;
+        //dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
+
         std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
 
         // ------------------------------ Parsing and validation of input args ---------------------------------
@@ -199,6 +215,9 @@ int main(int argc, char *argv[]) {
         timer.start("video frame decoding");
         frameReadStatus = cap.read(frame);
         timer.finish("video frame decoding");
+        
+        //dlib
+        dlib::image_window win, win_faces;
 
         while (true) {
             framesCounter++;
@@ -294,12 +313,45 @@ int main(int argc, char *argv[]) {
                                 cv::Scalar(255, 0, 0));
                 }
 
+                // dlib face detection
+                /*
+                dlib::array2d<dlib::rgb_pixel> img;
+                dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
+                std::vector<dlib::rectangle> dets = detector(img);
+                std::vector<dlib::full_object_detection> shapes;
+                for (unsigned long j = 0; j < dets.size(); ++j)
+                {
+                    dlib::full_object_detection shape = sp(img, dets[j]);
+                    // You get the idea, you can get all the face part locations if
+                    // you want them.  Here we just store them in shapes so we can
+                    // put them on the screen.
+                    shapes.push_back(shape);
+                }
+                win.clear_overlay();
+                win.set_image(img);
+                win.add_overlay(render_face_detections(shapes));
+                win.add_overlay(shapes);*/
+
                 // For every detected face.
                 int i = 0;
                 for (auto &result : prev_detection_results) {
                     cv::Rect rect = result.location;
 
                     out.str("");
+                    if(FLAGS_dlib_lm){
+                        float scale_factor_x = 0.15;
+                        float scale_factor_y = 0.20;
+                        cv::Rect aux_rect = cv::Rect(rect.x + scale_factor_x *rect.width, rect.y + scale_factor_y * rect.height, rect.width * (1- 2 * scale_factor_x), rect.height * (1 - scale_factor_y));
+                        //dlib facial landmarks
+                        dlib::array2d<dlib::rgb_pixel> img;
+                        dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
+                        dlib::rectangle det = openCVRectToDlib(aux_rect);
+                        dlib::full_object_detection shape = sp(img, det);
+                        for(int i = 0; i < shape.num_parts(); i++){
+                            cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                        }
+                        cv::rectangle(prev_frame, aux_rect, cv::Scalar(255,255,255), 1);
+                    }
 
                     if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {
                         out << (ageGenderDetector[i].maleProb > 0.5 ? "M" : "F");
@@ -338,25 +390,51 @@ int main(int argc, char *argv[]) {
                         cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
                         headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
                     }
-
+                    cv::Point2f eye_l_0;
+                    cv::Point2f eye_l_1;
                     if (facialLandmarksDetector.enabled() && i < facialLandmarksDetector.maxBatch) {
                         auto normed_landmarks = facialLandmarksDetector[i];
                         auto n_lm = normed_landmarks.size();
                         if (FLAGS_r)
                             std::cout << "Normed Facial Landmarks coordinates (x, y):" << std::endl;
                         for (auto i_lm = 0UL; i_lm < n_lm / 2; ++i_lm) {
-                            float normed_x = normed_landmarks[2 * i_lm];
-                            float normed_y = normed_landmarks[2 * i_lm + 1];
-
-                            if (FLAGS_r) {
-                                std::cout << normed_x << ", "
-                                          << normed_y << std::endl;
+                            if(i_lm < 4 || (i_lm >=12 && i_lm<=17)){
+                                float normed_x = normed_landmarks[2 * i_lm];
+                                float normed_y = normed_landmarks[2 * i_lm + 1];
+                                if (FLAGS_r) {
+                                    std::cout << normed_x << ", "
+                                            << normed_y << std::endl;
+                                }
+                                int x_lm = rect.x + rect.width * normed_x;
+                                int y_lm = rect.y + rect.height * normed_y;
+                                if(i_lm == 1)
+                                    eye_l_0=cv::Point2f(x_lm, y_lm);
+                                if(i_lm == 0)
+                                    eye_l_1=cv::Point2f(x_lm, y_lm);
+                                // Draw facial landmarks on the frame
+                                //cv::circle(prev_frame, cv::Point(x_lm, y_lm), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);    
                             }
-                            int x_lm = rect.x + rect.width * normed_x;
-                            int y_lm = rect.y + rect.height * normed_y;
-                            // Draw facial landmarks on the frame
-                            cv::circle(prev_frame, cv::Point(x_lm, y_lm), 1 + static_cast<int>(0.012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                        }
+                        }/*
+                        //Eye detection
+                        float distance_l = sqrt((eye_l_1.x - eye_l_0.x)*(eye_l_1.x - eye_l_0.x) + (eye_l_1.y - eye_l_0.y)*(eye_l_1.y - eye_l_0.y));
+                        float safety_factor = 0.20 * distance_l;
+                        cv::Point2f frame_p0(eye_l_0.x - safety_factor, (eye_l_0.y + distance_l/3) + safety_factor);
+                        cv::Point2f frame_p1(eye_l_1.x + safety_factor, (eye_l_1.y - distance_l/3) - safety_factor);
+                        cv::Rect frame_eye_l(frame_p0,frame_p1);
+
+                        cv::Mat l_eye;
+                        prev_frame(frame_eye_l).copyTo(l_eye);
+                        cv::cvtColor(l_eye, l_eye, cv::COLOR_BGR2GRAY);
+                        cv::namedWindow("Left Eye gray");
+                        cv::imshow("Left Eye gray", l_eye);
+                        cv::adaptiveThreshold(l_eye, l_eye, 130, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 3, 2);
+                        //cv::threshold(l_eye, l_eye, 70, 255, cv::THRESH_BINARY);
+                        cv::namedWindow("Left Eye");
+                        cv::imshow("Left Eye", l_eye);
+                        int count = cv::countNonZero(l_eye);
+                        std::cout << count << std::endl;
+                        cv::rectangle(prev_frame, frame_eye_l, cv::Scalar(147, 20, 255), 2);
+                        */
                     }
 
                     auto genderColor = (ageGenderDetector.enabled() && (i < ageGenderDetector.maxBatch)) ?
@@ -364,6 +442,7 @@ int main(int argc, char *argv[]) {
                                                                                                                0))
                               : cv::Scalar(100, 100, 100);
                     cv::rectangle(prev_frame, result.location, genderColor, 1);
+
                     i++;
                 }
 

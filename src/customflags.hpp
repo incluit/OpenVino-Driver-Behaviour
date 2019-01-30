@@ -115,6 +115,8 @@ static const char no_show_processed_video[] = "No show processed video.";
 /// @brief message for asynchronous mode
 static const char async_message[] = "Enable asynchronous mode";
 
+// dlib facial landmarks detection
+static const char dlib_lm_message[] = "Enable dlib's facial landmark detections";
 
 /// \brief Define flag for showing help message <br>
 DEFINE_bool(h, false, help_message);
@@ -213,6 +215,11 @@ DEFINE_bool(no_show, false, no_show_processed_video);
 /// It is an optional parameter
 DEFINE_bool(async, false, async_message);
 
+///Custom
+
+DEFINE_bool(dlib_lm, false, "Acti");
+
+
 /**
 * \brief This function shows a help message
 */
@@ -245,6 +252,7 @@ static void showUsage() {
     std::cout << "    -dyn_hp                    " << dyn_batch_hp_message << std::endl;
     std::cout << "    -dyn_em                    " << dyn_batch_em_message << std::endl;
     std::cout << "    -dyn_lm                    " << dyn_batch_lm_message << std::endl;
+    std::cout << "    -dlib_lm                   " << dlib_lm_message << std::endl;
     std::cout << "    -async                     " << async_message << std::endl;
     std::cout << "    -no_wait                   " << no_wait_for_keypress_message << std::endl;
     std::cout << "    -no_show                   " << no_show_processed_video << std::endl;
