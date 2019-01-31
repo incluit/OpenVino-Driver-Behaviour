@@ -53,10 +53,17 @@
 #include <dlib/image_io.h>
 #include <dlib/opencv.h>
 
+#include <boost/circular_buffer.hpp>
+
 using namespace InferenceEngine;
 static dlib::rectangle openCVRectToDlib(cv::Rect r)
 {
   return dlib::rectangle((long)r.tl().x, (long)r.tl().y, (long)r.br().x - 1, (long)r.br().y - 1);
+}
+
+float distanceAtoB(cv::Point2f A, cv::Point2f B){
+    float distance_l = sqrt((A.x - B.x)*(A.x - B.x) + (A.y - B.y)*(A.y - B.y));
+    return distance_l;
 }
 
 bool ParseAndCheckCommandLine(int argc, char *argv[]) {
@@ -97,6 +104,11 @@ int main(int argc, char *argv[]) {
         dlib::shape_predictor sp;
         dlib::deserialize("/home/m/Downloads/shape_predictor_68_face_landmarks.dat") >> sp;
         std::vector<dlib::full_object_detection> shapes;
+        float EYE_AR_THRESH = 0.32;
+        float EYE_AR_CONSEC_FRAMES = 3;    
+        int blink_counter = 0;
+        int blinl_total = 0;
+        boost::circular_buffer<float> ear_5;
         //dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
 
         std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
@@ -334,6 +346,7 @@ int main(int argc, char *argv[]) {
 
                 // For every detected face.
                 int i = 0;
+                std::vector<cv::Point2f> left_eye, right_eye;
                 for (auto &result : prev_detection_results) {
                     cv::Rect rect = result.location;
 
@@ -348,9 +361,35 @@ int main(int argc, char *argv[]) {
                         dlib::rectangle det = openCVRectToDlib(aux_rect);
                         dlib::full_object_detection shape = sp(img, det);
                         for(int i = 0; i < shape.num_parts(); i++){
+                            if(i >= 36 && i <= 41)
+                                left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
+                            if(i >= 42 && i <= 47)
+                                right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
                             cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
                         }
                         cv::rectangle(prev_frame, aux_rect, cv::Scalar(255,255,255), 1);
+                        float ear_left = 0;
+                        float ear_right = 0;
+                        float ear = 0;
+                        ear_left = (distanceAtoB(left_eye[1], left_eye[5]) + distanceAtoB(left_eye[2], left_eye[4])) / (2 * distanceAtoB(left_eye[0],left_eye[3]));
+                        ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0],right_eye[3]));
+                        ear = (ear_left + ear_right) / 2;
+                        ear_5.push_front(ear);
+                        for(auto && i : ear_5){
+
+                        }
+                        if(ear < EYE_AR_THRESH){
+                            blink_counter += 1;
+                        }else {
+                            if(blink_counter >= EYE_AR_CONSEC_FRAMES)
+                                blinl_total += 1;
+                            blink_counter = 0; 
+                        }
+                        std::string blink_str = "Blinks: " + std::to_string(blinl_total);
+                        std::string ear_str = "EAR: " + std::to_string(ear);
+                        cv::putText(frame, blink_str, cv::Point2f(10, 30),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, ear_str, cv::Point2f(300, 30), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                                         
                     }
 
                     if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {
@@ -412,7 +451,7 @@ int main(int argc, char *argv[]) {
                                 if(i_lm == 0)
                                     eye_l_1=cv::Point2f(x_lm, y_lm);
                                 // Draw facial landmarks on the frame
-                                //cv::circle(prev_frame, cv::Point(x_lm, y_lm), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);    
+                                cv::circle(prev_frame, cv::Point(x_lm, y_lm), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);    
                             }
                         }/*
                         //Eye detection
