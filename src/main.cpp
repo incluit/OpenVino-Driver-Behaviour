@@ -104,11 +104,13 @@ int main(int argc, char *argv[]) {
         dlib::shape_predictor sp;
         dlib::deserialize("/home/m/Downloads/shape_predictor_68_face_landmarks.dat") >> sp;
         std::vector<dlib::full_object_detection> shapes;
-        float EYE_AR_THRESH = 0.32;
-        float EYE_AR_CONSEC_FRAMES = 3;    
+        float EYE_AR_THRESH = 0.195;
+        float EYE_AR_CONSEC_FRAMES = 3;
+        std::chrono::high_resolution_clock::time_point slp1,slp2;
+
         int blink_counter = 0;
         int blinl_total = 0;
-        boost::circular_buffer<float> ear_5;
+        boost::circular_buffer<float> ear_5(5);
         //dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
 
         std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
@@ -375,10 +377,12 @@ int main(int argc, char *argv[]) {
                         ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0],right_eye[3]));
                         ear = (ear_left + ear_right) / 2;
                         ear_5.push_front(ear);
+                        float ear_avg = 0;
                         for(auto && i : ear_5){
-
+                            ear_avg = ear_avg + i;
                         }
-                        if(ear < EYE_AR_THRESH){
+                        ear_avg = ear_avg / ear_5.size();
+                        if(ear_avg < EYE_AR_THRESH){
                             blink_counter += 1;
                         }else {
                             if(blink_counter >= EYE_AR_CONSEC_FRAMES)
@@ -386,10 +390,9 @@ int main(int argc, char *argv[]) {
                             blink_counter = 0; 
                         }
                         std::string blink_str = "Blinks: " + std::to_string(blinl_total);
-                        std::string ear_str = "EAR: " + std::to_string(ear);
-                        cv::putText(frame, blink_str, cv::Point2f(10, 30),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, ear_str, cv::Point2f(300, 30), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                                         
+                        std::string ear_str = "EAR: " + std::to_string(ear_avg);
+                        cv::putText(frame, blink_str, cv::Point2f(10, 70),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, ear_str, cv::Point2f(300, 70), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
                     }
 
                     if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {
