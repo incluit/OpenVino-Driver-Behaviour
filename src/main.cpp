@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     try {
 
         dlib::shape_predictor sp;
-        dlib::deserialize("/home/m/Downloads/shape_predictor_68_face_landmarks.dat") >> sp;
+        dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
         std::vector<dlib::full_object_detection> shapes;
         float EYE_AR_THRESH = 0.195;
         float EYE_AR_CONSEC_FRAMES = 3;
