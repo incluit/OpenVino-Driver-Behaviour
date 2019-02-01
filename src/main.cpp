@@ -105,12 +105,22 @@ int main(int argc, char *argv[]) {
         dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
         std::vector<dlib::full_object_detection> shapes;
         float EYE_AR_THRESH = 0.195;
+        float MOUTH_EAR_THRESH = 0.8;
         float EYE_AR_CONSEC_FRAMES = 3;
+        float MOUTH_EAR_CONSEC_FRAMES = 5;
+
         std::chrono::high_resolution_clock::time_point slp1,slp2;
+        bool eye_closed = false;
 
         int blink_counter = 0;
+        int yawn_counter = 0;
+        int last_blink_counter = 0;
+        int last_yawn_counter = 0;
         int blinl_total = 0;
+        int yawn_total = 0;
         boost::circular_buffer<float> ear_5(5);
+        boost::circular_buffer<float> ear_5_mouth(5);
+
         //dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
 
         std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
@@ -231,7 +241,7 @@ int main(int argc, char *argv[]) {
         timer.finish("video frame decoding");
         
         //dlib
-        dlib::image_window win, win_faces;
+        //dlib::image_window win, win_faces;
 
         while (true) {
             framesCounter++;
@@ -348,7 +358,7 @@ int main(int argc, char *argv[]) {
 
                 // For every detected face.
                 int i = 0;
-                std::vector<cv::Point2f> left_eye, right_eye;
+                std::vector<cv::Point2f> left_eye, right_eye, mouth;
                 for (auto &result : prev_detection_results) {
                     cv::Rect rect = result.location;
 
@@ -367,7 +377,13 @@ int main(int argc, char *argv[]) {
                                 left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
                             if(i >= 42 && i <= 47)
                                 right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                            cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                            //cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                            //48 - 54. 50 - 58. 52 - 56.
+
+                            if(i == 48 || i == 54 || i ==  50 || i == 58 || i == 52 || i == 56){
+                                mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
+                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                            }
                         }
                         cv::rectangle(prev_frame, aux_rect, cv::Scalar(255,255,255), 1);
                         float ear_left = 0;
@@ -384,15 +400,41 @@ int main(int argc, char *argv[]) {
                         ear_avg = ear_avg / ear_5.size();
                         if(ear_avg < EYE_AR_THRESH){
                             blink_counter += 1;
+                            if(blink_counter >= 90)                            
+                                eye_closed = true;
                         }else {
-                            if(blink_counter >= EYE_AR_CONSEC_FRAMES)
+                            if(blink_counter >= EYE_AR_CONSEC_FRAMES){
                                 blinl_total += 1;
+                                last_blink_counter = blink_counter;
+                            }
                             blink_counter = 0; 
                         }
-                        std::string blink_str = "Blinks: " + std::to_string(blinl_total);
-                        std::string ear_str = "EAR: " + std::to_string(ear_avg);
-                        cv::putText(frame, blink_str, cv::Point2f(10, 70),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, ear_str, cv::Point2f(300, 70), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
+                        if(eye_closed)
+                            cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
+                        cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(500, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(10, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
+
+                        //Yawn detection
+                        float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0],mouth[3]));
+                        ear_5_mouth.push_front(ear_mouth);
+                        float ear_avg_mouth = 0;
+                        for(auto && i : ear_5_mouth){
+                            ear_avg_mouth = ear_avg_mouth + i;
+                        }
+                        ear_avg_mouth = ear_avg_mouth / ear_5_mouth.size();
+                        if(ear_avg_mouth > MOUTH_EAR_THRESH){
+                            yawn_counter += 1;
+                        }else {
+                            if(yawn_counter >= MOUTH_EAR_CONSEC_FRAMES){
+                                yawn_total += 1;
+                                last_yawn_counter = yawn_counter;
+                            }
+                            yawn_counter = 0; 
+                        }
+                        cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(500, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(300, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
                     }
 
                     if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {
