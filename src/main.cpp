@@ -97,6 +97,23 @@ bool ParseAndCheckCommandLine(int argc, char *argv[]) {
     return true;
 }
 
+enum distractionLevel {
+	NOT_DISTRACTED = 0,
+	DISTRACTED,
+	PHONE,
+};
+
+int isDistracted (float y, float p, float r)
+{
+	int result = 0;
+	if (abs(y) > 30 || abs(p) > 30) {
+		if (abs(y) > 20 && p > 10 && r < 0)
+			result = PHONE;
+		else
+			result = DISTRACTED;
+	}
+	return result;
+}
 
 int main(int argc, char *argv[]) {
     try {
@@ -473,6 +490,21 @@ int main(int argc, char *argv[]) {
                         }
                         cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
                         headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
+			int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
+			if (is_dist) {
+				std::string distracted_str = "";
+				switch (is_dist) {
+				case DISTRACTED:
+					distracted_str = "WATCH THE ROAD!";
+					break;
+				case PHONE:
+					distracted_str = "STOP LOOKING AT YER PHONE!";
+					break;
+				default:
+					break;
+				}
+				cv::putText(frame, distracted_str, cv::Point2f(50, 200),cv::FONT_HERSHEY_SIMPLEX, 2,cv::Scalar(0, 0, 255), 5);
+			}
                     }
                     cv::Point2f eye_l_0;
                     cv::Point2f eye_l_1;
