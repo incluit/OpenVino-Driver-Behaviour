@@ -35,6 +35,7 @@ As mentioned previously, we will take the https://software.intel.com/en-us/artic
 .. Gaze detection.
 
 We could have other information to build a robust system:
+
 . Heart rate.
 . Velocity.
 . Acceleration. 
@@ -102,7 +103,7 @@ By now you should have completed the Linux installation guide for the OpenVINOâ„
 
 [source,bash]
 ----
-git clone https://github.com/incluit/OpenVino-For-SmartCity.git
+git clone https://github.com/incluit/OpenVino-Driver-Behaviour.git
 ----
 
 **2.** The first step is to configure the build environment for the OpenCV
@@ -117,7 +118,7 @@ source  /opt/intel/computer_vision_sdk/bin/setupvars.sh
 
 [source,bash]
 ----
-cd OpenVino-For-SmartCity
+cd OpenVino-Driver-Behaviour
 ----
 
 **4.** Create a directory to build the tutorial in and change to it.
