@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 2.8)
 # Common to all tutorial sections
 include(CMakeLists_common.cmake)
 
-set(TARGET_NAME "smart_city_tutorial")
+set(TARGET_NAME "driver_behaviour_tutorial")
 
 find_package(OpenCV)
 if(OpenCV_FOUND)
