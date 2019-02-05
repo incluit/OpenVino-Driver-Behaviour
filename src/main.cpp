@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
         dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
         std::vector<dlib::full_object_detection> shapes;
         float EYE_AR_THRESH = 0.195;
-        float MOUTH_EAR_THRESH = 0.8;
+        float MOUTH_EAR_THRESH = 0.65;
         float EYE_AR_CONSEC_FRAMES = 3;
         float MOUTH_EAR_CONSEC_FRAMES = 5;
 
@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
                         }
                         if(eye_closed)
                             cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
-                        cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(500, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(10, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                         cv::putText(frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(10, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                         //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
 
@@ -450,8 +450,8 @@ int main(int argc, char *argv[]) {
                             yawn_counter = 0; 
                         }
                         cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(500, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(300, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
+                        cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 160),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 190), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
                     }
 
                     if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {

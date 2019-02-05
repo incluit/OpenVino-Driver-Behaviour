@@ -1,4 +1,4 @@
-= OpenVino-Driver-Behaviour
+= OpenVino Driver Behaviour
 :idprefix:
 :idseparator: -
 :sectanchors:
@@ -40,6 +40,28 @@ We could have other information to build a robust system:
 . Velocity.
 . Acceleration. 
 
+== Bussines Logic
+
+Using OpenVino's model detection we can easily detect face with great accuracy. We are currently using for testing 2 different face detection models that are included with OpenVino out-of-the-box:
+
+. face-detection-adas-0001
+. face-detection-retail-0004
+
+=== Blink/Yawn detection
+
+Using the image detected inside the face ROI (region of interest), we feed a facial landmarks detector to identify points of iterest. Using 6 point for each eye an 6 points for the mouth it is possible to calculate 'Eye Aspect Ratio (EAR)' that gives 2 values for eye/mouth open or close (based on http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf[this paper]).
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink_detection_6_landmarks.jpg[EAR]
+
+ At the moment of writing this guide, the facial landmarks detection model included with OpenVino (facial-landmarks-35-adas-0001) has not enough points to run this calculations. We are using dlib's facial landmarks detector instead.
+
+ Once we have positive detection for blink/yawn we count frames of those events and trigger an alarm when a threshold hit.
+
+ === 'Eye out of road' detection
+
+ Using de image inside the face ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
+ Analizing the output of that model we can easily detect when the face is not centered and looking front.
+ 
 == Prerequisites
 
 To run the application in this tutorial, the OpenVINO™ toolkit and its dependencies must already be installed and verified using the included demos. Installation instructions may be found at: https://software.intel.com/en-us/articles/OpenVINO-Install-Linux
@@ -48,7 +70,7 @@ If to be used, any optional hardware must also be installed and verified includi
 
 * USB camera - Standard USB Video Class (UVC) camera.
 
-* GPU - normally embedded with supported Intel® CPUs and requires drivers and updated Linux kernel to run
+* Intel® Core™ CPU with integrated graphics.
 
 * VPU - USB Intel® Movidius™ Neural Compute Stick and what is being referred to as "Myriad"
 
@@ -66,7 +88,7 @@ A summary of what is needed:
 
 ** USB UVC camera
 
-** GPU support
+** Intel® Core™ CPU with integrated graphics.
 
 === Software
 
@@ -141,7 +163,7 @@ make
 
 === Run
 
-==== Detection
+==== Face Detection
 
 **1.** Before running each of the following sections, be sure to source the
 helper script. That will make it easier to use environment variables
@@ -152,29 +174,29 @@ instead of long names to the models:
 source ../scripts/setupenv.sh 
 ----
 
-**2.** First, let us see how it works on a single image file using default
+**2.** First, let us see how it works face detection on a single image file using default
 synchronous mode.
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -i ../data/car_1.bmp
+./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/img_1.jpg
 ----
 
 **3.** For video files:
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -i ../data/video1_640x320.mp4
+./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4
 ----
 
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/detection.gif[detection]
 
 **4.** You can also run the command in asynchronous mode using the option
-"-n_async 2":
+"-async":
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -i ../data/NewVideo2.mp4 -n_async 2
+./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4 -async
 ----
 
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/detection2.gif[detection2]
@@ -185,86 +207,65 @@ image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/dete
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp GPU -i ../data/NewVideo2.mp4
+./intel64/Release/driver_behaviour_tutorial -m $face132 -d GPU -i ../data/video1.mp4
 ----
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp MYRIAD -i ../data/NewVideo2.mp4
+./intel64/Release/driver_behaviour_tutorial -m $face132 -d MYRIAD -i ../data/video1.mp4
 ----
 
-==== Other models
+===== Other models
 
-You can also experiment by using different detection models, being the ones available up to now:
+You can also experiment by using different face detection models, being the ones available up to now:
 
-. person-vehicle-bike-detection-crossroad-0078
-** `-m_vp $vehicle2{16,32}`
-. vehicle-detection-adas-0002 together with person-detection-retail-0013 or pedestrian-detection-adas-0002:
-** `-m $mVDR{16,32}` and `-m_p $person{1,2}{16,32}`
-. frozen_yolo_v3
-** `-m_y $yolo16`
+. face-detection-adas-0001:
+** `-m $face1{16,32}`
+. face-detection-retail-0004:
+** `-m $face2{16,32}`
 
 By default they will be loaded into the CPU, so remember to pass the corresponding argument:
 
-* `-d_vp {CPU,GPU,MYRIAD}`
+* `-d {CPU,GPU,MYRIAD}`
 
-* `-d {CPU,GPU,MYRIAD}` and `-d_p {CPU,GPU,MYRIAD}`
 
-* `-d_y {CPU,GPU,MYRIAD}`
+==== Drawsiness and yawn detection
 
-The first 2 are included with the OpenVINO toolkit, while the last one is the compiled version of the public https://github.com/pjreddie/darknet[yolo] general detection model. You can do this yourself by following this https://software.intel.com/en-us/articles/OpenVINO-Using-TensorFlow[Intel's guide] or download our compiled http://bit.ly/2QN2TT7[binary] and http://bit.ly/2sw4Idn[xml]. You will need to move these files to the `data` directory inside your OpenVino-For-SmartCity path.
-
-==== Tracking
-
-To enable tracking you should run the command with the `-tracking` argument:
+In order to enable drawsiness and yawn detection, we add to de pipeline a face landmarks detection.
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp GPU -i ../data/NewVideo2.mp4 -n_async 16 -tracking
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -dlib_lm -i ../data/video2.mp4
 ----
 
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/tracking.gif[tracking]
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/tracking2.gif[tracking2]
 
-==== Collisions
+==== Driver 'eyes on the road' detection
 
-To detect collisions you should run the command with the `-tracking` + `-collision` arguments:
+To analize if the driver is paying attention, we enable the head/pose model and work with that information:
 
 [source,bash]
 ----
-./intel64/Release/smart_city_tutorial -m_vp $vehicle232 -d_vp GPU -i ../data/video82.mp4 -n_async 16 -tracking -collision
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -m_hp $hp32 -i ../data/video3.mp4
+----
+
+==== Realtime feed
+
+Removing the '-i' flag, if the computer has a video camera enabled, the programs uses its feed to run the face detection models and the following calculations.
+
+[source,bash]
+----
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -dlib_lm
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -d GPU -dlib_lm -async
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -m_hp $hp32
 ----
 
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision.gif[collision]
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision2.gif[collision2]
 image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision3.gif[collision3]
 
-=== Performance on detection
-
-**Note**: In order to run this section, the GPU is required to be present and correctly configured.
-
-While **person-vehicle-bike-detection-crossroad-0078** and **yolo_v3** detect better in most cases, they have the disadvantage of being too slow for processing, achieving 20 fps and 8 fps respectively. On the other hand, if we can use 2 lighter models to detect different objects, we can parallelize the processing in different devices and take advantage of the asynchronous mode, as follows:
-
-**1.** First we run in synchronous mode and then asynchronously with increasing -n_async values using the commands:
-
-[source,bash]
-----
-./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 1
-./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 2
-./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 4
-./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 8
-./intel64/Release/smart_city_tutorial -m $mVDR16 -d {CPU,GPU} -m_p $person232 -d_p {GPU,CPU} -i ../data/video1_640x320.mp4 -n_async 16
-----
-
-**2.** Asynchronous mode should be faster by some amount for `-n_async 2` then a little more for `-n_async 4` and `-n_async 8`, then not as noticeable for `-n_async 16`. The improvements come from the CPU running in parallel more and more with the GPU. The absence of improvement shows when the CPU is doing less in parallel and is waiting on the other devices. This is referred to as “diminishing returns” and will vary across devices and inference models.
-
-**3.** We run a performance analysis by running each 9 combinations of model/device/precision with `-n_async 16`. The following graph shows the results:
-
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/Vehicle%20and%20Pedestrian%20detection%20performance.png[performance]
-
-=== Observations on Models and Performance
-
-While the 2 light combined models work way faster than the heavy single ones, they're restricted in terms of perspective, making them unavailable for most use cases where the camera is not positioned in a way that they can detect properly. That is why we recommend using any of the other 2 for further implementations and analyses.
 
 == To Do
 
@@ -278,13 +279,10 @@ While the 2 light combined models work way faster than the heavy single ones, th
 === Development
 
 * [x] Try with different models
-* [x] Detect vehicles and pedestrians
-* [x] Draw Areas of Interest
-* [x] Object Tracking
-* [x] Object Trajectories
-* [x] Fix labels for the other models
-* [x] Calculate objects velocities
-* [x] Calculate objects accelerations
-* [x] Detect collisions
-* [ ] Elaborate on dangerous situations to be detected (near misses)
-* [ ] Detect these situations
+* [x] Face detection
+* [x] Dlib landmark idetification integration
+* [x] Blink/Yawn detection
+* [x] Blink/Yawn time
+* [x] 'Eye out of road' detection
+* [x] Face identification
+* [ ] Heart rate + speed/acceleration patterns risk
