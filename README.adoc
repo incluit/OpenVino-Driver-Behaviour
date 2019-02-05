@@ -51,16 +51,16 @@ Using OpenVino's model detection we can easily detect face with great accuracy. 
 
 Using the image detected inside the face ROI (region of interest), we feed a facial landmarks detector to identify points of iterest. Using 6 point for each eye an 6 points for the mouth it is possible to calculate 'Eye Aspect Ratio (EAR)' that gives 2 values for eye/mouth open or close (based on http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf[this paper]).
 
-image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink_detection_6_landmarks.jpg
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink_detection_6_landmarks.jpg[EAR]
 
- At the moment of writing this guide, the facial landmarks detection model included with OpenVino (facial-landmarks-35-adas-0001) has not enough points to run this calculations. We are using dlib's facial landmarks detector instead.
+At the moment of writing this guide, the facial landmarks detection model included with OpenVino (facial-landmarks-35-adas-0001) has not enough points to run this calculations. We are using dlib's facial landmarks detector instead.
 
- Once we have positive detection for blink/yawn we count frames of those events and trigger an alarm when a threshold hit.
+Once we have positive detection for blink/yawn we count frames of those events and trigger an alarm when a threshold hit.
 
- === 'Eye out of road' detection
+=== 'Eye out of road' detection
 
- Using de image inside the face ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
- Analizing the output of that model we can easily detect when the face is not centered and looking front.
+Using de image inside the face ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
+Analizing the output of that model we can easily detect when the face is not centered and looking front.
  
 == Prerequisites
 
