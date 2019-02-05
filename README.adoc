@@ -189,8 +189,6 @@ synchronous mode.
 ./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4
 ----
 
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/detection.gif[detection]
-
 **4.** You can also run the command in asynchronous mode using the option
 "-async":
 
@@ -198,8 +196,6 @@ image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/dete
 ----
 ./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4 -async
 ----
-
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/detection2.gif[detection2]
 
 **5.** You can also load the models into the **GPU** or **MYRIAD**:
 
@@ -238,9 +234,6 @@ In order to enable drawsiness and yawn detection, we add to de pipeline a face l
 ./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -dlib_lm -i ../data/video2.mp4
 ----
 
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/tracking.gif[tracking]
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/tracking2.gif[tracking2]
-
 ==== Driver 'eyes on the road' detection
 
 To analize if the driver is paying attention, we enable the head/pose model and work with that information:
@@ -261,11 +254,6 @@ Removing the '-i' flag, if the computer has a video camera enabled, the programs
 ./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -d GPU -dlib_lm -async
 ./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -m_hp $hp32
 ----
-
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision.gif[collision]
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision2.gif[collision2]
-image::https://github.com/incluit/OpenVino-For-SmartCity/blob/master/images/collision3.gif[collision3]
-
 
 == To Do
 
