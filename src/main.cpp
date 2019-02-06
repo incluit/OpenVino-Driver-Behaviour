@@ -1,24 +1,3 @@
-/*
-// Copyright (c) 2018 Intel Corporation
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-*/
-
-/**
-* \brief The entry point for the Inference Engine interactive_face_detection demo application
-* \file interactive_face_detection_demo/main.cpp
-* \example interactive_face_detection_demo/main.cpp
-*/
 #include <gflags/gflags.h>
 #include <functional>
 #include <iostream>
@@ -138,8 +117,6 @@ int main(int argc, char *argv[]) {
         boost::circular_buffer<float> ear_5(5);
         boost::circular_buffer<float> ear_5_mouth(5);
 
-        //dlib::frontal_face_detector detector = dlib::get_frontal_face_detector();
-
         std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
 
         // ------------------------------ Parsing and validation of input args ---------------------------------
@@ -169,10 +146,7 @@ int main(int argc, char *argv[]) {
             {FLAGS_d_em, FLAGS_m_em}, {FLAGS_d_lm, FLAGS_m_lm}
         };
         FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
-        AgeGenderDetection ageGenderDetector(FLAGS_m_ag, FLAGS_d_ag, FLAGS_n_ag, FLAGS_dyn_ag, FLAGS_async);
         HeadPoseDetection headPoseDetector(FLAGS_m_hp, FLAGS_d_hp, FLAGS_n_hp, FLAGS_dyn_hp, FLAGS_async);
-        EmotionsDetection emotionsDetector(FLAGS_m_em, FLAGS_d_em, FLAGS_n_em, FLAGS_dyn_em, FLAGS_async);
-        FacialLandmarksDetection facialLandmarksDetector(FLAGS_m_lm, FLAGS_d_lm, FLAGS_n_lm, FLAGS_dyn_lm, FLAGS_async);
 
         for (auto && option : cmdOptions) {
             auto deviceName = option.first;
@@ -219,10 +193,7 @@ int main(int argc, char *argv[]) {
         // --------------------------- 2. Read IR models and load them to plugins ------------------------------
         // Disable dynamic batching for face detector as long it processes one image at a time.
         Load(faceDetector).into(pluginsForDevices[FLAGS_d], false);
-        Load(ageGenderDetector).into(pluginsForDevices[FLAGS_d_ag], FLAGS_dyn_ag);
         Load(headPoseDetector).into(pluginsForDevices[FLAGS_d_hp], FLAGS_dyn_hp);
-        Load(emotionsDetector).into(pluginsForDevices[FLAGS_d_em], FLAGS_dyn_em);
-        Load(facialLandmarksDetector).into(pluginsForDevices[FLAGS_d_lm], FLAGS_dyn_lm);
         // -----------------------------------------------------------------------------------------------------
 
         // --------------------------- 3. Do inference ---------------------------------------------------------
@@ -232,8 +203,7 @@ int main(int argc, char *argv[]) {
             std::cout << "Press any key to stop" << std::endl;
         }
 
-        bool isFaceAnalyticsEnabled = ageGenderDetector.enabled() || headPoseDetector.enabled() ||
-                                      emotionsDetector.enabled() || facialLandmarksDetector.enabled();
+        bool isFaceAnalyticsEnabled = headPoseDetector.enabled();
 
         Timer timer;
         timer.start("total");
@@ -283,10 +253,7 @@ int main(int argc, char *argv[]) {
                 if (isFaceAnalyticsEnabled) {
                     auto clippedRect = face.location & cv::Rect(0, 0, width, height);
                     cv::Mat face = prev_frame(clippedRect);
-                    ageGenderDetector.enqueue(face);
                     headPoseDetector.enqueue(face);
-                    emotionsDetector.enqueue(face);
-                    facialLandmarksDetector.enqueue(face);
                 }
             }
             timer.finish("data preprocessing");
@@ -294,10 +261,7 @@ int main(int argc, char *argv[]) {
             // Run age-gender recognition, head pose estimation and emotions recognition simultaneously.
             timer.start("face analytics call");
             if (isFaceAnalyticsEnabled) {
-                ageGenderDetector.submitRequest();
                 headPoseDetector.submitRequest();
-                emotionsDetector.submitRequest();
-                facialLandmarksDetector.submitRequest();
             }
             timer.finish("face analytics call");
 
@@ -310,10 +274,7 @@ int main(int argc, char *argv[]) {
 
             timer.start("face analytics wait");
             if (isFaceAnalyticsEnabled) {
-                ageGenderDetector.wait();
                 headPoseDetector.wait();
-                emotionsDetector.wait();
-                facialLandmarksDetector.wait();
             }
             timer.finish("face analytics wait");
 
@@ -353,25 +314,6 @@ int main(int argc, char *argv[]) {
                     cv::putText(prev_frame, out.str(), cv::Point2f(0, 65), cv::FONT_HERSHEY_TRIPLEX, 0.5,
                                 cv::Scalar(255, 0, 0));
                 }
-
-                // dlib face detection
-                /*
-                dlib::array2d<dlib::rgb_pixel> img;
-                dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
-                std::vector<dlib::rectangle> dets = detector(img);
-                std::vector<dlib::full_object_detection> shapes;
-                for (unsigned long j = 0; j < dets.size(); ++j)
-                {
-                    dlib::full_object_detection shape = sp(img, dets[j]);
-                    // You get the idea, you can get all the face part locations if
-                    // you want them.  Here we just store them in shapes so we can
-                    // put them on the screen.
-                    shapes.push_back(shape);
-                }
-                win.clear_overlay();
-                win.set_image(img);
-                win.add_overlay(render_face_detections(shapes));
-                win.add_overlay(shapes);*/
 
                 // For every detected face.
                 int i = 0;
@@ -454,26 +396,6 @@ int main(int argc, char *argv[]) {
                         cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 190), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
                     }
 
-                    if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {
-                        out << (ageGenderDetector[i].maleProb > 0.5 ? "M" : "F");
-                        out << std::fixed << std::setprecision(0) << "," << ageGenderDetector[i].age;
-                        if (FLAGS_r) {
-                            std::cout << "Predicted gender, age = " << out.str() << std::endl;
-                        }
-                    } else {
-                        out << (result.label < faceDetector.labels.size() ? faceDetector.labels[result.label] :
-                                std::string("label #") + std::to_string(result.label))
-                            << ": " << std::fixed << std::setprecision(3) << result.confidence;
-                    }
-
-                    if (emotionsDetector.enabled() && i < emotionsDetector.maxBatch) {
-                        std::string emotion = emotionsDetector[i];
-                        if (FLAGS_r) {
-                            std::cout << "Predicted emotion = " << emotion << std::endl;
-                        }
-                        out << "," << emotion;
-                    }
-
                     cv::putText(prev_frame,
                                 out.str(),
                                 cv::Point2f(result.location.x, result.location.y - 15),
@@ -490,113 +412,26 @@ int main(int argc, char *argv[]) {
                         }
                         cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
                         headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
-			int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
-			if (is_dist) {
-				std::string distracted_str = "";
-				switch (is_dist) {
-				case DISTRACTED:
-					distracted_str = "WATCH THE ROAD!";
-					break;
-				case PHONE:
-					distracted_str = "STOP LOOKING AT YER PHONE!";
-					break;
-				default:
-					break;
-				}
-				cv::putText(frame, distracted_str, cv::Point2f(50, 200),cv::FONT_HERSHEY_SIMPLEX, 2,cv::Scalar(0, 0, 255), 5);
-			}
-                    }
-                    cv::Point2f eye_l_0;
-                    cv::Point2f eye_l_1;
-                    if (facialLandmarksDetector.enabled() && i < facialLandmarksDetector.maxBatch) {
-                        auto normed_landmarks = facialLandmarksDetector[i];
-                        auto n_lm = normed_landmarks.size();
-                        if (FLAGS_r)
-                            std::cout << "Normed Facial Landmarks coordinates (x, y):" << std::endl;
-                        for (auto i_lm = 0UL; i_lm < n_lm / 2; ++i_lm) {
-                            if(i_lm < 4 || (i_lm >=12 && i_lm<=17)){
-                                float normed_x = normed_landmarks[2 * i_lm];
-                                float normed_y = normed_landmarks[2 * i_lm + 1];
-                                if (FLAGS_r) {
-                                    std::cout << normed_x << ", "
-                                            << normed_y << std::endl;
-                                }
-                                int x_lm = rect.x + rect.width * normed_x;
-                                int y_lm = rect.y + rect.height * normed_y;
-                                if(i_lm == 1)
-                                    eye_l_0=cv::Point2f(x_lm, y_lm);
-                                if(i_lm == 0)
-                                    eye_l_1=cv::Point2f(x_lm, y_lm);
-                                // Draw facial landmarks on the frame
-                                cv::circle(prev_frame, cv::Point(x_lm, y_lm), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);    
+                        int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
+                        if (is_dist) {
+                            std::string distracted_str = "";
+                            switch (is_dist) {
+                            case DISTRACTED:
+                                distracted_str = "WATCH THE ROAD!";
+                                break;
+                            case PHONE:
+                                distracted_str = "STOP LOOKING AT YER PHONE!";
+                                break;
+                            default:
+                                break;
                             }
-                        }/*
-                        //Eye detection
-                        float distance_l = sqrt((eye_l_1.x - eye_l_0.x)*(eye_l_1.x - eye_l_0.x) + (eye_l_1.y - eye_l_0.y)*(eye_l_1.y - eye_l_0.y));
-                        float safety_factor = 0.20 * distance_l;
-                        cv::Point2f frame_p0(eye_l_0.x - safety_factor, (eye_l_0.y + distance_l/3) + safety_factor);
-                        cv::Point2f frame_p1(eye_l_1.x + safety_factor, (eye_l_1.y - distance_l/3) - safety_factor);
-                        cv::Rect frame_eye_l(frame_p0,frame_p1);
-
-                        cv::Mat l_eye;
-                        prev_frame(frame_eye_l).copyTo(l_eye);
-                        cv::cvtColor(l_eye, l_eye, cv::COLOR_BGR2GRAY);
-                        cv::namedWindow("Left Eye gray");
-                        cv::imshow("Left Eye gray", l_eye);
-                        cv::adaptiveThreshold(l_eye, l_eye, 130, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 3, 2);
-                        //cv::threshold(l_eye, l_eye, 70, 255, cv::THRESH_BINARY);
-                        cv::namedWindow("Left Eye");
-                        cv::imshow("Left Eye", l_eye);
-                        int count = cv::countNonZero(l_eye);
-                        std::cout << count << std::endl;
-                        cv::rectangle(prev_frame, frame_eye_l, cv::Scalar(147, 20, 255), 2);
-                        */
-                    }
-
-                    auto genderColor = (ageGenderDetector.enabled() && (i < ageGenderDetector.maxBatch)) ?
-                                ((ageGenderDetector[i].maleProb < 0.5) ? cv::Scalar(147, 20, 255) : cv::Scalar(255, 0,
-                                                                                                               0))
-                              : cv::Scalar(100, 100, 100);
-                    cv::rectangle(prev_frame, result.location, genderColor, 1);
-
-                    i++;
-                }
-
-                cv::imshow("Detection results", prev_frame);
-                timer.finish("visualization");
-            } else if (FLAGS_r) {
-                // For every detected face.
-                for (int i = 0; i < prev_detection_results.size(); i++) {
-                    if (ageGenderDetector.enabled() && i < ageGenderDetector.maxBatch) {
-                        out.str("");
-                        out << (ageGenderDetector[i].maleProb > 0.5 ? "M" : "F");
-                        out << std::fixed << std::setprecision(0) << "," << ageGenderDetector[i].age;
-                        std::cout << "Predicted gender, age = " << out.str() << std::endl;
-                    }
-
-                    if (emotionsDetector.enabled() && i < emotionsDetector.maxBatch) {
-                        std::cout << "Predicted emotion = " << emotionsDetector[i] << std::endl;
-                    }
-
-                    if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch) {
-                        std::cout << "Head pose results: yaw, pitch, roll = "
-                                  << headPoseDetector[i].angle_y << ";"
-                                  << headPoseDetector[i].angle_p << ";"
-                                  << headPoseDetector[i].angle_r << std::endl;
-                    }
-
-                    if (facialLandmarksDetector.enabled() && i < facialLandmarksDetector.maxBatch) {
-                        auto normed_landmarks = facialLandmarksDetector[i];
-                        auto n_lm = normed_landmarks.size();
-                        std::cout << "Normed Facial Landmarks coordinates (x, y):" << std::endl;
-                        for (auto i_lm = 0UL; i_lm < n_lm / 2; ++i_lm) {
-                            float normed_x = normed_landmarks[2 * i_lm];
-                            float normed_y = normed_landmarks[2 * i_lm + 1];
-                            std::cout << normed_x << ", "
-                                      << normed_y << std::endl;
+                            cv::putText(frame, distracted_str, cv::Point2f(50, 200),cv::FONT_HERSHEY_SIMPLEX, 2,cv::Scalar(0, 0, 255), 5);
                         }
                     }
+                    i++;
                 }
+                cv::imshow("Detection results", prev_frame);
+                timer.finish("visualization");
             }
 
             // End of file (or a single frame file like an image). We just keep last frame displayed to let user check what was shown
@@ -623,10 +458,7 @@ int main(int argc, char *argv[]) {
         // Show performace results.
         if (FLAGS_pc) {
             faceDetector.printPerformanceCounts();
-            ageGenderDetector.printPerformanceCounts();
             headPoseDetector.printPerformanceCounts();
-            emotionsDetector.printPerformanceCounts();
-            facialLandmarksDetector.printPerformanceCounts();
         }
         // -----------------------------------------------------------------------------------------------------
     }
