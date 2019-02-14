@@ -21,18 +21,18 @@ This is a follow-up on the OpenVino's inference tutorials samples:
 
 https://software.intel.com/en-us/articles/OpenVINO-IE-Samples#interactive-face-detection
 
-We will focus on the "Interactive face detection" sample, and we will work on and extend this tutorial as a demo app for aimed to the automotive insdustry.
+We will focus on the "Interactive face detection" sample, and we will work on and extend this tutorial as a demo app aimed to the automotive industry.
 
 == Introduction
 
-This project consists on showcasing the advantages of the Intel's OpenVINO toolkit. We will develop a __Driver Behaviour__ case scenario, where we will detect drawsiness, sleep, yawns. For that, we will use the OpenVINO toolkit and OpenCV, all written in `{cpp}`.
+This project consists on showcasing the advantages of the Intel's OpenVINO toolkit. We will develop a __Driver Behaviour__ case scenario, where we will detect drowsiness based on blinking and yawning and gaze direction. For that, we will use the OpenVINO toolkit and OpenCV, all written in `{cpp}`.
 
 As mentioned previously, we will take the https://software.intel.com/en-us/articles/OpenVINO-IE-Samples#interactive-face-detection[Interactive face detection sample] as a starting point, as it provides us with the options to run and stack different models synchronously or asynchronously. We will develop the following features based on computer vision:
 
 .  Sleep/Drowsiness Detection:
 .. Counting frecuency of blinking.
 .. Yawn detection.
-.. Gaze detection.
+. Gaze detection.
 
 We could have other information to build a robust system:
 
@@ -42,25 +42,25 @@ We could have other information to build a robust system:
 
 == Bussines Logic
 
-Using OpenVino's model detection we can easily detect face with great accuracy. We are currently using for testing 2 different face detection models that are included with OpenVino out-of-the-box:
+Using OpenVino's model detection we can easily detect faces with great accuracy. We are currently using for testing 2 different face detection models that are included with OpenVino out-of-the-box:
 
 . face-detection-adas-0001
 . face-detection-retail-0004
 
 === Blink/Yawn detection
 
-Using the image detected inside the face ROI (region of interest), we feed a facial landmarks detector to identify points of iterest. Using 6 point for each eye an 6 points for the mouth it is possible to calculate 'Eye Aspect Ratio (EAR)' that gives 2 values for eye/mouth open or close (based on http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf[this paper]).
+Using the image detected inside the face ROI (region of interest), we feed a facial landmarks detector to identify points of iterest. Using 6 points for each eye and 6 points for the mouth it is possible to calculate 'Eye Aspect Ratio (EAR)' that gives 2 values for eye/mouth open or closed (based on http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf[this paper]).
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink_detection_6_landmarks.jpg[EAR]
 
 At the moment of writing this guide, the facial landmarks detection model included with OpenVino (facial-landmarks-35-adas-0001) has not enough points to run this calculations. We are using dlib's facial landmarks detector instead.
 
-Once we have positive detection for blink/yawn we count frames of those events and trigger an alarm when a threshold hit.
+Once we have a positive detection for blink/yawn, we count frames of those events and trigger an alarm when they hit a threshold.
 
 === 'Eye out of road' detection
 
-Using de image inside the face ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
-Analizing the output of that model we can easily detect when the face is not centered and looking front.
+Using the face's ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
+Analizing the output of that model we can easily detect when the face is not centered or not looking to the front.
  
 == Prerequisites
 
@@ -94,7 +94,7 @@ A summary of what is needed:
 
 * OpenVINO™ toolkit supported Linux operating system. This tutorial was run on 64-bit Ubuntu 16.04.1 LTS updated to kernel 4.15.0-43 following the OpenVINO™ toolkit installation instructions.
 
-* The latest OpenVINO™ toolkit installed and verified. This tutorial was written using version 2018 R4.0.
+* The latest OpenVINO™ toolkit installed and verified. This tutorial was written using version 2018 R4.0. (Support for R5 has recently been added)
 
 * Git(git) for downloading from the GitHub repository.
 
@@ -151,7 +151,16 @@ mkdir build
 cd build
 ----
 
-**5.** Compile:
+**5.** Before running each of the following sections, be sure to source the
+helper script. That will make it easier to use environment variables
+instead of long names to the models:
+
+[source,bash]
+----
+source ../scripts/setupenv.sh
+----
+
+**6.** Compile:
 
 [source,bash]
 ----
@@ -165,16 +174,7 @@ make
 
 ==== Face Detection
 
-**1.** Before running each of the following sections, be sure to source the
-helper script. That will make it easier to use environment variables
-instead of long names to the models:
-
-[source,bash]
-----
-source ../scripts/setupenv.sh 
-----
-
-**2.** First, let us see how it works face detection on a single image file using default
+**1.** First, let us see how face detection works on a single image file using the default
 synchronous mode.
 
 [source,bash]
@@ -182,14 +182,14 @@ synchronous mode.
 ./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/img_1.jpg
 ----
 
-**3.** For video files:
+**2.** For video files:
 
 [source,bash]
 ----
 ./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4
 ----
 
-**4.** You can also run the command in asynchronous mode using the option
+**3.** You can also run the command in asynchronous mode using the option
 "-async":
 
 [source,bash]
@@ -197,7 +197,7 @@ synchronous mode.
 ./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4 -async
 ----
 
-**5.** You can also load the models into the **GPU** or **MYRIAD**:
+**4.** You can also load the models into the **GPU** or **MYRIAD**:
 
 **Note**: In order to run this section, the **GPU** and/or **MYRIAD** are required to be present and correctly configured.
 
@@ -225,23 +225,29 @@ By default they will be loaded into the CPU, so remember to pass the correspondi
 * `-d {CPU,GPU,MYRIAD}`
 
 
-==== Drawsiness and yawn detection
+==== Drowsiness and yawn detection
 
-In order to enable drawsiness and yawn detection, we add to de pipeline a face landmarks detection.
+In order to enable drowsiness and yawn detection, we add to the pipeline a face landmarks detection.
 
 [source,bash]
 ----
 ./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -dlib_lm -i ../data/video2.mp4
 ----
 
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink.gif[blinking]
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/yawning.gif[yawning]
+
 ==== Driver 'eyes on the road' detection
 
-To analize if the driver is paying attention, we enable the head/pose model and work with that information:
+To analize if the driver is paying attention to the road, we enable the head/pose model and work with that information:
 
 [source,bash]
 ----
 ./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -m_hp $hp32 -i ../data/video3.mp4
 ----
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/gaze.gif[gaze]
 
 ==== Realtime feed
 
