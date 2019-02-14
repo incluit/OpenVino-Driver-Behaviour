@@ -14,7 +14,6 @@
 
 #include <inference_engine.hpp>
 
-#include <samples/common.hpp>
 #include <samples/slog.hpp>
 
 #include "customflags.hpp"

@@ -14,9 +14,6 @@
 
 #include <inference_engine.hpp>
 
-#include <samples/common.hpp>
-#include <samples/slog.hpp>
-
 #include <ie_iextension.h>
 #include <ext_list.hpp>
 
