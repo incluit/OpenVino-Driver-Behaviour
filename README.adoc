@@ -225,7 +225,7 @@ By default they will be loaded into the CPU, so remember to pass the correspondi
 * `-d {CPU,GPU,MYRIAD}`
 
 
-==== Drowsiness and yawn detection
+==== Drowsiness detection
 
 In order to enable drowsiness and yawn detection, we add to the pipeline a face landmarks detection.
 
