@@ -333,16 +333,19 @@ int main(int argc, char *argv[]) {
                         dlib::rectangle det = openCVRectToDlib(aux_rect);
                         dlib::full_object_detection shape = sp(img, det);
                         for(int i = 0; i < shape.num_parts(); i++){
-                            if(i >= 36 && i <= 41)
+                            if(i >= 36 && i <= 41) {
                                 left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                            if(i >= 42 && i <= 47)
+                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                            }
+                            if(i >= 42 && i <= 47) {
                                 right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                            //cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                            }
                             //48 - 54. 50 - 58. 52 - 56.
 
                             if(i == 48 || i == 54 || i ==  50 || i == 58 || i == 52 || i == 56){
                                 mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                               // cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
                             }
                         }
                         float ear_left = 0;
@@ -372,7 +375,6 @@ int main(int argc, char *argv[]) {
                             cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
                             cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                             timer_danger--;
-			    std::cout<<"timer : "<<timer_danger<<std::endl;
 			}
                         if (timer_danger == 0) {
                             eye_closed = false;
