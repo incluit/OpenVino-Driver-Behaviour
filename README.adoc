@@ -231,7 +231,7 @@ In order to enable drowsiness and yawn detection, we add to the pipeline a face 
 
 [source,bash]
 ----
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -dlib_lm -i ../data/video2.mp4
+./intel64/Release/driver_behaviour_tutorial -m $face232 -dlib_lm -i ../data/video2.mp4
 ----
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink.gif[blinking]
@@ -244,7 +244,7 @@ To analize if the driver is paying attention to the road, we enable the head/pos
 
 [source,bash]
 ----
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -m_hp $hp32 -i ../data/video3.mp4
+./intel64/Release/driver_behaviour_tutorial -m $face232 -m_hp $hp32 -i ../data/video3.mp4
 ----
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/gaze.gif[gaze]
@@ -255,10 +255,10 @@ Removing the '-i' flag, if the computer has a video camera enabled, the programs
 
 [source,bash]
 ----
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -dlib_lm
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -d GPU -dlib_lm -async
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -m_hp $hp32
+./intel64/Release/driver_behaviour_tutorial -m $face232
+./intel64/Release/driver_behaviour_tutorial -m $face232 -dlib_lm
+./intel64/Release/driver_behaviour_tutorial -m $face232 -d GPU -dlib_lm -async
+./intel64/Release/driver_behaviour_tutorial -m $face232 -m_hp $hp32
 ----
 
 == To Do
