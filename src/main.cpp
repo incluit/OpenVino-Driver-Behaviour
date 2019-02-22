@@ -322,6 +322,7 @@ int main(int argc, char *argv[]) {
                     cv::Rect rect = result.location;
 
                     out.str("");
+                    cv::rectangle(prev_frame, rect, cv::Scalar(255,255,255), 1);
                     if(FLAGS_dlib_lm){
                         float scale_factor_x = 0.15;
                         float scale_factor_y = 0.20;
@@ -341,10 +342,9 @@ int main(int argc, char *argv[]) {
 
                             if(i == 48 || i == 54 || i ==  50 || i == 58 || i == 52 || i == 56){
                                 mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                               // cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
                             }
                         }
-                        cv::rectangle(prev_frame, aux_rect, cv::Scalar(255,255,255), 1);
                         float ear_left = 0;
                         float ear_right = 0;
                         float ear = 0;
@@ -400,7 +400,7 @@ int main(int argc, char *argv[]) {
                         }
                         cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(250, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                         cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
+                       // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
                     }
 
                     cv::putText(prev_frame,
