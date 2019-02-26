@@ -18,6 +18,7 @@
 #pragma once
 
 #include <string>
+#include <cstdlib>
 #include <vector>
 #include <gflags/gflags.h>
 #include <iostream>
@@ -27,6 +28,18 @@
 #else
 #include <dirent.h>
 #endif
+
+std::string GetEnv( const std::string & var ) {
+     const char * val = std::getenv( var.c_str() );
+     if ( val == 0 ) {
+         return "";
+     }
+     else {
+         return val;
+     }
+}
+
+const std::string DEFAULT_PATH = GetEnv("INTEL_CVSDK_DIR");
 
 /// @brief message for help argument
 static const char help_message[] = "Print a usage message.";
@@ -143,7 +156,15 @@ DEFINE_string(m_em, "", emotions_model_message);
 
 /// \brief Define parameter for facial landmarks detection model file <br>
 /// It is an optional parameter
-DEFINE_string(m_lm, "", facial_landmarks_model_message);
+
+std::string fp_lm = DEFAULT_PATH + std::string("/deployment_tools/intel_models/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml");
+
+DEFINE_string(m_lm, fp_lm, facial_landmarks_model_message);
+
+/// \brief Define parameter for facial landmarks detection model file <br>
+/// It is an optional parameter
+std::string fp_reid = DEFAULT_PATH + std::string("/deployment_tools/intel_models/face-reidentification-retail-0095/FP32/face-reidentification-retail-0095.xml");
+DEFINE_string(m_reid, fp_reid, facial_landmarks_model_message);
 
 /// \brief target device for face detection <br>
 DEFINE_string(d, "CPU", target_device_message);
@@ -159,6 +180,9 @@ DEFINE_string(d_em, "CPU", target_device_message_em);
 
 /// \brief target device for Facial Landmarks net <br>
 DEFINE_string(d_lm, "CPU", target_device_message_lm);
+
+/// \brief target device for Facial Landmarks net <br>
+DEFINE_string(d_reid, "CPU", target_device_message_lm);
 
 /// \brief maximum batch size for AgeGender net <br>
 DEFINE_uint32(n_ag, 16, num_batch_ag_message);
@@ -219,6 +243,7 @@ DEFINE_bool(async, false, async_message);
 
 DEFINE_bool(dlib_lm, false, "Acti");
 
+DEFINE_string(fg, "", "Path to gallery");
 
 /**
 * \brief This function shows a help message

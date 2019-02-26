@@ -78,3 +78,7 @@ export em32=$modelDir/$modName/FP32/$modName.xml
 modName=head-pose-estimation-adas-0001
 export hp16=$modelDir/$modName/FP16/$modName.xml
 export hp32=$modelDir/$modName/FP32/$modName.xml
+
+modName=face-reidentification-retail-0095
+export reid16=$modelDir/$modName/FP16/$modName.xml
+export reid32=$modelDir/$modName/FP32/$modName.xml

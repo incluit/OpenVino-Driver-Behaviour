@@ -18,6 +18,9 @@
 
 #include "customflags.hpp"
 #include "detectors.hpp"
+#include "cnn.hpp"
+#include "face_reid.hpp"
+#include "tracker.hpp"
 
 #include <ie_iextension.h>
 #include <ext_list.hpp>
@@ -93,60 +96,151 @@ int isDistracted (float y, float p, float r)
 	return result;
 }
 
+bool identify_driver(cv::Mat frame, std::vector<FaceDetection::Result>* results, VectorCNN* landmarks_detector,
+		VectorCNN* face_reid, EmbeddingsGallery* face_gallery, std::string* driver_name) {
+	bool ret = false;
+	std::vector<cv::Mat> face_rois, landmarks, embeddings;
+
+	if (results->empty())
+		return ret;
+
+	for (const auto& face : *results) {
+		cv::Rect rect = face.location;
+		float scale_factor_x = 0.15;
+		float scale_factor_y = 0.20;
+		double aux_x = (rect.x > 3 ? rect.x : 3);
+		double aux_y = (rect.y > 3 ? rect.y : 3);
+		double aux_width = (rect.width + aux_x < frame.cols ? rect.width : frame.cols - aux_x);
+		double aux_height = (rect.height + aux_y < frame.rows ? rect.height : frame.rows - aux_y);
+		aux_x += scale_factor_x * aux_width;
+		aux_y += scale_factor_y * aux_height;
+		aux_width = aux_width * (1 - 2 * scale_factor_x);
+		aux_height = aux_height * ( 1 - scale_factor_y);
+		cv::Rect aux_rect = cv::Rect(aux_x, aux_y, aux_width, aux_height);
+		face_rois.push_back(frame(aux_rect));
+	}
+
+	if (!face_rois.empty()) {
+	landmarks_detector->Compute(face_rois, &landmarks, cv::Size(2, 5));
+	AlignFaces(&face_rois, &landmarks);
+	face_reid->Compute(face_rois, &embeddings);
+	auto ids = face_gallery->GetIDsByEmbeddings(embeddings);
+
+	if (!ids.empty() && ids[0] != EmbeddingsGallery::unknown_id) {
+		ret = true;
+		*driver_name = face_gallery->GetLabelByID(ids[0]);
+	}
+	}
+
+	return ret;
+}
+
 int main(int argc, char *argv[]) {
-    try {
+	try {
 
-        dlib::shape_predictor sp;
-        dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
-        std::vector<dlib::full_object_detection> shapes;
-        float EYE_AR_THRESH = 0.195;
-        float MOUTH_EAR_THRESH = 0.65;
-        float EYE_AR_CONSEC_FRAMES = 3;
-        float MOUTH_EAR_CONSEC_FRAMES = 5;
+		dlib::shape_predictor sp;
+		dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
+		std::vector<dlib::full_object_detection> shapes;
+		float EYE_AR_THRESH = 0.195;
+		float MOUTH_EAR_THRESH = 0.65;
+		float EYE_AR_CONSEC_FRAMES = 3;
+		float MOUTH_EAR_CONSEC_FRAMES = 5;
 
-        std::chrono::high_resolution_clock::time_point slp1,slp2;
-        bool eye_closed = false;
+		std::chrono::high_resolution_clock::time_point slp1,slp2;
+		bool eye_closed = false;
 
-        int blink_counter = 0;
-        int yawn_counter = 0;
-        int last_blink_counter = 0;
-        int last_yawn_counter = 0;
-        int blinl_total = 0;
-        int yawn_total = 0;
-        boost::circular_buffer<float> ear_5(5);
-        boost::circular_buffer<float> ear_5_mouth(5);
+		int blink_counter = 0;
+		int yawn_counter = 0;
+		int last_blink_counter = 0;
+		int last_yawn_counter = 0;
+		int blinl_total = 0;
+		int yawn_total = 0;
+		boost::circular_buffer<float> ear_5(5);
+		boost::circular_buffer<float> ear_5_mouth(5);
 
-        std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
+		std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
 
-        // ------------------------------ Parsing and validation of input args ---------------------------------
-        if (!ParseAndCheckCommandLine(argc, argv)) {
-            return 0;
+		// ------------------------------ Parsing and validation of input args ---------------------------------
+		if (!ParseAndCheckCommandLine(argc, argv)) {
+			return 0;
+		}
+
+		slog::info << "Reading input" << slog::endl;
+		cv::VideoCapture cap;
+		const bool isCamera = FLAGS_i == "cam";
+		if (!(FLAGS_i == "cam" ? cap.open(0) : cap.open(FLAGS_i))) {
+			throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
+		}
+		const size_t width  = (size_t) cap.get(cv::CAP_PROP_FRAME_WIDTH);
+		const size_t height = (size_t) cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+
+		// read input (video) frame
+		cv::Mat frame;
+		if (!cap.read(frame)) {
+			throw std::logic_error("Failed to get frame from cv::VideoCapture");
+		}
+		// -----------------------------------------------------------------------------------------------------
+		// --------------------------- 1. Load Plugin for inference engine -------------------------------------
+		std::map<std::string, InferencePlugin> pluginsForDevices;
+		std::vector<std::pair<std::string, std::string>> cmdOptions = {
+			{FLAGS_d, FLAGS_m}, {FLAGS_d_ag, FLAGS_m_ag}, {FLAGS_d_hp, FLAGS_m_hp},
+			{FLAGS_d_em, FLAGS_m_em}
+		};
+		FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
+		HeadPoseDetection headPoseDetector(FLAGS_m_hp, FLAGS_d_hp, FLAGS_n_hp, FLAGS_dyn_hp, FLAGS_async);
+		//	FacialLandmarksDetection facialLandmarksDetector(FLAGS_m_lm, FLAGS_d_lm, FLAGS_n_lm, FLAGS_dyn_lm, FLAGS_async);
+
+		auto fr_model_path = FLAGS_m_reid;
+		std::cout<<fr_model_path<<std::endl;
+		auto fr_weights_path = fileNameNoExt(FLAGS_m_reid) + ".bin";
+		auto lm_model_path = FLAGS_m_lm;
+		auto lm_weights_path = fileNameNoExt(FLAGS_m_lm) + ".bin";
+
+		std::map<std::string, InferencePlugin> plugins_for_devices;
+		std::vector<std::string> devices = {FLAGS_d_lm, FLAGS_d_reid};
+
+		for (const auto &device : devices) {
+			if (plugins_for_devices.find(device) != plugins_for_devices.end()) {
+				continue;
+			}
+			slog::info << "Loading plugin " << device << slog::endl;
+			InferencePlugin plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(device);
+			printPluginVersion(plugin, std::cout);
+			/** Load extensions for the CPU plugin **/
+			if ((device.find("CPU") != std::string::npos)) {
+				plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
+
+				if (!FLAGS_l.empty()) {
+					// CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
+					auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+					plugin.AddExtension(extension_ptr);
+					slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
+				}
+            } else if (!FLAGS_c.empty()) {
+                // Load Extensions for other plugins not CPU
+                plugin.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}});
+            }
+            plugin.SetConfig({{PluginConfigParams::KEY_DYN_BATCH_ENABLED, PluginConfigParams::YES}});
+            if (FLAGS_pc)
+                plugin.SetConfig({{PluginConfigParams::KEY_PERF_COUNT, PluginConfigParams::YES}});
+            plugins_for_devices[device] = plugin;
         }
 
-        slog::info << "Reading input" << slog::endl;
-        cv::VideoCapture cap;
-        const bool isCamera = FLAGS_i == "cam";
-        if (!(FLAGS_i == "cam" ? cap.open(0) : cap.open(FLAGS_i))) {
-            throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
-        }
-        const size_t width  = (size_t) cap.get(cv::CAP_PROP_FRAME_WIDTH);
-        const size_t height = (size_t) cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+        CnnConfig reid_config(fr_model_path, fr_weights_path);
+        reid_config.max_batch_size = 16;
+        reid_config.enabled = /*face_config.enabled*/ true && !fr_model_path.empty() && !lm_model_path.empty();
+        reid_config.plugin = plugins_for_devices[FLAGS_d_reid];
+        VectorCNN face_reid(reid_config);
 
-        // read input (video) frame
-        cv::Mat frame;
-        if (!cap.read(frame)) {
-            throw std::logic_error("Failed to get frame from cv::VideoCapture");
-        }
-        // -----------------------------------------------------------------------------------------------------
-        // --------------------------- 1. Load Plugin for inference engine -------------------------------------
-        std::map<std::string, InferencePlugin> pluginsForDevices;
-        std::vector<std::pair<std::string, std::string>> cmdOptions = {
-            {FLAGS_d, FLAGS_m}, {FLAGS_d_ag, FLAGS_m_ag}, {FLAGS_d_hp, FLAGS_m_hp},
-            {FLAGS_d_em, FLAGS_m_em}, {FLAGS_d_lm, FLAGS_m_lm}
-        };
-        FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
-        HeadPoseDetection headPoseDetector(FLAGS_m_hp, FLAGS_d_hp, FLAGS_n_hp, FLAGS_dyn_hp, FLAGS_async);
+        // Load landmarks detector
+        CnnConfig landmarks_config(lm_model_path, lm_weights_path);
+        landmarks_config.max_batch_size = 16;
+        landmarks_config.enabled = /*face_config.enabled*/ true && reid_config.enabled && !lm_model_path.empty();
+        landmarks_config.plugin = plugins_for_devices[FLAGS_d_lm];
+        VectorCNN landmarks_detector(landmarks_config);
 
+	double t_reid = 0.85; // Cosine distance threshold between two vectors for face reidentification.
+        EmbeddingsGallery face_gallery(FLAGS_fg, t_reid, landmarks_detector, face_reid);
         for (auto && option : cmdOptions) {
             auto deviceName = option.first;
             auto networkName = option.second;
@@ -229,8 +323,16 @@ int main(int argc, char *argv[]) {
         //dlib
         //dlib::image_window win, win_faces;
 	int timer_danger = 150; // N frames for DANGER sign
+	int timer_off = 45; // N frames for Welcome sign
 
-        while (true) {
+	bool face_identified = false;
+	bool first_stage_completed = false;
+	FaceDetection::Result big_head;
+	big_head.label = 0;
+	big_head.confidence = 0;
+	big_head.location = cv::Rect(0,0,0,0);
+        int biggest_head = 0;
+	while (true) {
             framesCounter++;
             isLastFrame = !frameReadStatus;
 
@@ -239,7 +341,19 @@ int main(int argc, char *argv[]) {
             faceDetector.wait();
             faceDetector.fetchResults();
             auto prev_detection_results = faceDetector.results;
-
+            if (!prev_detection_results.empty()) {
+	    for (int i=0; i<prev_detection_results.size(); i++) {
+		if (big_head.location.area() < prev_detection_results[i].location.area()) {
+			big_head = prev_detection_results[i];
+			biggest_head = i;
+		}
+	    }
+	    prev_detection_results.clear();
+	    prev_detection_results.push_back(big_head);
+	    big_head.label = 0;
+	    big_head.confidence = 0;
+	    big_head.location = cv::Rect(0,0,0,0);
+	    }
             // No valid frame to infer if previous frame is last.
             if (!isLastFrame) {
                 faceDetector.enqueue(frame);
@@ -280,6 +394,7 @@ int main(int argc, char *argv[]) {
 
             // Visualize results.
             if (!FLAGS_no_show) {
+            TrackedObjects tracked_face_objects;
                 timer.start("visualization");
                 out.str("");
                 out << "OpenCV cap/render time: " << std::fixed << std::setprecision(2)
@@ -314,8 +429,33 @@ int main(int argc, char *argv[]) {
                     cv::putText(prev_frame, out.str(), cv::Point2f(0, 65), cv::FONT_HERSHEY_TRIPLEX, 0.5,
                                 cv::Scalar(255, 0, 0));
                 }
+		std::string driver_name="";
 
                 // For every detected face.
+		if (!first_stage_completed) {
+		static std::string prev_driver_name="";
+			cv::Mat aux_prev_frame = prev_frame.clone();
+			face_identified = identify_driver(aux_prev_frame, &prev_detection_results, &landmarks_detector, &face_reid, &face_gallery, &driver_name);
+                        if (!prev_detection_results.empty())
+				cv::rectangle(prev_frame, prev_detection_results[0].location, cv::Scalar(255,255,255), 1);
+			cv::imshow("Driver identification", prev_frame);
+
+		if (face_identified) {
+			if (prev_driver_name == driver_name) {
+                        cv::putText(prev_frame, "Welcome "+driver_name+"!", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0, 0, 255), 5);
+			cv::imshow("Driver identification", prev_frame);
+			timer_off--;
+			if ( timer_off == 0 ) {
+				first_stage_completed = true;
+				cv::destroyWindow("Driver identification");
+			}
+		} else timer_off = 45;
+		prev_driver_name = driver_name;
+		} else timer_off = 45;
+		}
+
+                // For every detected face.
+		if (first_stage_completed) {
                 int i = 0;
                 std::vector<cv::Point2f> left_eye, right_eye, mouth;
                 for (auto &result : prev_detection_results) {
@@ -440,6 +580,7 @@ int main(int argc, char *argv[]) {
                     i++;
                 }
                 cv::imshow("Detection results", prev_frame);
+		}
                 timer.finish("visualization");
             }
 

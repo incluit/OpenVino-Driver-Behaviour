@@ -40,7 +40,7 @@ file (GLOB MAIN_SRC
         )
 
 file (GLOB MAIN_HEADERS
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
         )
 
 # Create named folders for the sources within the .vcproj
