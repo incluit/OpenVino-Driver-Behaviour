@@ -241,6 +241,7 @@ int main(int argc, char *argv[]) {
 
 	double t_reid = 0.85; // Cosine distance threshold between two vectors for face reidentification.
         EmbeddingsGallery face_gallery(FLAGS_fg, t_reid, landmarks_detector, face_reid);
+
         for (auto && option : cmdOptions) {
             auto deviceName = option.first;
             auto networkName = option.second;
