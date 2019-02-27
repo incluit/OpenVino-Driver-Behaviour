@@ -125,6 +125,9 @@ static const char no_wait_for_keypress_message[] = "No wait for key press in the
 /// @brief message no show processed video
 static const char no_show_processed_video[] = "No show processed video.";
 
+/// @brief message for driver recognition mode
+static const char drecog_message[] = "Enable driver recognition mode";
+
 /// @brief message for asynchronous mode
 static const char async_message[] = "Enable asynchronous mode";
 
@@ -234,6 +237,10 @@ DEFINE_bool(no_wait, false, no_wait_for_keypress_message);
 /// \brief Flag to disable processed video showing<br>
 /// It is an optional parameter
 DEFINE_bool(no_show, false, no_show_processed_video);
+
+/// \brief Flag to enable driver recognition from database
+/// It is an optional parameter
+DEFINE_bool(d_recognition, false, drecog_message);
 
 /// \brief Flag to enable aynchronous execution<br>
 /// It is an optional parameter

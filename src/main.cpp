@@ -326,7 +326,7 @@ int main(int argc, char *argv[]) {
 	int timer_off = 45; // N frames for Welcome sign
 
 	bool face_identified = false;
-	bool first_stage_completed = false;
+	bool first_stage_completed = (FLAGS_d_recognition ? false : true);
 	FaceDetection::Result big_head;
 	big_head.label = 0;
 	big_head.confidence = 0;

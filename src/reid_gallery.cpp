@@ -63,6 +63,9 @@ EmbeddingsGallery::EmbeddingsGallery(const std::string& ids_list,
         return;
     }
 
+    if (ids_list == "")
+	return;
+
     cv::FileStorage fs(ids_list, cv::FileStorage::Mode::READ);
     cv::FileNode fn = fs.root();
     int total_images = 0;
