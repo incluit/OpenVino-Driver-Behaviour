@@ -261,6 +261,31 @@ Removing the '-i' flag, if the computer has a video camera enabled, the programs
 ./intel64/Release/driver_behaviour_tutorial -m $face232 -m_hp $hp32
 ----
 
+==== Driver recognition
+
+We could also detect if the person sitting in front of the camera is actually an authorized driver. For that matter, we added a first stage of driver recognition that works as follows:
+
+In `drivers/` there are pictures of "authorized drivers", you can add yours by taking a picture of yourself and cropping your face as you can see in the sample pictures, name the file as `name.N.png`. Then navigate to the `scripts/` and generate the .json.
+
+[source,bash]
+----
+cd scripts/
+python3 create_list.py ../drivers/
+----
+
+You should now see a file named `faces_gallery.json` with your name and the path to your photo there.
+
+Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../scripts/faces_gallery.json` as follows:
+
+[source,bash]
+----
+./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../scripts/faces_gallery.json
+----
+
+It will wait there until an authorized driver sits in front of the camera for a couple of seconds and then will continue with the previous features.
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/driver_recognition.gif[driver_recognition]
+
 == To Do
 
 === README
