@@ -129,7 +129,7 @@ bool identify_driver(cv::Mat frame, std::vector<FaceDetection::Result>* results,
 	if (!ids.empty() && ids[0] != EmbeddingsGallery::unknown_id) {
 		ret = true;
 		*driver_name = face_gallery->GetLabelByID(ids[0]);
-	}
+	} else *driver_name = "Unknown driver!";
 	}
 
 	return ret;
@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
         landmarks_config.plugin = plugins_for_devices[FLAGS_d_lm];
         VectorCNN landmarks_detector(landmarks_config);
 
-	double t_reid = 0.85; // Cosine distance threshold between two vectors for face reidentification.
+	double t_reid = 0.4; // Cosine distance threshold between two vectors for face reidentification.
         EmbeddingsGallery face_gallery(FLAGS_fg, t_reid, landmarks_detector, face_reid);
 
         for (auto && option : cmdOptions) {
@@ -439,8 +439,10 @@ int main(int argc, char *argv[]) {
 			face_identified = identify_driver(aux_prev_frame, &prev_detection_results, &landmarks_detector, &face_reid, &face_gallery, &driver_name);
                         if (!prev_detection_results.empty())
 				cv::rectangle(prev_frame, prev_detection_results[0].location, cv::Scalar(255,255,255), 1);
+		if (!face_identified) {
+                        cv::putText(prev_frame, driver_name, cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0, 0, 255), 5);
 			cv::imshow("Driver identification", prev_frame);
-
+		}
 		if (face_identified) {
 			if (prev_driver_name == driver_name) {
                         cv::putText(prev_frame, "Welcome "+driver_name+"!", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0, 0, 255), 5);
