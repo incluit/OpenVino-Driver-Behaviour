@@ -286,6 +286,11 @@ It will wait there until an authorized driver sits in front of the camera for a 
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/driver_recognition.gif[driver_recognition]
 
+For this feature we are making use of the next models that are available within OpenVINO's distribution:
+
+. face-reidentification-retail-0095: For R5
+. face-reidentification-retail-0071: For R4
+
 == To Do
 
 === README
