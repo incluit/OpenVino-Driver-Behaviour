@@ -279,7 +279,7 @@ Now we can run the program with the flag `-d_recognition` and the path to the .j
 
 [source,bash]
 ----
-./intel64/RelWithDebInfo/driver_behaviour_tutorial -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../scripts/faces_gallery.json
+./intel64/Release/driver_behaviour_tutorial -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../scripts/faces_gallery.json
 ----
 
 It will wait there until an authorized driver sits in front of the camera for a couple of seconds and then will continue with the previous features.
