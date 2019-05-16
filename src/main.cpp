@@ -168,7 +168,17 @@ int main(int argc, char *argv[]) {
 		slog::info << "Reading input" << slog::endl;
 		cv::VideoCapture cap;
 		const bool isCamera = FLAGS_i == "cam";
-		if (!(FLAGS_i == "cam" ? cap.open(0) : cap.open(FLAGS_i))) {
+		if (FLAGS_i == "cam") {
+			if (!cap.open(0))
+				throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
+		} else if (FLAGS_i == "cam1") {
+			if (!cap.open(1 + cv::CAP_GSTREAMER))
+				throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
+			cap.set(cv::CAP_PROP_FOURCC , cv::VideoWriter::fourcc('M', 'J', 'P', 'G') );
+//			cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+//			cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+//			cap.set(cv::CAP_PROP_FPS, 30);
+		} else if (!cap.open(FLAGS_i)) {
 			throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
 		}
 		const size_t width  = (size_t) cap.get(cv::CAP_PROP_FRAME_WIDTH);
