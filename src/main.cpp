@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
+#include <thread>
+#include <mutex>
 
 #include <inference_engine.hpp>
 
@@ -37,38 +39,46 @@
 #include <boost/circular_buffer.hpp>
 
 using namespace InferenceEngine;
+
 static dlib::rectangle openCVRectToDlib(cv::Rect r)
 {
-  return dlib::rectangle((long)r.tl().x, (long)r.tl().y, (long)r.br().x - 1, (long)r.br().y - 1);
+    return dlib::rectangle((long)r.tl().x, (long)r.tl().y, (long)r.br().x - 1, (long)r.br().y - 1);
 }
 
-float distanceAtoB(cv::Point2f A, cv::Point2f B){
-    float distance_l = sqrt((A.x - B.x)*(A.x - B.x) + (A.y - B.y)*(A.y - B.y));
+float distanceAtoB(cv::Point2f A, cv::Point2f B)
+{
+    float distance_l = sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y));
     return distance_l;
 }
 
-bool ParseAndCheckCommandLine(int argc, char *argv[]) {
+bool ParseAndCheckCommandLine(int argc, char *argv[])
+{
     // ---------------------------Parsing and validation of input args--------------------------------------
     gflags::ParseCommandLineNonHelpFlags(&argc, &argv, true);
-    if (FLAGS_h) {
+    if (FLAGS_h)
+    {
         showUsage();
         return false;
     }
     slog::info << "Parsing input parameters" << slog::endl;
 
-    if (FLAGS_i.empty()) {
+    if (FLAGS_i.empty())
+    {
         throw std::logic_error("Parameter -i is not set");
     }
 
-    if (FLAGS_m.empty()) {
+    if (FLAGS_m.empty())
+    {
         throw std::logic_error("Parameter -m is not set");
     }
 
-    if (FLAGS_n_ag < 1) {
+    if (FLAGS_n_ag < 1)
+    {
         throw std::logic_error("Parameter -n_ag cannot be 0");
     }
 
-    if (FLAGS_n_hp < 1) {
+    if (FLAGS_n_hp < 1)
+    {
         throw std::logic_error("Parameter -n_hp cannot be 0");
     }
 
@@ -78,155 +88,197 @@ bool ParseAndCheckCommandLine(int argc, char *argv[]) {
     return true;
 }
 
-enum distractionLevel {
-	NOT_DISTRACTED = 0,
-	DISTRACTED,
-	PHONE,
+enum distractionLevel
+{
+    NOT_DISTRACTED = 0,
+    DISTRACTED,
+    PHONE,
 };
 
-int isDistracted (float y, float p, float r)
+int isDistracted(float y, float p, float r)
 {
-	int result = 0;
-	if (abs(y) > 30 || abs(p) > 30) {
-		if (abs(y) > 20 && p > 10 && r < 0)
-			result = PHONE;
-		else
-			result = DISTRACTED;
-	}
-	return result;
+    int result = 0;
+    if (abs(y) > 30 || abs(p) > 30)
+    {
+        if (abs(y) > 20 && p > 10 && r < 0)
+            result = PHONE;
+        else
+            result = DISTRACTED;
+    }
+    return result;
 }
 
-bool identify_driver(cv::Mat frame, std::vector<FaceDetection::Result>* results, VectorCNN* landmarks_detector,
-		VectorCNN* face_reid, EmbeddingsGallery* face_gallery, std::string* driver_name) {
-	bool ret = false;
-	std::vector<cv::Mat> face_rois, landmarks, embeddings;
+bool identify_driver(cv::Mat frame, std::vector<FaceDetection::Result> *results, VectorCNN *landmarks_detector,
+                     VectorCNN *face_reid, EmbeddingsGallery *face_gallery, std::string *driver_name)
+{
+    bool ret = false;
+    std::vector<cv::Mat> face_rois, landmarks, embeddings;
 
-	if (results->empty())
-		return ret;
+    if (results->empty())
+        return ret;
 
-	for (const auto& face : *results) {
-		cv::Rect rect = face.location;
-		float scale_factor_x = 0.15;
-		float scale_factor_y = 0.20;
-		double aux_x = (rect.x > 3 ? rect.x : 3);
-		double aux_y = (rect.y > 3 ? rect.y : 3);
-		double aux_width = (rect.width + aux_x < frame.cols ? rect.width : frame.cols - aux_x);
-		double aux_height = (rect.height + aux_y < frame.rows ? rect.height : frame.rows - aux_y);
-		aux_x += scale_factor_x * aux_width;
-		aux_y += scale_factor_y * aux_height;
-		aux_width = aux_width * (1 - 2 * scale_factor_x);
-		aux_height = aux_height * ( 1 - scale_factor_y);
-		cv::Rect aux_rect = cv::Rect(aux_x, aux_y, aux_width, aux_height);
-		face_rois.push_back(frame(aux_rect));
-	}
+    for (const auto &face : *results)
+    {
+        cv::Rect rect = face.location;
+        float scale_factor_x = 0.15;
+        float scale_factor_y = 0.20;
+        double aux_x = (rect.x > 3 ? rect.x : 3);
+        double aux_y = (rect.y > 3 ? rect.y : 3);
+        double aux_width = (rect.width + aux_x < frame.cols ? rect.width : frame.cols - aux_x);
+        double aux_height = (rect.height + aux_y < frame.rows ? rect.height : frame.rows - aux_y);
+        aux_x += scale_factor_x * aux_width;
+        aux_y += scale_factor_y * aux_height;
+        aux_width = aux_width * (1 - 2 * scale_factor_x);
+        aux_height = aux_height * (1 - scale_factor_y);
+        cv::Rect aux_rect = cv::Rect(aux_x, aux_y, aux_width, aux_height);
+        face_rois.push_back(frame(aux_rect));
+    }
 
-	if (!face_rois.empty()) {
-	landmarks_detector->Compute(face_rois, &landmarks, cv::Size(2, 5));
-	AlignFaces(&face_rois, &landmarks);
-	face_reid->Compute(face_rois, &embeddings);
-	auto ids = face_gallery->GetIDsByEmbeddings(embeddings);
+    if (!face_rois.empty())
+    {
+        landmarks_detector->Compute(face_rois, &landmarks, cv::Size(2, 5));
+        AlignFaces(&face_rois, &landmarks);
+        face_reid->Compute(face_rois, &embeddings);
+        auto ids = face_gallery->GetIDsByEmbeddings(embeddings);
 
-	if (!ids.empty() && ids[0] != EmbeddingsGallery::unknown_id) {
-		ret = true;
-		*driver_name = face_gallery->GetLabelByID(ids[0]);
-	} else *driver_name = "Unknown driver!";
-	}
+        if (!ids.empty() && ids[0] != EmbeddingsGallery::unknown_id)
+        {
+            ret = true;
+            *driver_name = face_gallery->GetLabelByID(ids[0]);
+        }
+        else
+            *driver_name = "Unknown driver";
+    }
 
-	return ret;
+    return ret;
 }
 
-int main(int argc, char *argv[]) {
-	try {
+// Global variables declaration
+int timer_danger = 150; // N frames for DANGER sign
+int timer_off = 0;      // N frames for Welcome sign
+bool face_identified = false;
+bool first_stage_completed = (FLAGS_d_recognition ? false : true);
+int biggest_head = 0;
 
-		dlib::shape_predictor sp;
-		dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
-		std::vector<dlib::full_object_detection> shapes;
-		float EYE_AR_THRESH = 0.195;
-		float MOUTH_EAR_THRESH = 0.65;
-		float EYE_AR_CONSEC_FRAMES = 3;
-		float MOUTH_EAR_CONSEC_FRAMES = 5;
+std::string driver_name = "";
+Timer timer;
+int firstTime = 0;
 
-		std::chrono::high_resolution_clock::time_point slp1,slp2;
-		bool eye_closed = false;
+// Thread 1: Driver Recognition
+void function1(cv::Mat prev_frame, std::vector<FaceDetection::Result> prev_detection_results, VectorCNN landmarks_detector, VectorCNN face_reid, EmbeddingsGallery face_gallery, std::string *driver_name)
+{
+    if (timer["face_identified"].getSmoothedDuration() > 60000.0 && face_identified && firstTime == 1 ||
+        timer["face_identified"].getSmoothedDuration() > 1000.0 && !face_identified && firstTime == 1 ||
+        firstTime == 0)
+    {
+        cv::Mat aux_prev_frame = prev_frame.clone();
+        face_identified = identify_driver(aux_prev_frame, &prev_detection_results, &landmarks_detector, &face_reid, &face_gallery, driver_name);
+        if (!prev_detection_results.empty())
+            cv::rectangle(prev_frame, prev_detection_results[0].location, cv::Scalar(255, 255, 255), 1);
+        firstTime = 1;
+        timer.start("face_identified");
+    }
+}
 
-		int blink_counter = 0;
-		int yawn_counter = 0;
-		int last_blink_counter = 0;
-		int last_yawn_counter = 0;
-		int blinl_total = 0;
-		int yawn_total = 0;
-		boost::circular_buffer<float> ear_5(5);
-		boost::circular_buffer<float> ear_5_mouth(5);
+int main(int argc, char *argv[])
+{
+    try
+    {
+        timer.start("face_identified");
+        dlib::shape_predictor sp;
+        dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
+        std::vector<dlib::full_object_detection> shapes;
+        float EYE_AR_THRESH = 0.195;
+        float MOUTH_EAR_THRESH = 0.65;
+        float EYE_AR_CONSEC_FRAMES = 3;
+        float MOUTH_EAR_CONSEC_FRAMES = 5;
 
-		std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
+        std::chrono::high_resolution_clock::time_point slp1, slp2;
+        bool eye_closed = false;
 
-		// ------------------------------ Parsing and validation of input args ---------------------------------
-		if (!ParseAndCheckCommandLine(argc, argv)) {
-			return 0;
-		}
+        int blink_counter = 0;
+        int yawn_counter = 0;
+        int last_blink_counter = 0;
+        int last_yawn_counter = 0;
+        int blinl_total = 0;
+        int yawn_total = 0;
+        boost::circular_buffer<float> ear_5(5);
+        boost::circular_buffer<float> ear_5_mouth(5);
 
-		slog::info << "Reading input" << slog::endl;
-		cv::VideoCapture cap;
-		const bool isCamera = FLAGS_i == "cam";
-		if (FLAGS_i == "cam") {
-			if (!cap.open(0))
-				throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
-		} else if (FLAGS_i == "cam1") {
-			if (!cap.open(1 + cv::CAP_GSTREAMER))
-				throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
-			cap.set(cv::CAP_PROP_FOURCC , cv::VideoWriter::fourcc('M', 'J', 'P', 'G') );
-//			cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-//			cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-//			cap.set(cv::CAP_PROP_FPS, 30);
-		} else if (!cap.open(FLAGS_i)) {
+        std::cout << "InferenceEngine: " << GetInferenceEngineVersion() << std::endl;
+
+        // ------------------------------ Parsing and validation of input args ---------------------------------
+        if (!ParseAndCheckCommandLine(argc, argv))
+        {
+            return 0;
+        }
+
+        slog::info << "Reading input" << slog::endl;
+	cv::VideoCapture cap;
+	const bool isCamera = FLAGS_i == "cam";
+	if (FLAGS_i == "cam") {
+		if (!cap.open(0))
 			throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
-		}
-		const size_t width  = (size_t) cap.get(cv::CAP_PROP_FRAME_WIDTH);
-		const size_t height = (size_t) cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+	} else if (FLAGS_i == "cam1") {
+		if (!cap.open(1 + cv::CAP_GSTREAMER))
+			throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
+		cap.set(cv::CAP_PROP_FOURCC , cv::VideoWriter::fourcc('M', 'J', 'P', 'G') );
+		//cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+		//cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+		//cap.set(cv::CAP_PROP_FPS, 30);
+	} else if (!cap.open(FLAGS_i)) {
+		throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
+	}
+	const size_t width = (size_t)cap.get(cv::CAP_PROP_FRAME_WIDTH);
+        const size_t height = (size_t)cap.get(cv::CAP_PROP_FRAME_HEIGHT);
 
-		// read input (video) frame
-		cv::Mat frame;
-		if (!cap.read(frame)) {
-			throw std::logic_error("Failed to get frame from cv::VideoCapture");
-		}
-		// -----------------------------------------------------------------------------------------------------
-		// --------------------------- 1. Load Plugin for inference engine -------------------------------------
-		std::map<std::string, InferencePlugin> pluginsForDevices;
-		std::vector<std::pair<std::string, std::string>> cmdOptions = {
-			{FLAGS_d, FLAGS_m}, {FLAGS_d_ag, FLAGS_m_ag}, {FLAGS_d_hp, FLAGS_m_hp},
-			{FLAGS_d_em, FLAGS_m_em}
-		};
-		FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
-		HeadPoseDetection headPoseDetector(FLAGS_m_hp, FLAGS_d_hp, FLAGS_n_hp, FLAGS_dyn_hp, FLAGS_async);
-		//	FacialLandmarksDetection facialLandmarksDetector(FLAGS_m_lm, FLAGS_d_lm, FLAGS_n_lm, FLAGS_dyn_lm, FLAGS_async);
+        // read input (video) frame
+        cv::Mat frame;
+        if (!cap.read(frame))
+        {
+            throw std::logic_error("Failed to get frame from cv::VideoCapture");
+        }
+        // -----------------------------------------------------------------------------------------------------
+        // --------------------------- 1. Load Plugin for inference engine -------------------------------------
+        std::map<std::string, InferencePlugin> pluginsForDevices;
+        std::vector<std::pair<std::string, std::string>> cmdOptions = {
+            {FLAGS_d, FLAGS_m}, {FLAGS_d_ag, FLAGS_m_ag}, {FLAGS_d_hp, FLAGS_m_hp}, {FLAGS_d_em, FLAGS_m_em}};
+        FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
+        HeadPoseDetection headPoseDetector(FLAGS_m_hp, FLAGS_d_hp, FLAGS_n_hp, FLAGS_dyn_hp, FLAGS_async);
+        //	FacialLandmarksDetection facialLandmarksDetector(FLAGS_m_lm, FLAGS_d_lm, FLAGS_n_lm, FLAGS_dyn_lm, FLAGS_async);
 
-		auto fr_model_path = FLAGS_m_reid;
-		std::cout<<fr_model_path<<std::endl;
-		auto fr_weights_path = fileNameNoExt(FLAGS_m_reid) + ".bin";
-		auto lm_model_path = FLAGS_m_lm;
-		auto lm_weights_path = fileNameNoExt(FLAGS_m_lm) + ".bin";
+        auto fr_model_path = FLAGS_m_reid;
+        std::cout << fr_model_path << std::endl;
+        auto fr_weights_path = fileNameNoExt(FLAGS_m_reid) + ".bin";
+        auto lm_model_path = FLAGS_m_lm;
+        auto lm_weights_path = fileNameNoExt(FLAGS_m_lm) + ".bin";
 
-		std::map<std::string, InferencePlugin> plugins_for_devices;
-		std::vector<std::string> devices = {FLAGS_d_lm, FLAGS_d_reid};
+        std::map<std::string, InferencePlugin> plugins_for_devices;
+        std::vector<std::string> devices = {FLAGS_d_lm, FLAGS_d_reid};
 
-		for (const auto &device : devices) {
-			if (plugins_for_devices.find(device) != plugins_for_devices.end()) {
-				continue;
-			}
-			slog::info << "Loading plugin " << device << slog::endl;
-			InferencePlugin plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(device);
-			printPluginVersion(plugin, std::cout);
-			/** Load extensions for the CPU plugin **/
-			if ((device.find("CPU") != std::string::npos)) {
-				plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
-
-				if (!FLAGS_l.empty()) {
-					// CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
-					auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
-					plugin.AddExtension(extension_ptr);
-					slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
-				}
-            } else if (!FLAGS_c.empty()) {
+        for (const auto &device : devices)
+        {
+            if (plugins_for_devices.find(device) != plugins_for_devices.end())
+            {
+                continue;
+            }
+            slog::info << "Loading plugin " << device << slog::endl;
+            InferencePlugin plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(device);
+            printPluginVersion(plugin, std::cout);
+            /** Load extensions for the CPU plugin **/
+            if ((device.find("CPU") != std::string::npos))
+            {
+                plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
+                if (!FLAGS_l.empty())
+                {
+                    // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
+                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+                    plugin.AddExtension(extension_ptr);
+                    slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
+                }
+            }
+            else if (!FLAGS_c.empty())
+            {
                 // Load Extensions for other plugins not CPU
                 plugin.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}});
             }
@@ -249,18 +301,21 @@ int main(int argc, char *argv[]) {
         landmarks_config.plugin = plugins_for_devices[FLAGS_d_lm];
         VectorCNN landmarks_detector(landmarks_config);
 
-	double t_reid = 0.4; // Cosine distance threshold between two vectors for face reidentification.
+        double t_reid = 0.4; // Cosine distance threshold between two vectors for face reidentification.
         EmbeddingsGallery face_gallery(FLAGS_fg, t_reid, landmarks_detector, face_reid);
 
-        for (auto && option : cmdOptions) {
+        for (auto &&option : cmdOptions)
+        {
             auto deviceName = option.first;
             auto networkName = option.second;
 
-            if (deviceName == "" || networkName == "") {
+            if (deviceName == "" || networkName == "")
+            {
                 continue;
             }
 
-            if (pluginsForDevices.find(deviceName) != pluginsForDevices.end()) {
+            if (pluginsForDevices.find(deviceName) != pluginsForDevices.end())
+            {
                 continue;
             }
             slog::info << "Loading plugin " << deviceName << slog::endl;
@@ -270,16 +325,20 @@ int main(int argc, char *argv[]) {
             printPluginVersion(plugin, std::cout);
 
             /** Load extensions for the CPU plugin **/
-            if ((deviceName.find("CPU") != std::string::npos)) {
+            if ((deviceName.find("CPU") != std::string::npos))
+            {
                 plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
 
-                if (!FLAGS_l.empty()) {
+                if (!FLAGS_l.empty())
+                {
                     // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
                     auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
                     plugin.AddExtension(extension_ptr);
                     slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
                 }
-            } else if (!FLAGS_c.empty()) {
+            }
+            else if (!FLAGS_c.empty())
+            {
                 // Load Extensions for other plugins not CPU
                 plugin.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}});
             }
@@ -287,8 +346,10 @@ int main(int argc, char *argv[]) {
         }
 
         /** Per layer metrics **/
-        if (FLAGS_pc) {
-            for (auto && plugin : pluginsForDevices) {
+        if (FLAGS_pc)
+        {
+            for (auto &&plugin : pluginsForDevices)
+            {
                 plugin.second.SetConfig({{PluginConfigParams::KEY_PERF_COUNT, PluginConfigParams::YES}});
             }
         }
@@ -303,13 +364,14 @@ int main(int argc, char *argv[]) {
         // --------------------------- 3. Do inference ---------------------------------------------------------
         // Start inference & calc performance.
         slog::info << "Start inference " << slog::endl;
-        if (!FLAGS_no_show) {
+        if (!FLAGS_no_show)
+        {
             std::cout << "Press any key to stop" << std::endl;
         }
 
         bool isFaceAnalyticsEnabled = headPoseDetector.enabled();
 
-        Timer timer;
+        //Timer timer;
         timer.start("total");
 
         std::ostringstream out;
@@ -330,20 +392,17 @@ int main(int argc, char *argv[]) {
         timer.start("video frame decoding");
         frameReadStatus = cap.read(frame);
         timer.finish("video frame decoding");
-        
+
         //dlib
         //dlib::image_window win, win_faces;
-	int timer_danger = 150; // N frames for DANGER sign
-	int timer_off = 45; // N frames for Welcome sign
 
-	bool face_identified = false;
-	bool first_stage_completed = (FLAGS_d_recognition ? false : true);
-	FaceDetection::Result big_head;
-	big_head.label = 0;
-	big_head.confidence = 0;
-	big_head.location = cv::Rect(0,0,0,0);
-        int biggest_head = 0;
-	while (true) {
+        FaceDetection::Result big_head;
+        big_head.label = 0;
+        big_head.confidence = 0;
+        big_head.location = cv::Rect(0, 0, 0, 0);
+
+        while (true)
+        {
             framesCounter++;
             isLastFrame = !frameReadStatus;
 
@@ -352,21 +411,25 @@ int main(int argc, char *argv[]) {
             faceDetector.wait();
             faceDetector.fetchResults();
             auto prev_detection_results = faceDetector.results;
-            if (!prev_detection_results.empty()) {
-	    for (int i=0; i<prev_detection_results.size(); i++) {
-		if (big_head.location.area() < prev_detection_results[i].location.area()) {
-			big_head = prev_detection_results[i];
-			biggest_head = i;
-		}
-	    }
-	    prev_detection_results.clear();
-	    prev_detection_results.push_back(big_head);
-	    big_head.label = 0;
-	    big_head.confidence = 0;
-	    big_head.location = cv::Rect(0,0,0,0);
-	    }
+            if (!prev_detection_results.empty())
+            {
+                for (int i = 0; i < prev_detection_results.size(); i++)
+                {
+                    if (big_head.location.area() < prev_detection_results[i].location.area())
+                    {
+                        big_head = prev_detection_results[i];
+                        biggest_head = i;
+                    }
+                }
+                prev_detection_results.clear();
+                prev_detection_results.push_back(big_head);
+                big_head.label = 0;
+                big_head.confidence = 0;
+                big_head.location = cv::Rect(0, 0, 0, 0);
+            }
             // No valid frame to infer if previous frame is last.
-            if (!isLastFrame) {
+            if (!isLastFrame)
+            {
                 faceDetector.enqueue(frame);
                 faceDetector.submitRequest();
             }
@@ -374,8 +437,10 @@ int main(int argc, char *argv[]) {
 
             timer.start("data preprocessing");
             // Fill inputs of face analytics networks.
-            for (auto &&face : prev_detection_results) {
-                if (isFaceAnalyticsEnabled) {
+            for (auto &&face : prev_detection_results)
+            {
+                if (isFaceAnalyticsEnabled)
+                {
                     auto clippedRect = face.location & cv::Rect(0, 0, width, height);
                     cv::Mat face = prev_frame(clippedRect);
                     headPoseDetector.enqueue(face);
@@ -385,32 +450,36 @@ int main(int argc, char *argv[]) {
 
             // Run age-gender recognition, head pose estimation and emotions recognition simultaneously.
             timer.start("face analytics call");
-            if (isFaceAnalyticsEnabled) {
+            if (isFaceAnalyticsEnabled)
+            {
                 headPoseDetector.submitRequest();
             }
             timer.finish("face analytics call");
 
             // Read next frame if current one is not last.
-            if (!isLastFrame) {
+            if (!isLastFrame)
+            {
                 timer.start("video frame decoding");
                 frameReadStatus = cap.read(next_frame);
                 timer.finish("video frame decoding");
             }
 
             timer.start("face analytics wait");
-            if (isFaceAnalyticsEnabled) {
+            if (isFaceAnalyticsEnabled)
+            {
                 headPoseDetector.wait();
             }
             timer.finish("face analytics wait");
 
             // Visualize results.
-            if (!FLAGS_no_show) {
-            TrackedObjects tracked_face_objects;
+            if (!FLAGS_no_show)
+            {
+                TrackedObjects tracked_face_objects;
                 timer.start("visualization");
                 out.str("");
                 out << "OpenCV cap/render time: " << std::fixed << std::setprecision(2)
                     << (timer["video frame decoding"].getSmoothedDuration() +
-                       timer["visualization"].getSmoothedDuration())
+                        timer["visualization"].getSmoothedDuration())
                     << " ms";
                 cv::putText(prev_frame, out.str(), cv::Point2f(0, 25), cv::FONT_HERSHEY_TRIPLEX, 0.5,
                             cv::Scalar(255, 0, 0));
@@ -424,79 +493,63 @@ int main(int argc, char *argv[]) {
                 cv::putText(prev_frame, out.str(), cv::Point2f(0, 45), cv::FONT_HERSHEY_TRIPLEX, 0.5,
                             cv::Scalar(255, 0, 0));
 
-                if (isFaceAnalyticsEnabled) {
+                if (isFaceAnalyticsEnabled)
+                {
                     out.str("");
                     out << "Face Analysics Networks "
                         << "time: " << std::fixed << std::setprecision(2)
                         << timer["face analytics call"].getSmoothedDuration() +
-                           timer["face analytics wait"].getSmoothedDuration()
+                               timer["face analytics wait"].getSmoothedDuration()
                         << " ms ";
-                    if (!prev_detection_results.empty()) {
+                    if (!prev_detection_results.empty())
+                    {
                         out << "("
                             << 1000.f / (timer["face analytics call"].getSmoothedDuration() +
-                               timer["face analytics wait"].getSmoothedDuration())
+                                         timer["face analytics wait"].getSmoothedDuration())
                             << " fps)";
                     }
                     cv::putText(prev_frame, out.str(), cv::Point2f(0, 65), cv::FONT_HERSHEY_TRIPLEX, 0.5,
                                 cv::Scalar(255, 0, 0));
                 }
-		std::string driver_name="";
+
+                // Thread 1: Driver Recognition
+                std::thread thread_1(function1, prev_frame, prev_detection_results, landmarks_detector, face_reid, face_gallery, &driver_name);
 
                 // For every detected face.
-		if (!first_stage_completed) {
-		static std::string prev_driver_name="";
-			cv::Mat aux_prev_frame = prev_frame.clone();
-			face_identified = identify_driver(aux_prev_frame, &prev_detection_results, &landmarks_detector, &face_reid, &face_gallery, &driver_name);
-                        if (!prev_detection_results.empty())
-				cv::rectangle(prev_frame, prev_detection_results[0].location, cv::Scalar(255,255,255), 1);
-		if (!face_identified) {
-                        cv::putText(prev_frame, driver_name, cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0, 0, 255), 5);
-			cv::imshow("Driver identification", prev_frame);
-		}
-		if (face_identified) {
-			if (prev_driver_name == driver_name) {
-                        cv::putText(prev_frame, "Welcome "+driver_name+"!", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 3, cv::Scalar(0, 0, 255), 5);
-			cv::imshow("Driver identification", prev_frame);
-			timer_off--;
-			if ( timer_off == 0 ) {
-				first_stage_completed = true;
-				cv::destroyWindow("Driver identification");
-			}
-		} else timer_off = 45;
-		prev_driver_name = driver_name;
-		} else timer_off = 45;
-		}
-
-                // For every detected face.
-		if (first_stage_completed) {
                 int i = 0;
                 std::vector<cv::Point2f> left_eye, right_eye, mouth;
-                for (auto &result : prev_detection_results) {
+                for (auto &result : prev_detection_results)
+                {
                     cv::Rect rect = result.location;
 
                     out.str("");
-                    cv::rectangle(prev_frame, rect, cv::Scalar(255,255,255), 1);
-                    if(FLAGS_dlib_lm){
+                    cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 1);
+                    if (FLAGS_dlib_lm)
+                    {
                         float scale_factor_x = 0.15;
                         float scale_factor_y = 0.20;
-                        cv::Rect aux_rect = cv::Rect(rect.x + scale_factor_x *rect.width, rect.y + scale_factor_y * rect.height, rect.width * (1- 2 * scale_factor_x), rect.height * (1 - scale_factor_y));
+                        cv::Rect aux_rect = cv::Rect(rect.x + scale_factor_x * rect.width, rect.y + scale_factor_y * rect.height, rect.width * (1 - 2 * scale_factor_x), rect.height * (1 - scale_factor_y));
                         //dlib facial landmarks
                         dlib::array2d<dlib::rgb_pixel> img;
                         dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
                         dlib::rectangle det = openCVRectToDlib(aux_rect);
                         dlib::full_object_detection shape = sp(img, det);
-                        for(int i = 0; i < shape.num_parts(); i++){
-                            if(i >= 36 && i <= 41) {
+                        for (int i = 0; i < shape.num_parts(); i++)
+                        {
+                            if (i >= 36 && i <= 41)
+                            {
                                 left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
                                 cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
                             }
-                            if(i >= 42 && i <= 47) {
+                            if (i >= 42 && i <= 47)
+                            {
                                 right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
                                 cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
                             }
                             //48 - 54. 50 - 58. 52 - 56.
 
-                            if(i == 48 || i == 54 || i ==  50 || i == 58 || i == 52 || i == 56){
+                            if (i == 48 || i == 54 || i == 50 || i == 58 || i == 52 || i == 56)
+                            {
                                 mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
                                 cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
                             }
@@ -504,58 +557,70 @@ int main(int argc, char *argv[]) {
                         float ear_left = 0;
                         float ear_right = 0;
                         float ear = 0;
-                        ear_left = (distanceAtoB(left_eye[1], left_eye[5]) + distanceAtoB(left_eye[2], left_eye[4])) / (2 * distanceAtoB(left_eye[0],left_eye[3]));
-                        ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0],right_eye[3]));
+                        ear_left = (distanceAtoB(left_eye[1], left_eye[5]) + distanceAtoB(left_eye[2], left_eye[4])) / (2 * distanceAtoB(left_eye[0], left_eye[3]));
+                        ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0], right_eye[3]));
                         ear = (ear_left + ear_right) / 2;
                         ear_5.push_front(ear);
                         float ear_avg = 0;
-                        for(auto && i : ear_5){
+                        for (auto &&i : ear_5)
+                        {
                             ear_avg = ear_avg + i;
                         }
                         ear_avg = ear_avg / ear_5.size();
-                        if(ear_avg < EYE_AR_THRESH){
+                        if (ear_avg < EYE_AR_THRESH)
+                        {
                             blink_counter += 1;
-                            if(blink_counter >= 90)                            
+                            if (blink_counter >= 90)
                                 eye_closed = true;
-                        }else {
-                            if(blink_counter >= EYE_AR_CONSEC_FRAMES){
+                        }
+                        else
+                        {
+                            if (blink_counter >= EYE_AR_CONSEC_FRAMES)
+                            {
                                 blinl_total += 1;
                                 last_blink_counter = blink_counter;
                             }
-                            blink_counter = 0; 
+                            blink_counter = 0;
                         }
-                        if(eye_closed && timer_danger > 0) {
+                        if (eye_closed && timer_danger > 0)
+                        {
                             cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
-                            cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                            cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                             timer_danger--;
-			}
-                        if (timer_danger == 0) {
+                        }
+                        if (timer_danger == 0)
+                        {
                             eye_closed = false;
                             timer_danger = 150;
                         }
-                        cv::putText(frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(10, 100),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
+                        cv::putText(frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(10, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
 
                         //Yawn detection
-                        float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0],mouth[3]));
+                        float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0], mouth[3]));
                         ear_5_mouth.push_front(ear_mouth);
                         float ear_avg_mouth = 0;
-                        for(auto && i : ear_5_mouth){
+                        for (auto &&i : ear_5_mouth)
+                        {
                             ear_avg_mouth = ear_avg_mouth + i;
                         }
                         ear_avg_mouth = ear_avg_mouth / ear_5_mouth.size();
-                        if(ear_avg_mouth > MOUTH_EAR_THRESH){
+                        if (ear_avg_mouth > MOUTH_EAR_THRESH)
+                        {
                             yawn_counter += 1;
-                        }else {
-                            if(yawn_counter >= MOUTH_EAR_CONSEC_FRAMES){
+                        }
+                        else
+                        {
+                            if (yawn_counter >= MOUTH_EAR_CONSEC_FRAMES)
+                            {
                                 yawn_total += 1;
                                 last_yawn_counter = yawn_counter;
                             }
-                            yawn_counter = 0; 
+                            yawn_counter = 0;
                         }
-                        cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(250, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130),cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                       // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);  
+                        cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(250, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                        // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                     }
 
                     cv::putText(prev_frame,
@@ -565,8 +630,10 @@ int main(int argc, char *argv[]) {
                                 0.8,
                                 cv::Scalar(0, 0, 255));
 
-                    if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch) {
-                        if (FLAGS_r) {
+                    if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch)
+                    {
+                        if (FLAGS_r)
+                        {
                             std::cout << "Head pose results: yaw, pitch, roll = "
                                       << headPoseDetector[i].angle_y << ";"
                                       << headPoseDetector[i].angle_p << ";"
@@ -575,9 +642,11 @@ int main(int argc, char *argv[]) {
                         cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
                         headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
                         int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
-                        if (is_dist) {
+                        if (is_dist)
+                        {
                             std::string distracted_str = "";
-                            switch (is_dist) {
+                            switch (is_dist)
+                            {
                             case DISTRACTED:
                                 distracted_str = "WATCH THE ROAD!";
                                 break;
@@ -587,25 +656,40 @@ int main(int argc, char *argv[]) {
                             default:
                                 break;
                             }
-                            cv::putText(frame, distracted_str, cv::Point2f(50, 200),cv::FONT_HERSHEY_SIMPLEX, 2,cv::Scalar(0, 0, 255), 5);
+                            cv::putText(frame, distracted_str, cv::Point2f(50, 200), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255), 5);
                         }
                     }
                     i++;
                 }
+
+                // End Thread 1: Driver Recognition
+                thread_1.join();
+                if (face_identified)
+                {
+                    cv::putText(prev_frame, "Driver: " + driver_name, cv::Point2f(10, 450), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 255, 0), 2);
+                }
+                else if (!face_identified && driver_name == "Unknown driver")
+                {
+                    cv::putText(prev_frame, driver_name, cv::Point2f(10, 450), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+                }
+
                 cv::imshow("Detection results", prev_frame);
-		}
                 timer.finish("visualization");
             }
 
             // End of file (or a single frame file like an image). We just keep last frame displayed to let user check what was shown
-            if (isLastFrame) {
+            if (isLastFrame)
+            {
                 timer.finish("total");
-                if (!FLAGS_no_wait) {
+                if (!FLAGS_no_wait)
+                {
                     std::cout << "No more frames to process. Press any key to exit" << std::endl;
                     cv::waitKey(0);
                 }
                 break;
-            } else if (!FLAGS_no_show && -1 != cv::waitKey(1)) {
+            }
+            else if (!FLAGS_no_show && -1 != cv::waitKey(1))
+            {
                 timer.finish("total");
                 break;
             }
@@ -619,23 +703,25 @@ int main(int argc, char *argv[]) {
         slog::info << "Total image throughput: " << framesCounter * (1000.f / timer["total"].getTotalDuration()) << " fps" << slog::endl;
 
         // Show performace results.
-        if (FLAGS_pc) {
+        if (FLAGS_pc)
+        {
             faceDetector.printPerformanceCounts();
             headPoseDetector.printPerformanceCounts();
         }
         // -----------------------------------------------------------------------------------------------------
     }
-    catch (const std::exception& error) {
+    catch (const std::exception &error)
+    {
         slog::err << error.what() << slog::endl;
         return 1;
     }
-    catch (...) {
+    catch (...)
+    {
         slog::err << "Unknown/internal exception happened." << slog::endl;
         return 1;
     }
 
     slog::info << "Execution successful" << slog::endl;
+
     return 0;
 }
-
-
