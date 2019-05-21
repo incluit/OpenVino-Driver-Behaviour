@@ -38,6 +38,31 @@
 
 #include <boost/circular_buffer.hpp>
 
+#ifdef SIMULATOR
+#include "rclcpp/rclcpp.hpp"
+#include "ets_msgs/msg/truck.hpp"
+
+void callback(const ets_msgs::msg::Truck::SharedPtr msg)
+{
+    std::cout << "speed=" << msg->speed << " acc.x=" << msg->acc_x <<
+	" acc.y=" << msg->acc_y << " acc.z=" << msg->acc_z << " rpm=" << msg->rpm <<
+	" gear=" << msg->gear << " engine_running=" << msg->engine_running <<
+	" trailer_connected=" << msg->trailer_connected << " position.x= " << msg->x <<
+	" position.y=" << msg->y << " position.z=" << msg->z << " heading=" << msg->heading <<
+	" pitch=" << msg->pitch << " roll=" << msg->roll << std::endl << std::endl;
+}
+
+void ros_client()
+{
+    auto node = rclcpp::Node::make_shared("ets_client");
+
+    auto sub = node->create_subscription<ets_msgs::msg::Truck>(
+      "truck", callback, rmw_qos_profile_default);
+
+    rclcpp::spin(node);
+}
+#endif
+
 using namespace InferenceEngine;
 
 static dlib::rectangle openCVRectToDlib(cv::Rect r)
@@ -182,6 +207,11 @@ void function1(cv::Mat prev_frame, std::vector<FaceDetection::Result> prev_detec
 
 int main(int argc, char *argv[])
 {
+#ifdef SIMULATOR
+    rclcpp::init(argc, argv);
+    std::thread truck_data(ros_client);
+#endif
+
     try
     {
         timer.start("face_identified");
@@ -720,6 +750,10 @@ int main(int argc, char *argv[])
         slog::err << "Unknown/internal exception happened." << slog::endl;
         return 1;
     }
+
+#ifdef SIMULATOR
+    truck_data.join();
+#endif
 
     slog::info << "Execution successful" << slog::endl;
 
