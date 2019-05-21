@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.3)
 
 # Common to all tutorial sections
 include(CMakeLists_common.cmake)
 
-set(TARGET_NAME "driver_behaviour_tutorial")
+set(TARGET_NAME "driver_behavior")
+
+option(SIMULATOR  "Use ets/ats for truck data simulation" OFF)
 
 find_package(OpenCV)
 if(OpenCV_FOUND)
@@ -28,7 +30,18 @@ else()
     return()
 endif()
 
+if ( SIMULATOR )
+find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rcutils)
+find_package(rosidl_typesupport_cpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(ets_msgs REQUIRED)
 find_package(Boost COMPONENTS log system filesystem REQUIRED)
+
+ament_export_dependencies(rosidl_default_runtime)
+endif()
 
 if( BUILD_SAMPLE_NAME AND NOT ${BUILD_SAMPLE_NAME} STREQUAL ${TARGET_NAME} )
     message(STATUS "SAMPLE ${TARGET_NAME} SKIPPED")
@@ -58,13 +71,29 @@ add_executable(${TARGET_NAME} ${MAIN_SRC} ${MAIN_HEADERS})
 add_dependencies(${TARGET_NAME} gflags)
 add_definitions(-DBOOST_LOG_DYN_LINK)
 add_definitions(-DINTEL_CVSDK_VER=$ENV{INTEL_CVSDK_VER})
+if( SIMULATOR )
+  add_definitions(-DSIMULATOR)
+endif()
 
-set_target_properties(${TARGET_NAME} PROPERTIES "CMAKE_CXX_FLAGS" "${CMAKE_CXX_FLAGS} -fPIE"
-COMPILE_PDB_NAME ${TARGET_NAME})
-
+set_target_properties(${TARGET_NAME} PROPERTIES "CMAKE_CXX_FLAGS" "${CMAKE_CXX_FLAGS} -fPIE" COMPILE_PDB_NAME ${TARGET_NAME})
 
 target_link_libraries(${TARGET_NAME} format_reader IE::ie_cpu_extension ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
 
 if(UNIX)
     target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib)
+endif()
+
+install(TARGETS driver_behavior
+    DESTINATION bin/${PROJECT_NAME})
+
+if ( SIMULATOR )
+ament_target_dependencies(driver_behavior
+    "rclcpp"
+    "rcutils"
+    "rosidl_typesupport_cpp"
+    "std_msgs"
+    "ets_msgs"
+    "OpenCV")
+
+ament_package()
 endif()
