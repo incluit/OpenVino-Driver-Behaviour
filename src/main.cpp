@@ -23,6 +23,7 @@
 #include "cnn.hpp"
 #include "face_reid.hpp"
 #include "tracker.hpp"
+#include "classes.hpp"
 
 #include <ie_iextension.h>
 #include <ext_list.hpp>
@@ -42,22 +43,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ets_msgs/msg/truck.hpp"
 
-void callback(const ets_msgs::msg::Truck::SharedPtr msg)
-{
-    std::cout << "speed=" << msg->speed << " acc.x=" << msg->acc_x <<
-	" acc.y=" << msg->acc_y << " acc.z=" << msg->acc_z << " rpm=" << msg->rpm <<
-	" gear=" << msg->gear << " engine_running=" << msg->engine_running <<
-	" trailer_connected=" << msg->trailer_connected << " position.x= " << msg->x <<
-	" position.y=" << msg->y << " position.z=" << msg->z << " heading=" << msg->heading <<
-	" pitch=" << msg->pitch << " roll=" << msg->roll << std::endl << std::endl;
-}
-
-void ros_client()
+void ros_client(Truck * truck)
 {
     auto node = rclcpp::Node::make_shared("ets_client");
 
     auto sub = node->create_subscription<ets_msgs::msg::Truck>(
-      "truck", callback, rmw_qos_profile_default);
+      "truck", std::bind(&Truck::ros_callback, truck, std::placeholders::_1), rmw_qos_profile_default);
 
     rclcpp::spin(node);
 }
@@ -207,9 +198,12 @@ void function1(cv::Mat prev_frame, std::vector<FaceDetection::Result> prev_detec
 
 int main(int argc, char *argv[])
 {
+
+    Truck truck;
+
 #ifdef SIMULATOR
     rclcpp::init(argc, argv);
-    std::thread truck_data(ros_client);
+    std::thread truck_data(ros_client, &truck);
 #endif
 
     try
@@ -703,6 +697,7 @@ int main(int argc, char *argv[])
                     cv::putText(prev_frame, driver_name, cv::Point2f(10, 450), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
                 }
 
+		std::cout<<"speed!: "<<truck.getSpeed()<<std::endl;
                 cv::imshow("Detection results", prev_frame);
                 timer.finish("visualization");
             }
