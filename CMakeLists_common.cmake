@@ -85,7 +85,7 @@ else ()
     set (LIBRARY_OUTPUT_PATH ${LIBRARY_OUTPUT_DIRECTORY}/lib)
 endif()
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
 if (WIN32)
     if(NOT "${CMAKE_GENERATOR}" MATCHES "(Win64|IA64)")
         message(FATAL_ERROR "Only 64-bit supported on Windows")
@@ -124,10 +124,10 @@ endif()
 add_subdirectory(third-party/dlib dlib_build)
 
 ####################################
-## to use C++11
-set (CMAKE_CXX_STANDARD 11)
+## to use C++14
+set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
 ####################################
 
 # Make sure dependencies are present
