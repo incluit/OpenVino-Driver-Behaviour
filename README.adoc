@@ -34,11 +34,21 @@ As mentioned previously, we will take the https://software.intel.com/en-us/artic
 .. Yawn detection.
 . Gaze detection.
 
-We could have other information to build a robust system:
+=== [Optional] Simulator
 
-. Heart rate.
-. Velocity.
-. Acceleration. 
+To test our system with data closer to reality we added support for https://store.steampowered.com/app/227300/Euro_Truck_Simulator_2/[ETS] or https://store.steampowered.com/app/270880/American_Truck_Simulator/[ATS]. As the simulator is not free, you can opt whether to compile the project with this feature or not. The communication between the simulator and our program is done via a ROS2 client and it provides the following info:
+
+. Engine Status (On/Off)
+. Trailer Status (Connected/Disconnected).
+. Speed.
+. RPM.
+. Acceleration.
+. Position (Coordinates).
+. Gear (-1 for Reverse, >0 the rest).
+
+=== [Optional] AWS (In Progress)
+
+We also plan to send the data through MQTT using AWS IoT-Core, to produce a dashboard with the trucks positions, alarms, etc. Again, using AWS may incur in a cost, so this will also be optional for you to compile with/without it.
 
 == Bussines Logic
 
@@ -57,7 +67,7 @@ At the moment of writing this guide, the facial landmarks detection model includ
 
 Once we have a positive detection for blink/yawn, we count frames of those events and trigger an alarm when they hit a threshold.
 
-=== 'Eye out of road' detection
+=== 'Eyes on the road' detection
 
 Using the face's ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
 Analizing the output of that model we can easily detect when the face is not centered or not looking to the front.
@@ -94,7 +104,7 @@ A summary of what is needed:
 
 * OpenVINO™ toolkit supported Linux operating system. This tutorial was run on 64-bit Ubuntu 16.04.1 LTS updated to kernel 4.15.0-43 following the OpenVINO™ toolkit installation instructions.
 
-* The latest OpenVINO™ toolkit installed and verified. This tutorial was written using version 2018 R4.0. (Support for R5 has recently been added)
+* The latest OpenVINO™ toolkit installed and verified. This tutorial was written using version 2018 R4.0. Support for R5 has recently been added and +2019.
 
 * Git(git) for downloading from the GitHub repository.
 
@@ -104,6 +114,10 @@ A summary of what is needed:
 ----
 apt-get install libboost-dev
 ----
+
+* [Optional] ETS or ATS simulator. Install it through Steam on Ubuntu.
+
+* [Optional] https://github.com/awslabs/aws-crt-cpp[AWS Crt Cpp]
 
 === Checks
 
@@ -119,7 +133,9 @@ By now you should have completed the Linux installation guide for the OpenVINO�
 
 * That your development platform is connected to a network and has Internet access. To download all the files for this tutorial, you will need to access GitHub on the Internet. 
 
-== Build
+== Building
+
+=== Basic Build
 
 **1.** Clone the repository at desired location:
 
@@ -166,6 +182,76 @@ source ../scripts/setupenv.sh
 ----
 cmake -DCMAKE_BUILD_TYPE=Release ../
 make
+----
+
+=== Simulator Build
+
+In order to run the simulator you will need to install:
+
+* **ROS2** following https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/[Installing ROS2 via Debian Packages].
+* **colcon** following https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/[Colcon Tutorial].
+* **ETS or ATS** using Steam.
+* **ets_ros2-plugin** from this https://github.com/brunodmt/ets_ros2[repo].
+
+Follow the plugin's instructions to install everything, you can test the ros
+client is working through the sample application provided there. Once that is
+working we can build or program.
+
+**1.** Clone the repository at <ros2_workspace>/src/ets_ros2 location:
+
+[source,bash]
+----
+<ros2_ws>/src/ets_ros2$ git clone https://github.com/incluit/OpenVino-Driver-Behaviour.git
+----
+
+**2.** Source everything!
+
+[source,bash]
+----
+source /opt/intel/openvino/bin/setupvars.sh
+source /opt/ros/<ros-version>/setup.bash
+source <ros2_ws>src/ets_ros2/OpenVino-Driver-Behaviour/scripts/setupenv.sh
+----
+
+The OpenVino path may vary depending on the version installed. If it's a 2018 Release or older, the path should be:
+[source,bash]
+----
+source /opt/intel/computer_vision_sdk/bin/setupvars.sh
+----
+
+**3.** Compile:
+
+[source,bash]
+----
+colcon build --symlink-install --parallel-workers N --cmake-args -DSIMULATOR=ON
+----
+
+N being the number of cores to build (like make's `-jN` flag). We recommend
+using 1 as it is a bit memory intensive.
+
+**4.** Copy the plugin to the corresponding folder as described in the https://github.com/brunodmt/ets_ros2[plugin repo]:
+
+[source,bash]
+----
+   mkdir  ~/.local/share/Steam/steamapps/common/Euro\ Truck\ Simulator\ 2/bin/linux_x64/plugins
+   cp install/ets_plugin/lib/ets_plugin/libetsros2.so ~/.local/share/Steam/steamapps/common/Euro\ Truck\ Simulator\ 2/bin/linux_x64/plugins/
+----
+
+or the ATS folder:
+
+[source,bash]
+----
+   mkdir ~/.local/share/Steam/steamapps/common/American\ Truck\ Simulator/bin/linux_x64/plugins
+   cp install/ets_plugin/lib/ets_plugin/libetsros2.so ~/.local/share/Steam/steamapps/common/American\ Truck\ Simulator/bin/linux_x64/plugins/
+----
+
+**5.** Lastly, source our workspace and copy the `data` directory:
+
+[source,bash]
+----
+source <ros2_ws>/install/setup.bash
+cd <ros2_ws>/build/driver_behavior
+cp -r ../../src/OpenVino-Driver-Behaviour/data .
 ----
 
 == Usage
@@ -290,6 +376,22 @@ For this feature we are making use of the next models that are available within 
 
 . face-reidentification-retail-0095: For R5
 . face-reidentification-retail-0071: For R4
+
+==== Simulator
+
+If you compiled with the simulator, you may run all together. We consider the next use-cases to show on the screen:
+. System off if Engine = Off.
+. "Eyes out of the road" enable (inferred by Head Position) when [GearStatus = Driving] and [VehicleSpeed > 5 kmh].
+. "Eyes out of the road" disabled (inferred by Head Position) when Gear Status = Reverse.
+. "Eyes out of the road" disabled (inferred by Head Position) when Gear Status = Parking.
+. "Stop looking at (...)" detection (inferred by Head Position) when [GearStatus = Driving] and [VehicleSpeed > 2 kmh].
+. "Stop looking at (...)" disabled (inferred by Head Position) when [GearStatus = Reverse].
+. "Stop looking at (...)" disabled (inferred by Head Position) when [GearStatus = Parking].
+. "Drowsiness state" detection (inferred by Blink and Yawn detection) when [GearStatus = Driving].
+. "Drowsiness state" detection (inferred by Blink and Yawn detection) when [GearStatus = Reverse].
+. "Drowsiness state" disabled (inferred by Blink and Yawn detection) when [GearStatus = Parking].
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/fullsimulator.gif[simulator]
 
 == To Do
 
