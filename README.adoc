@@ -380,6 +380,7 @@ For this feature we are making use of the next models that are available within 
 ==== Simulator
 
 If you compiled with the simulator, you may run all together. We consider the next use-cases to show on the screen:
+
 . System off if Engine = Off.
 . "Eyes out of the road" enable (inferred by Head Position) when [GearStatus = Driving] and [VehicleSpeed > 5 kmh].
 . "Eyes out of the road" disabled (inferred by Head Position) when Gear Status = Reverse.
