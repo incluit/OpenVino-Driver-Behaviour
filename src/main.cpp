@@ -43,12 +43,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ets_msgs/msg/truck.hpp"
 
-void ros_client(Truck * truck)
+void ros_client(Truck *truck)
 {
     auto node = rclcpp::Node::make_shared("ets_client");
 
     auto sub = node->create_subscription<ets_msgs::msg::Truck>(
-      "truck", std::bind(&Truck::ros_callback, truck, std::placeholders::_1), rmw_qos_profile_default);
+        "truck", std::bind(&Truck::ros_callback, truck, std::placeholders::_1), rmw_qos_profile_default);
 
     rclcpp::spin(node);
 }
@@ -163,7 +163,7 @@ bool identify_driver(cv::Mat frame, std::vector<FaceDetection::Result> *results,
             *driver_name = face_gallery->GetLabelByID(ids[0]);
         }
         else
-            *driver_name = "Unknown driver";
+            *driver_name = "Unknown";
     }
 
     return ret;
@@ -181,6 +181,8 @@ bool alarmDrowsiness = false;
 std::string driver_name = "";
 Timer timer;
 int firstTime = 0;
+Truck truck;
+bool fSim = false;
 
 // Alarm Logic Function
 std::string labelAlarm = "";
@@ -189,16 +191,22 @@ std::string alarmDetection(int is_dist, int yawn_total, int blinl_total)
 {
     if (is_dist)
     {
-        alarmDistraction = true;
         switch (is_dist)
         {
         case DISTRACTED:
-            labelAlarm = "WATCH THE ROAD!";
+            if (truck.getSpeed()*3.6 >= 5 || !fSim){
+                labelAlarm = "EYES OUT OF ROAD";
+                alarmDistraction = true;
+            }
             break;
         case PHONE:
-            labelAlarm = "STOP LOOKING AT YER PHONE!";
+            if (truck.getSpeed()*3.6 >= 2 || !fSim){
+                labelAlarm = "LOOKING THE PHONE";
+                alarmDistraction = true;
+            }
             break;
         default:
+            alarmDistraction = false;
             break;
         }
     }
@@ -252,164 +260,17 @@ void driver_behavior(cv::Mat frame, cv::Mat prev_frame, std::vector<FaceDetectio
     std::vector<cv::Point2f> left_eye, right_eye, mouth;
     for (auto &result : prev_detection_results)
     {
-        cv::Rect rect = result.location;
-
-        out.str("");
-        cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 1);
-        if (FLAGS_dlib_lm)
-        {
-            float scale_factor_x = 0.15;
-            float scale_factor_y = 0.20;
-            cv::Rect aux_rect = cv::Rect(rect.x + scale_factor_x * rect.width, rect.y + scale_factor_y * rect.height, rect.width * (1 - 2 * scale_factor_x), rect.height * (1 - scale_factor_y));
-            //dlib facial landmarks
-            dlib::array2d<dlib::rgb_pixel> img;
-            dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
-            dlib::rectangle det = openCVRectToDlib(aux_rect);
-            dlib::full_object_detection shape = sp(img, det);
-            for (int i = 0; i < shape.num_parts(); i++)
-            {
-                if (i >= 36 && i <= 41)
-                {
-                    left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                    cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                }
-                if (i >= 42 && i <= 47)
-                {
-                    right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                    cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                }
-                //48 - 54. 50 - 58. 52 - 56.
-
-                if (i == 48 || i == 54 || i == 50 || i == 58 || i == 52 || i == 56)
-                {
-                    mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                    cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                }
-            }
-            float ear_left = 0;
-            float ear_right = 0;
-            float ear = 0;
-            ear_left = (distanceAtoB(left_eye[1], left_eye[5]) + distanceAtoB(left_eye[2], left_eye[4])) / (2 * distanceAtoB(left_eye[0], left_eye[3]));
-            ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0], right_eye[3]));
-            ear = (ear_left + ear_right) / 2;
-            ear_5.push_front(ear);
-            float ear_avg = 0;
-            for (auto &&i : ear_5)
-            {
-                ear_avg = ear_avg + i;
-            }
-            ear_avg = ear_avg / ear_5.size();
-            if (ear_avg < EYE_AR_THRESH)
-            {
-                blink_counter += 1;
-                if (blink_counter >= 90)
-                    eye_closed = true;
-            }
-            else
-            {
-                if (blink_counter >= EYE_AR_CONSEC_FRAMES)
-                {
-                    blinl_total += 1;
-                    last_blink_counter = blink_counter;
-                }
-                blink_counter = 0;
-            }
-            if (eye_closed && timer_danger > 0)
-            {
-                cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
-                cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                timer_danger--;
-            }
-            if (timer_danger == 0)
-            {
-                eye_closed = false;
-                timer_danger = 150;
-            }
-            cv::putText(frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(10, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-            //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-
-            //Yawn detection
-            float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0], mouth[3]));
-            ear_5_mouth.push_front(ear_mouth);
-            float ear_avg_mouth = 0;
-            for (auto &&i : ear_5_mouth)
-            {
-                ear_avg_mouth = ear_avg_mouth + i;
-            }
-            ear_avg_mouth = ear_avg_mouth / ear_5_mouth.size();
-            if (ear_avg_mouth > MOUTH_EAR_THRESH)
-            {
-                yawn_counter += 1;
-            }
-            else
-            {
-                if (yawn_counter >= MOUTH_EAR_CONSEC_FRAMES)
-                {
-                    yawn_total += 1;
-                    last_yawn_counter = yawn_counter;
-                }
-                yawn_counter = 0;
-            }
-            cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(250, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-            cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-            // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-        }
-
-        cv::putText(prev_frame,
-                    out.str(),
-                    cv::Point2f(result.location.x, result.location.y - 15),
-                    cv::FONT_HERSHEY_COMPLEX_SMALL,
-                    0.8,
-                    cv::Scalar(0, 0, 255));
-
-        if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch)
-        {
-            if (FLAGS_r)
-            {
-                std::cout << "Head pose results: yaw, pitch, roll = "
-                          << headPoseDetector[i].angle_y << ";"
-                          << headPoseDetector[i].angle_p << ";"
-                          << headPoseDetector[i].angle_r << std::endl;
-            }
-            cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
-            headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
-            int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
-
-            // Alarm Show
-            int x = 400;
-            int y = 60;
-            cv::Rect rect(width - (x + 20), height - (y + 20), x, y);
-            cv::rectangle(prev_frame, rect, cv::Scalar(0, 0, 0), -1);
-
-            cv::putText(prev_frame, "Alarms | Distraction", cv::Point2f(width - x, height - y + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-            cv::putText(prev_frame, "Drowsiness", cv::Point2f(width - x + 200, height - y + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-            cv::putText(prev_frame, "Description: ", cv::Point2f(width - x, height - y + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-
-            // Call alarmDetection Function
-            cv::putText(prev_frame, alarmDetection(is_dist, yawn_total, blinl_total), cv::Point2f(width - x + 100, height - y + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 2);
-
-            if (alarmDistraction)
-                cv::circle(prev_frame, cv::Point2f(width - x + 170, height - y), 7, cv::Scalar(0, 0, 255), -1);
-            else
-                cv::circle(prev_frame, cv::Point2f(width - x + 170, height - y), 7, cv::Scalar(255, 255, 255), 1);
-
-            if (alarmDrowsiness)
-                cv::circle(prev_frame, cv::Point2f(width - x + 300, height - y), 7, cv::Scalar(0, 0, 255), -1);
-            else
-                cv::circle(prev_frame, cv::Point2f(width - x + 300, height - y), 7, cv::Scalar(255, 255, 255), 1);
-        }
-        i++;
+        // Complete this thread.
     }
 }
 
 int main(int argc, char *argv[])
 {
 
-    Truck truck;
-
 #ifdef SIMULATOR
     rclcpp::init(argc, argv);
     std::thread truck_data(ros_client, &truck);
+    fSim = true;
 #endif
 
     try
@@ -466,8 +327,20 @@ int main(int argc, char *argv[])
         {
             throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
         }
+
+        // Size force
+        cap.set(cv::CAP_PROP_FRAME_HEIGHT, 768);
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, 1366);
+        cap.set(cv::CAP_PROP_FPS, 30);
+        //
+
         const size_t width = (size_t)cap.get(cv::CAP_PROP_FRAME_WIDTH);
         const size_t height = (size_t)cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+                
+        int x = 200;
+        int y = 140;
+        int x_truck_i = width - (x + 10);
+        int y_driver_i = y + 30;
 
         // read input (video) frame
         cv::Mat frame;
@@ -718,7 +591,7 @@ int main(int argc, char *argv[])
                     << (timer["video frame decoding"].getSmoothedDuration() +
                         timer["visualization"].getSmoothedDuration())
                     << " ms";
-                cv::putText(prev_frame, out.str(), cv::Point2f(0, 25), cv::FONT_HERSHEY_TRIPLEX, 0.5,
+                cv::putText(prev_frame, out.str(), cv::Point2f(10, 25), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                             cv::Scalar(255, 0, 0));
 
                 out.str("");
@@ -727,7 +600,7 @@ int main(int argc, char *argv[])
                     << " ms ("
                     << 1000.f / (timer["detection"].getSmoothedDuration())
                     << " fps)";
-                cv::putText(prev_frame, out.str(), cv::Point2f(0, 45), cv::FONT_HERSHEY_TRIPLEX, 0.5,
+                cv::putText(prev_frame, out.str(), cv::Point2f(10, 45), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                             cv::Scalar(255, 0, 0));
 
                 if (isFaceAnalyticsEnabled)
@@ -736,189 +609,223 @@ int main(int argc, char *argv[])
                     out << "Face Analysics Networks "
                         << "time: " << std::fixed << std::setprecision(2)
                         << timer["face analytics call"].getSmoothedDuration() +
-                               timer["face analytics wait"].getSmoothedDuration()
+                            timer["face analytics wait"].getSmoothedDuration()
                         << " ms ";
                     if (!prev_detection_results.empty())
                     {
                         out << "("
                             << 1000.f / (timer["face analytics call"].getSmoothedDuration() +
-                                         timer["face analytics wait"].getSmoothedDuration())
+                                        timer["face analytics wait"].getSmoothedDuration())
                             << " fps)";
                     }
-                    cv::putText(prev_frame, out.str(), cv::Point2f(0, 65), cv::FONT_HERSHEY_TRIPLEX, 0.5,
+                    cv::putText(prev_frame, out.str(), cv::Point2f(10, 65), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                                 cv::Scalar(255, 0, 0));
                 }
+                
+                if ((truck.getEngine() && fSim) || !fSim) { // Detect if Engine = ON and Simulator Flag
+                    // Thread 1: Driver Recognition
+                    std::thread thread_recognition(driver_recognition, prev_frame, prev_detection_results, landmarks_detector, face_reid, face_gallery, &driver_name);
 
-                // Thread 1: Driver Recognition
-                std::thread thread_recognition(driver_recognition, prev_frame, prev_detection_results, landmarks_detector, face_reid, face_gallery, &driver_name);
+                    // Tread 2: Diver Behavior
+                    // std::thread thread_behavior(driver_behavior, frame, prev_frame, prev_detection_results, out, sp, headPoseDetector, width, height);
 
-                // For every detected face.
-                int i = 0;
-                std::vector<cv::Point2f> left_eye, right_eye, mouth;
-                for (auto &result : prev_detection_results)
-                {
-                    cv::Rect rect = result.location;
+                    // Driver Label (CHECK! -> Not here)
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y), cv::Scalar(0, 0, 0), -1);
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x ,y), cv::Scalar(255, 255, 255), 2);
 
-                    out.str("");
-                    cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 1);
-                    if (FLAGS_dlib_lm)
+                    // For every detected face.
+                    int i = 0;
+                    std::vector<cv::Point2f> left_eye, right_eye, mouth;
+                    for (auto &result : prev_detection_results)
                     {
-                        float scale_factor_x = 0.15;
-                        float scale_factor_y = 0.20;
-                        cv::Rect aux_rect = cv::Rect(rect.x + scale_factor_x * rect.width, rect.y + scale_factor_y * rect.height, rect.width * (1 - 2 * scale_factor_x), rect.height * (1 - scale_factor_y));
-                        //dlib facial landmarks
-                        dlib::array2d<dlib::rgb_pixel> img;
-                        dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
-                        dlib::rectangle det = openCVRectToDlib(aux_rect);
-                        dlib::full_object_detection shape = sp(img, det);
-                        for (int i = 0; i < shape.num_parts(); i++)
-                        {
-                            if (i >= 36 && i <= 41)
-                            {
-                                left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                            }
-                            if (i >= 42 && i <= 47)
-                            {
-                                right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                            }
-                            //48 - 54. 50 - 58. 52 - 56.
+                        cv::Rect rect = result.location;
 
-                            if (i == 48 || i == 54 || i == 50 || i == 58 || i == 52 || i == 56)
+                        out.str("");
+                        cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 1);
+                        if (FLAGS_dlib_lm)
+                        {
+                            float scale_factor_x = 0.15;
+                            float scale_factor_y = 0.20;
+                            cv::Rect aux_rect = cv::Rect(rect.x + scale_factor_x * rect.width, rect.y + scale_factor_y * rect.height, rect.width * (1 - 2 * scale_factor_x), rect.height * (1 - scale_factor_y));
+                            //dlib facial landmarks
+                            dlib::array2d<dlib::rgb_pixel> img;
+                            dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(prev_frame));
+                            dlib::rectangle det = openCVRectToDlib(aux_rect);
+                            dlib::full_object_detection shape = sp(img, det);
+                            for (int i = 0; i < shape.num_parts(); i++)
                             {
-                                mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
-                                cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
-                            }
-                        }
-                        float ear_left = 0;
-                        float ear_right = 0;
-                        float ear = 0;
-                        ear_left = (distanceAtoB(left_eye[1], left_eye[5]) + distanceAtoB(left_eye[2], left_eye[4])) / (2 * distanceAtoB(left_eye[0], left_eye[3]));
-                        ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0], right_eye[3]));
-                        ear = (ear_left + ear_right) / 2;
-                        ear_5.push_front(ear);
-                        float ear_avg = 0;
-                        for (auto &&i : ear_5)
-                        {
-                            ear_avg = ear_avg + i;
-                        }
-                        ear_avg = ear_avg / ear_5.size();
-                        if (ear_avg < EYE_AR_THRESH)
-                        {
-                            blink_counter += 1;
-                            if (blink_counter >= 90)
-                                eye_closed = true;
-                        }
-                        else
-                        {
-                            if (blink_counter >= EYE_AR_CONSEC_FRAMES)
-                            {
-                                blinl_total += 1;
-                                last_blink_counter = blink_counter;
-                            }
-                            blink_counter = 0;
-                        }
-                        if (eye_closed && timer_danger > 0)
-                        {
-                            cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
-                            cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                            timer_danger--;
-                        }
-                        if (timer_danger == 0)
-                        {
-                            eye_closed = false;
-                            timer_danger = 150;
-                        }
-                        cv::putText(frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(10, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                                if (i >= 36 && i <= 41)
+                                {
+                                    left_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
+                                    cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                                }
+                                if (i >= 42 && i <= 47)
+                                {
+                                    right_eye.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
+                                    cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                                }
+                                //48 - 54. 50 - 58. 52 - 56.
 
-                        //Yawn detection
-                        float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0], mouth[3]));
-                        ear_5_mouth.push_front(ear_mouth);
-                        float ear_avg_mouth = 0;
-                        for (auto &&i : ear_5_mouth)
-                        {
-                            ear_avg_mouth = ear_avg_mouth + i;
-                        }
-                        ear_avg_mouth = ear_avg_mouth / ear_5_mouth.size();
-                        if (ear_avg_mouth > MOUTH_EAR_THRESH)
-                        {
-                            yawn_counter += 1;
-                        }
-                        else
-                        {
-                            if (yawn_counter >= MOUTH_EAR_CONSEC_FRAMES)
-                            {
-                                yawn_total += 1;
-                                last_yawn_counter = yawn_counter;
+                                if (i == 48 || i == 54 || i == 50 || i == 58 || i == 52 || i == 56)
+                                {
+                                    mouth.push_back(cv::Point2l(shape.part(i).x(), shape.part(i).y()));
+                                    cv::circle(prev_frame, cv::Point2l(shape.part(i).x(), shape.part(i).y()), 1 + static_cast<int>(0.0012 * rect.width), cv::Scalar(0, 255, 255), -1);
+                                }
                             }
-                            yawn_counter = 0;
+                            float ear_left = 0;
+                            float ear_right = 0;
+                            float ear = 0;
+                            ear_left = (distanceAtoB(left_eye[1], left_eye[5]) + distanceAtoB(left_eye[2], left_eye[4])) / (2 * distanceAtoB(left_eye[0], left_eye[3]));
+                            ear_right = (distanceAtoB(right_eye[1], right_eye[5]) + distanceAtoB(right_eye[2], right_eye[4])) / (2 * distanceAtoB(right_eye[0], right_eye[3]));
+                            ear = (ear_left + ear_right) / 2;
+                            ear_5.push_front(ear);
+                            float ear_avg = 0;
+                            for (auto &&i : ear_5)
+                            {
+                                ear_avg = ear_avg + i;
+                            }
+                            ear_avg = ear_avg / ear_5.size();
+                            if (ear_avg < EYE_AR_THRESH)
+                            {
+                                blink_counter += 1;
+                                if (blink_counter >= 90)
+                                    eye_closed = true;
+                            }
+                            else
+                            {
+                                if (blink_counter >= EYE_AR_CONSEC_FRAMES)
+                                {
+                                    blinl_total += 1;
+                                    last_blink_counter = blink_counter;
+                                }
+                                blink_counter = 0;
+                            }
+                            if (eye_closed && timer_danger > 0)
+                            {
+                                cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
+                                cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+                                timer_danger--;
+                            }
+                            if (timer_danger == 0)
+                            {
+                                eye_closed = false;
+                                timer_danger = 150;
+                            }
+
+                            cv::putText(prev_frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(x_truck_i, y_driver_i + 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1);
+                            //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+
+                            //Yawn detection
+                            float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0], mouth[3]));
+                            ear_5_mouth.push_front(ear_mouth);
+                            float ear_avg_mouth = 0;
+                            for (auto &&i : ear_5_mouth)
+                            {
+                                ear_avg_mouth = ear_avg_mouth + i;
+                            }
+                            ear_avg_mouth = ear_avg_mouth / ear_5_mouth.size();
+                            if (ear_avg_mouth > MOUTH_EAR_THRESH)
+                            {
+                                yawn_counter += 1;
+                            }
+                            else
+                            {
+                                if (yawn_counter >= MOUTH_EAR_CONSEC_FRAMES)
+                                {
+                                    yawn_total += 1;
+                                    last_yawn_counter = yawn_counter;
+                                }
+                                yawn_counter = 0;
+                            }
+                            cv::putText(prev_frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(x_truck_i, y_driver_i + 100), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1);
+                            cv::putText(prev_frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(x_truck_i, y_driver_i + 80), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1);
+                            // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
                         }
-                        cv::putText(frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(250, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        cv::putText(frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(10, 130), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
+
+                        cv::putText(prev_frame,
+                                    out.str(),
+                                    cv::Point2f(result.location.x, result.location.y - 15),
+                                    cv::FONT_HERSHEY_COMPLEX_SMALL,
+                                    0.8,
+                                    cv::Scalar(0, 0, 255));
+
+                        if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch)
+                        {
+                            if (FLAGS_r)
+                            {
+                                std::cout << "Head pose results: yaw, pitch, roll = "
+                                        << headPoseDetector[i].angle_y << ";"
+                                        << headPoseDetector[i].angle_p << ";"
+                                        << headPoseDetector[i].angle_r << std::endl;
+                            }
+                            cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
+                            headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
+                            int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
+
+                            // Alarm Label
+                            int x_alarm = 300;
+                            int y_alarm = 100;
+                            cv::Rect rect(width - (x_alarm + 20), height - (y_alarm + 20), x_alarm, y_alarm);
+                            cv::rectangle(prev_frame, rect, cv::Scalar(0, 0, 0), -1);
+                            cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 2);
+                            
+                            cv::putText(prev_frame, "Alarms", cv::Point2f(width - x_alarm, height - y_alarm + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+                            cv::putText(prev_frame, "Distraction", cv::Point2f(width - x_alarm + 100, height - y_alarm + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+                            cv::putText(prev_frame, "Drowsiness", cv::Point2f(width - x_alarm + 100, height - y_alarm + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+                            cv::putText(prev_frame, "Description", cv::Point2f(width - x_alarm, height - y_alarm + 44), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+
+                            // Call alarmDetection Function
+                            cv::putText(prev_frame, alarmDetection(is_dist, yawn_total, blinl_total), cv::Point2f(width - x_alarm, height - y_alarm + 64), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 2);
+
+                            if (alarmDistraction)
+                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm), 7, cv::Scalar(0, 0, 255), -1);
+                            else
+                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm), 7, cv::Scalar(255, 255, 255), 1);
+
+                            if (alarmDrowsiness)
+                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm + 20), 7, cv::Scalar(0, 0, 255), -1);
+                            else
+                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm +20), 7, cv::Scalar(255, 255, 255), 1);
+                        }
+                        i++;
                     }
 
-                    cv::putText(prev_frame,
-                                out.str(),
-                                cv::Point2f(result.location.x, result.location.y - 15),
-                                cv::FONT_HERSHEY_COMPLEX_SMALL,
-                                0.8,
-                                cv::Scalar(0, 0, 255));
+                    // End Thread 1: Driver Recognition
+                    thread_recognition.join();
 
-                    if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch)
+                    // End Thread 2: Driver Behavior
+                    //thread_behavior.join();
+
+                    // Truck Label
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), 20, x, y), cv::Scalar(0, 0, 0), -1);
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), 20, x ,y), cv::Scalar(255, 255, 255), 2);
+
+                    cv::putText(prev_frame, "Truck Information", cv::Point2f(x_truck_i, 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+                    if (truck.getEngine())
+                        cv::putText(prev_frame, "Engine: ON", cv::Point2f(x_truck_i, 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.8);
+                    else
+                        cv::putText(prev_frame, "Engine: OFF", cv::Point2f(x_truck_i, 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.8);
+                    cv::putText(prev_frame, cv::format("Speed (Km/h): %3.2f", truck.getSpeed()*3.6) , cv::Point2f(x_truck_i, 80), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    cv::putText(prev_frame, "RPM: " + std::to_string(truck.getRpm()), cv::Point2f(x_truck_i, 100), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    cv::putText(prev_frame, "Gear: " + std::to_string(truck.getGear()), cv::Point2f(x_truck_i, 120), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    if (truck.getTrailer())
+                        cv::putText(prev_frame, "Trailer: ON", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.2);
+                    else
+                        cv::putText(prev_frame, "Trailer: OFF", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
+                    
+                    // Driver Label
+                    cv::putText(prev_frame, "Driver Information", cv::Point2f(x_truck_i, y_driver_i + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+
+                    if (face_identified)
                     {
-                        if (FLAGS_r)
-                        {
-                            std::cout << "Head pose results: yaw, pitch, roll = "
-                                      << headPoseDetector[i].angle_y << ";"
-                                      << headPoseDetector[i].angle_p << ";"
-                                      << headPoseDetector[i].angle_r << std::endl;
-                        }
-                        cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
-                        headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
-                        int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
-
-                        // Alarm Show
-                        int x = 400;
-                        int y = 60;
-                        cv::Rect rect(width - (x + 20), height - (y + 20), x, y);
-                        cv::rectangle(prev_frame, rect, cv::Scalar(0, 0, 0), -1);
-
-                        cv::putText(prev_frame, "Alarms | Distraction", cv::Point2f(width - x, height - y + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-                        cv::putText(prev_frame, "Drowsiness", cv::Point2f(width - x + 200, height - y + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-                        cv::putText(prev_frame, "Description: ", cv::Point2f(width - x, height - y + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-
-                        // Call alarmDetection Function
-                        cv::putText(prev_frame, alarmDetection(is_dist, yawn_total, blinl_total), cv::Point2f(width - x + 100, height - y + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 2);
-
-                        if (alarmDistraction)
-                            cv::circle(prev_frame, cv::Point2f(width - x + 170, height - y), 7, cv::Scalar(0, 0, 255), -1);
-                        else
-                            cv::circle(prev_frame, cv::Point2f(width - x + 170, height - y), 7, cv::Scalar(255, 255, 255), 1);
-
-                        if (alarmDrowsiness)
-                            cv::circle(prev_frame, cv::Point2f(width - x + 300, height - y), 7, cv::Scalar(0, 0, 255), -1);
-                        else
-                            cv::circle(prev_frame, cv::Point2f(width - x + 300, height - y), 7, cv::Scalar(255, 255, 255), 1);
+                        cv::putText(prev_frame, "Driver: " + driver_name, cv::Point2f(x_truck_i, y_driver_i + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
                     }
-                    i++;
+                    else if (!face_identified && driver_name == "Unknown")
+                    {
+                        cv::putText(prev_frame, "Driver: " + driver_name, cv::Point2f(x_truck_i, y_driver_i + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+                    }
                 }
 
-                // End Thread 1: Driver Recognition
-                thread_recognition.join();
-
-                if (face_identified)
-                {
-                    cv::putText(prev_frame, "Driver: " + driver_name, cv::Point2f(10, 450), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 255, 0), 2);
-                }
-                else if (!face_identified && driver_name == "Unknown driver")
-                {
-                    cv::putText(prev_frame, driver_name, cv::Point2f(10, 450), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 0, 255), 2);
-                }
-
-		std::cout<<"speed!: "<<truck.getSpeed()<<std::endl;
                 // Sample of Results
                 cv::imshow("Detection results", prev_frame);
                 timer.finish("visualization");
