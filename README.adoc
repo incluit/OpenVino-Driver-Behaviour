@@ -251,7 +251,7 @@ or the ATS folder:
 ----
 source <ros2_ws>/install/setup.bash
 cd <ros2_ws>/build/driver_behavior
-cp -r ../../src/OpenVino-Driver-Behaviour/data .
+cp -r ../../src/ets_ros2/OpenVino-Driver-Behaviour/data ../
 ----
 
 == Usage
