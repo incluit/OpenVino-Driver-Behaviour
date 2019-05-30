@@ -176,8 +176,6 @@ bool face_identified = false;
 bool first_stage_completed = (FLAGS_d_recognition ? false : true);
 int biggest_head = 0;
 bool alarmDistraction = false;
-bool alarmDrowsiness = false;
-
 std::string driver_name = "";
 Timer timer;
 int firstTime = 0;
@@ -194,14 +192,16 @@ std::string alarmDetection(int is_dist, int yawn_total, int blinl_total)
         switch (is_dist)
         {
         case DISTRACTED:
-            if (truck.getSpeed()*3.6 >= 5 || !fSim){
+            if (truck.getSpeed() * 3.6 >= 5 || !fSim)
+            {
                 labelAlarm = "EYES OUT OF ROAD";
                 alarmDistraction = true;
             }
             break;
         case PHONE:
-            if (truck.getSpeed()*3.6 >= 2 || !fSim){
-                labelAlarm = "LOOKING THE PHONE";
+            if (truck.getSpeed() * 3.6 >= 2 || !fSim)
+            {
+                labelAlarm = "LOOKING AT THE PHONE";
                 alarmDistraction = true;
             }
             break;
@@ -215,10 +215,47 @@ std::string alarmDetection(int is_dist, int yawn_total, int blinl_total)
         labelAlarm = "";
         alarmDistraction = false;
     }
-    if ((yawn_total + blinl_total) >= 5)
-        alarmDrowsiness = true;
 
     return labelAlarm;
+}
+
+int maxNormal = 3;
+int maxWarning = 7;
+int maxCritical = 10;
+int x_vum = 5;
+int y_vum = 10;
+int tDrowsiness = 0 ;
+
+void alarmDrowsiness(cv::Mat prev_frame, int yawn_total, int blinl_total,int width, int height, int x_alarm, int y_alarm)
+{
+
+    tDrowsiness = (yawn_total + blinl_total);
+
+    if (tDrowsiness <= maxNormal)
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, tDrowsiness * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
+
+    else if (tDrowsiness > maxNormal && tDrowsiness <= maxWarning)
+    {
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxNormal * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxNormal * x_vum), height - y_alarm + 15, (tDrowsiness - maxNormal) * x_vum, y_vum), cv::Scalar(0, 255, 255), -1);
+    }
+
+    else if (tDrowsiness > maxWarning && tDrowsiness <= maxCritical)
+    {
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxNormal * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxNormal * x_vum), height - y_alarm + 15, (maxWarning - maxNormal) * x_vum, y_vum), cv::Scalar(0, 255, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxWarning * x_vum), height - y_alarm + 15, (tDrowsiness - maxWarning) * x_vum, y_vum), cv::Scalar(0, 0, 255), -1);
+    }
+    else
+    {
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxNormal * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxNormal * x_vum), height - y_alarm + 15, (maxWarning - maxNormal) * x_vum, y_vum), cv::Scalar(0, 255, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxWarning * x_vum), height - y_alarm + 15, (maxCritical - maxWarning) * x_vum, y_vum), cv::Scalar(0, 0, 255), -1);
+    }
+    
+    // VUmeter - White Rectangle
+    cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxCritical * x_vum, y_vum), cv::Scalar(255, 255, 255), 1);
+                        
 }
 
 // Thread 1: Driver Recognition
@@ -316,7 +353,7 @@ int main(int argc, char *argv[])
         }
         else if (FLAGS_i == "cam1")
         {
-            if (!cap.open(1 + cv::CAP_GSTREAMER))
+            if (!cap.open(1))
                 throw std::logic_error("Cannot open input file or camera: " + FLAGS_i);
             cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
             //cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
@@ -329,14 +366,13 @@ int main(int argc, char *argv[])
         }
 
         // Size force
-        cap.set(cv::CAP_PROP_FRAME_HEIGHT, 768);
-        cap.set(cv::CAP_PROP_FRAME_WIDTH, 1366);
-        cap.set(cv::CAP_PROP_FPS, 30);
-        //
+        cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+        cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+        // cap.set(cv::CAP_PROP_FPS, 30);
 
         const size_t width = (size_t)cap.get(cv::CAP_PROP_FRAME_WIDTH);
         const size_t height = (size_t)cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-                
+
         int x = 200;
         int y = 140;
         int x_truck_i = width - (x + 10);
@@ -609,20 +645,21 @@ int main(int argc, char *argv[])
                     out << "Face Analysics Networks "
                         << "time: " << std::fixed << std::setprecision(2)
                         << timer["face analytics call"].getSmoothedDuration() +
-                            timer["face analytics wait"].getSmoothedDuration()
+                               timer["face analytics wait"].getSmoothedDuration()
                         << " ms ";
                     if (!prev_detection_results.empty())
                     {
                         out << "("
                             << 1000.f / (timer["face analytics call"].getSmoothedDuration() +
-                                        timer["face analytics wait"].getSmoothedDuration())
+                                         timer["face analytics wait"].getSmoothedDuration())
                             << " fps)";
                     }
                     cv::putText(prev_frame, out.str(), cv::Point2f(10, 65), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                                 cv::Scalar(255, 0, 0));
                 }
-                
-                if ((truck.getEngine() && fSim) || !fSim) { // Detect if Engine = ON and Simulator Flag
+
+                if ((truck.getEngine() && fSim) || !fSim)
+                { // Detect if Engine = ON and Simulator Flag
                     // Thread 1: Driver Recognition
                     std::thread thread_recognition(driver_recognition, prev_frame, prev_detection_results, landmarks_detector, face_reid, face_gallery, &driver_name);
 
@@ -631,7 +668,7 @@ int main(int argc, char *argv[])
 
                     // Driver Label (CHECK! -> Not here)
                     cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y), cv::Scalar(0, 0, 0), -1);
-                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x ,y), cv::Scalar(255, 255, 255), 2);
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y), cv::Scalar(255, 255, 255), 2);
 
                     // For every detected face.
                     int i = 0;
@@ -754,9 +791,9 @@ int main(int argc, char *argv[])
                             if (FLAGS_r)
                             {
                                 std::cout << "Head pose results: yaw, pitch, roll = "
-                                        << headPoseDetector[i].angle_y << ";"
-                                        << headPoseDetector[i].angle_p << ";"
-                                        << headPoseDetector[i].angle_r << std::endl;
+                                          << headPoseDetector[i].angle_y << ";"
+                                          << headPoseDetector[i].angle_p << ";"
+                                          << headPoseDetector[i].angle_r << std::endl;
                             }
                             cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
                             headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
@@ -768,7 +805,7 @@ int main(int argc, char *argv[])
                             cv::Rect rect(width - (x_alarm + 20), height - (y_alarm + 20), x_alarm, y_alarm);
                             cv::rectangle(prev_frame, rect, cv::Scalar(0, 0, 0), -1);
                             cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 2);
-                            
+
                             cv::putText(prev_frame, "Alarms", cv::Point2f(width - x_alarm, height - y_alarm + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
                             cv::putText(prev_frame, "Distraction", cv::Point2f(width - x_alarm + 100, height - y_alarm + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
                             cv::putText(prev_frame, "Drowsiness", cv::Point2f(width - x_alarm + 100, height - y_alarm + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
@@ -782,11 +819,13 @@ int main(int argc, char *argv[])
                             else
                                 cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm), 7, cv::Scalar(255, 255, 255), 1);
 
-                            if (alarmDrowsiness)
-                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm + 20), 7, cv::Scalar(0, 0, 255), -1);
-                            else
-                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm +20), 7, cv::Scalar(255, 255, 255), 1);
-                        }
+                            // Thread: Drowsiness Alarm
+                            std::thread thread_drowsiness(alarmDrowsiness,prev_frame, yawn_total, blinl_total, width, height, x_alarm, y_alarm);
+
+                            // Thread: Drowsiness Alarm
+                            thread_drowsiness.join();
+
+                            }
                         i++;
                     }
 
@@ -798,21 +837,21 @@ int main(int argc, char *argv[])
 
                     // Truck Label
                     cv::rectangle(prev_frame, cv::Rect(width - (x + 20), 20, x, y), cv::Scalar(0, 0, 0), -1);
-                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), 20, x ,y), cv::Scalar(255, 255, 255), 2);
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), 20, x, y), cv::Scalar(255, 255, 255), 2);
 
                     cv::putText(prev_frame, "Truck Information", cv::Point2f(x_truck_i, 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
                     if (truck.getEngine())
                         cv::putText(prev_frame, "Engine: ON", cv::Point2f(x_truck_i, 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.8);
                     else
                         cv::putText(prev_frame, "Engine: OFF", cv::Point2f(x_truck_i, 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.8);
-                    cv::putText(prev_frame, cv::format("Speed (Km/h): %3.2f", truck.getSpeed()*3.6) , cv::Point2f(x_truck_i, 80), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    cv::putText(prev_frame, cv::format("Speed (Km/h): %3.2f", truck.getSpeed() * 3.6), cv::Point2f(x_truck_i, 80), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
                     cv::putText(prev_frame, "RPM: " + std::to_string(truck.getRpm()), cv::Point2f(x_truck_i, 100), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
                     cv::putText(prev_frame, "Gear: " + std::to_string(truck.getGear()), cv::Point2f(x_truck_i, 120), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
                     if (truck.getTrailer())
                         cv::putText(prev_frame, "Trailer: ON", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.2);
                     else
                         cv::putText(prev_frame, "Trailer: OFF", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
-                    
+
                     // Driver Label
                     cv::putText(prev_frame, "Driver Information", cv::Point2f(x_truck_i, y_driver_i + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
 
