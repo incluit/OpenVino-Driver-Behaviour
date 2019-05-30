@@ -301,6 +301,24 @@ void driver_behavior(cv::Mat frame, cv::Mat prev_frame, std::vector<FaceDetectio
     }
 }
 
+int headbuttDetection(boost::circular_buffer<double>* angle_p)
+{
+	boost::circular_buffer<double>& pitch = *angle_p;
+	bool ret = false;
+	const int full = 5;
+	double delta = 0;
+
+	int lim = std::min(full,(int)pitch.size()-1); // Wait for one frame to calculate speed
+	if (lim > 1) {
+		for (int i = 0; i < lim; i++)
+			delta = delta + (pitch[i] - pitch[i+1]);
+		delta = delta / lim;
+		if (delta > 6) // magic threshold (adjust)
+			ret=true;
+	}
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -546,6 +564,9 @@ int main(int argc, char *argv[])
         big_head.label = 0;
         big_head.confidence = 0;
         big_head.location = cv::Rect(0, 0, 0, 0);
+
+        boost::circular_buffer<double> pitch = boost::circular_buffer<double>(5);
+        bool headbutt = false;
 
         while (true)
         {
@@ -797,6 +818,8 @@ int main(int argc, char *argv[])
                             }
                             cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
                             headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
+                            pitch.push_front(headPoseDetector[i].angle_p);
+                            headbutt = headbuttDetection(&pitch);
                             int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
 
                             // Alarm Label
