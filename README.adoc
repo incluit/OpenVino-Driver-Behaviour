@@ -115,6 +115,13 @@ A summary of what is needed:
 apt-get install libboost-dev
 ----
 
+* LibAO and libsndfile to play some beeping sounds. On Ubuntu, run:
+
+[source,bash]
+----
+apt-get install libao-dev libsndfile1-dev
+----
+
 * [Optional] ETS or ATS simulator. Install it through Steam on Ubuntu.
 
 * [Optional] https://github.com/awslabs/aws-crt-cpp[AWS Crt Cpp]
