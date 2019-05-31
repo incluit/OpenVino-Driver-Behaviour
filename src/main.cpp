@@ -13,6 +13,7 @@
 #include <map>
 #include <thread>
 #include <mutex>
+#include <math.h>
 
 #include <inference_engine.hpp>
 
@@ -301,6 +302,18 @@ void driver_behavior(cv::Mat frame, cv::Mat prev_frame, std::vector<FaceDetectio
     }
 }
 
+void beeping (Player* beep, bool* finished) {
+
+    while (!(*finished)) {
+        if (tDrowsiness <= 10)
+            beep->setGain(exp((float)(tDrowsiness-10)));
+        if(tDrowsiness > 3) {
+            if (!beep->isPlaying())
+                beep->play();
+        }
+    }
+}
+
 int headbuttDetection(boost::circular_buffer<double>* angle_p)
 {
 	boost::circular_buffer<double>& pitch = *angle_p;
@@ -567,6 +580,10 @@ int main(int argc, char *argv[])
 
         boost::circular_buffer<double> pitch = boost::circular_buffer<double>(5);
         bool headbutt = false;
+
+        bool processing_finished = false;
+        Player beep("../data/beep.ogg");
+        std::thread beep_thread(beeping, &beep, &processing_finished);
 
         while (true)
         {
@@ -915,6 +932,8 @@ int main(int argc, char *argv[])
             next_frame = cv::Mat();
         }
 
+        processing_finished = true;
+        beep_thread.join();
         slog::info << "Number of processed frames: " << framesCounter << slog::endl;
         slog::info << "Total image throughput: " << framesCounter * (1000.f / timer["total"].getTotalDuration()) << " fps" << slog::endl;
 
