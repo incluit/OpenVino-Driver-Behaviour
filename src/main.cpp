@@ -200,7 +200,7 @@ std::string alarmDetection(int is_dist, int yawn_total, int blinl_total)
             }
             break;
         case PHONE:
-            if (truck.getSpeed() * 3.6 >= 2 || !fSim)
+            if (truck.getSpeed() * 3.6 >= 2 || truck.getSpeed() * 3.6 <= -2 || !fSim)
             {
                 labelAlarm = "LOOKING AT THE PHONE";
                 alarmDistraction = true;
@@ -220,43 +220,52 @@ std::string alarmDetection(int is_dist, int yawn_total, int blinl_total)
     return labelAlarm;
 }
 
-int maxNormal = 3;
+int maxNormal = 4;
 int maxWarning = 7;
 int maxCritical = 10;
-int x_vum = 5;
-int y_vum = 10;
-int tDrowsiness = 0 ;
+int x_vum = 20;
+int y_vum = 150;
+int y_vum_unit = y_vum / 10;
+int tDrowsiness = 0;
 
-void alarmDrowsiness(cv::Mat prev_frame, int yawn_total, int blinl_total,int width, int height, int x_alarm, int y_alarm)
+void alarmDrowsiness(cv::Mat prev_frame, int yawn_total, int blinl_total, int width, int height, int x_alarm, int y_alarm, int x_truck_i)
 {
+    // VUmeter Drowsiness: Rectangle Background
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxNormal), x_vum, y_vum_unit * maxNormal), cv::Scalar(0, 50, 0), -1);
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum_unit * (maxCritical - maxWarning), x_vum, y_vum_unit * (maxWarning - maxNormal)), cv::Scalar(0, 50, 50), -1);
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50, x_vum, y_vum_unit * (maxCritical - maxWarning)), cv::Scalar(0, 0, 50), -1);
+
+    // VUmeter Distraction: Rectangle Background
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 120, y_alarm + 50 + y_vum - (y_vum_unit * maxNormal), x_vum, y_vum_unit * maxNormal), cv::Scalar(0, 50, 0), -1);
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 120, y_alarm + 50 + y_vum_unit * (maxCritical - maxWarning), x_vum, y_vum_unit * (maxWarning - maxNormal)), cv::Scalar(0, 50, 50), -1);
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 120, y_alarm + 50, x_vum, y_vum_unit * (maxCritical - maxWarning)), cv::Scalar(0, 0, 50), -1);
 
     tDrowsiness = (yawn_total + blinl_total);
 
     if (tDrowsiness <= maxNormal)
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, tDrowsiness * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - y_vum_unit * tDrowsiness, x_vum, y_vum_unit * tDrowsiness), cv::Scalar(0, 255, 0), -1);
 
     else if (tDrowsiness > maxNormal && tDrowsiness <= maxWarning)
     {
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxNormal * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxNormal * x_vum), height - y_alarm + 15, (tDrowsiness - maxNormal) * x_vum, y_vum), cv::Scalar(0, 255, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxNormal), x_vum, y_vum_unit * maxNormal), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * tDrowsiness), x_vum, y_vum_unit * (tDrowsiness - maxNormal)), cv::Scalar(0, 255, 255), -1);
     }
 
     else if (tDrowsiness > maxWarning && tDrowsiness <= maxCritical)
     {
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxNormal * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxNormal * x_vum), height - y_alarm + 15, (maxWarning - maxNormal) * x_vum, y_vum), cv::Scalar(0, 255, 255), -1);
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxWarning * x_vum), height - y_alarm + 15, (tDrowsiness - maxWarning) * x_vum, y_vum), cv::Scalar(0, 0, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxNormal), x_vum, y_vum_unit * maxNormal), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxWarning), x_vum, y_vum_unit * (maxWarning - maxNormal)), cv::Scalar(0, 255, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * tDrowsiness), x_vum, y_vum_unit * (tDrowsiness - maxWarning)), cv::Scalar(0, 0, 255), -1);
     }
     else
     {
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxNormal * x_vum, y_vum), cv::Scalar(0, 255, 0), -1);
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxNormal * x_vum), height - y_alarm + 15, (maxWarning - maxNormal) * x_vum, y_vum), cv::Scalar(0, 255, 255), -1);
-        cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195 + (maxWarning * x_vum), height - y_alarm + 15, (maxCritical - maxWarning) * x_vum, y_vum), cv::Scalar(0, 0, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxNormal), x_vum, y_vum_unit * maxNormal), cv::Scalar(0, 255, 0), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxWarning), x_vum, y_vum_unit * (maxWarning - maxNormal)), cv::Scalar(0, 255, 255), -1);
+        cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50 + y_vum - (y_vum_unit * maxCritical), x_vum, y_vum_unit * (maxCritical - maxWarning)), cv::Scalar(0, 0, 255), -1);
     }
-    
-    // VUmeter - White Rectangle
-    cv::rectangle(prev_frame, cv::Rect(width - x_alarm + 195, height - y_alarm + 15, maxCritical * x_vum, y_vum), cv::Scalar(255, 255, 255), 1);
-                        
+
+    // VUmeter Drowsiness: Rectangle
+    cv::rectangle(prev_frame, cv::Rect(x_truck_i + 30, y_alarm + 50, x_vum, y_vum), cv::Scalar(255, 255, 255), 1);
 }
 
 // Thread 1: Driver Recognition
@@ -314,22 +323,23 @@ void beeping (Player* beep, bool* finished) {
     }
 }
 
-int headbuttDetection(boost::circular_buffer<double>* angle_p)
+int headbuttDetection(boost::circular_buffer<double> *angle_p)
 {
-	boost::circular_buffer<double>& pitch = *angle_p;
-	bool ret = false;
-	const int full = 5;
-	double delta = 0;
+    boost::circular_buffer<double> &pitch = *angle_p;
+    bool ret = false;
+    const int full = 5;
+    double delta = 0;
 
-	int lim = std::min(full,(int)pitch.size()-1); // Wait for one frame to calculate speed
-	if (lim > 1) {
-		for (int i = 0; i < lim; i++)
-			delta = delta + (pitch[i] - pitch[i+1]);
-		delta = delta / lim;
-		if (delta > 6) // magic threshold (adjust)
-			ret=true;
-	}
-	return ret;
+    int lim = std::min(full, (int)pitch.size() - 1); // Wait for one frame to calculate speed
+    if (lim > 1)
+    {
+        for (int i = 0; i < lim; i++)
+            delta = delta + (pitch[i] - pitch[i + 1]);
+        delta = delta / lim;
+        if (delta > 6) // magic threshold (adjust)
+            ret = true;
+    }
+    return ret;
 }
 
 int main(int argc, char *argv[])
@@ -840,32 +850,31 @@ int main(int argc, char *argv[])
                             int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
 
                             // Alarm Label
-                            int x_alarm = 300;
-                            int y_alarm = 100;
-                            cv::Rect rect(width - (x_alarm + 20), height - (y_alarm + 20), x_alarm, y_alarm);
-                            cv::rectangle(prev_frame, rect, cv::Scalar(0, 0, 0), -1);
-                            cv::rectangle(prev_frame, rect, cv::Scalar(255, 255, 255), 2);
+                            int x_alarm = width - (x + 20);
+                            int y_alarm = y_driver_i + y + 10;
+                            cv::rectangle(prev_frame, cv::Rect(x_alarm, y_alarm, x, y + 120), cv::Scalar(0, 0, 0), -1);
+                            cv::rectangle(prev_frame, cv::Rect(x_alarm, y_alarm, x, y + 120), cv::Scalar(255, 255, 255), 2);
 
-                            cv::putText(prev_frame, "Alarms", cv::Point2f(width - x_alarm, height - y_alarm + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
-                            cv::putText(prev_frame, "Distraction", cv::Point2f(width - x_alarm + 100, height - y_alarm + 4), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
-                            cv::putText(prev_frame, "Drowsiness", cv::Point2f(width - x_alarm + 100, height - y_alarm + 24), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
-                            cv::putText(prev_frame, "Description", cv::Point2f(width - x_alarm, height - y_alarm + 44), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+                            cv::putText(prev_frame, "Alarms", cv::Point2f(x_truck_i, y_alarm + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+                            cv::putText(prev_frame, "Drowsiness Distraction", cv::Point2f(x_truck_i, y_alarm + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+                            cv::putText(prev_frame, "Description", cv::Point2f(x_truck_i, y_alarm + y_vum + 75), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
 
                             // Call alarmDetection Function
-                            cv::putText(prev_frame, alarmDetection(is_dist, yawn_total, blinl_total), cv::Point2f(width - x_alarm, height - y_alarm + 64), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 2);
-
-                            if (alarmDistraction)
-                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm), 7, cv::Scalar(0, 0, 255), -1);
-                            else
-                                cv::circle(prev_frame, cv::Point2f(width - x_alarm + 200, height - y_alarm), 7, cv::Scalar(255, 255, 255), 1);
+                            cv::putText(prev_frame, alarmDetection(is_dist, yawn_total, blinl_total), cv::Point2f(x_truck_i, y_alarm + y_vum + 95), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 0, 255), 1);
 
                             // Thread: Drowsiness Alarm
-                            std::thread thread_drowsiness(alarmDrowsiness,prev_frame, yawn_total, blinl_total, width, height, x_alarm, y_alarm);
+                            std::thread thread_drowsiness(alarmDrowsiness, prev_frame, yawn_total, blinl_total, width, height, x_alarm, y_alarm, x_truck_i);
 
                             // Thread: Drowsiness Alarm
                             thread_drowsiness.join();
 
-                            }
+                            // alarmDistraction
+                            if (alarmDistraction)
+                                cv::rectangle(prev_frame, cv::Rect(x_truck_i + 120, y_alarm + 50, x_vum, y_vum), cv::Scalar(0, 0, 255), -1);
+
+                            // VUmeter Distraction: Rectangle
+                            cv::rectangle(prev_frame, cv::Rect(x_truck_i + 120, y_alarm + 50, x_vum, y_vum), cv::Scalar(255, 255, 255), 1);
+                        }
                         i++;
                     }
 
