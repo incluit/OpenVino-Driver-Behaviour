@@ -23,6 +23,11 @@ https://docs.openvinotoolkit.org/latest/_inference_engine_samples_interactive_fa
 
 We will focus on the "Interactive face detection" sample, and we will work on and extend this tutorial as a demo app aimed to the automotive industry.
 
+[quote]
+Caution!
+
+As of OpenVINO's Release 2019 R1, the model's binaries are not included in the toolkit, as they are part of the https://github.com/opencv/open_model_zoo[model zoo]. You are supposed to download them manually as described in the https://docs.openvinotoolkit.org/latest/_inference_engine_samples_interactive_face_detection_demo_README.html[tutorial]. Be aware that if you choose to download them in a different path than the default, our `scripts/setupenv.sh` will not fully work and you will have to add the path to the models yourself when running the program.
+
 == Introduction
 
 This project consists on showcasing the advantages of the Intel's OpenVINO toolkit. We will develop a __Driver Behaviour__ case scenario, where we will detect drowsiness based on blinking and yawning and gaze direction. For that, we will use the OpenVINO toolkit and OpenCV, all written in `{cpp}`.
