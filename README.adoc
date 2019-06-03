@@ -19,7 +19,7 @@ toc::[]
 == Foreword
 This is a follow-up on the OpenVino's inference tutorials samples:
 
-https://software.intel.com/en-us/articles/OpenVINO-IE-Samples#interactive-face-detection
+https://docs.openvinotoolkit.org/latest/_inference_engine_samples_interactive_face_detection_demo_README.html
 
 We will focus on the "Interactive face detection" sample, and we will work on and extend this tutorial as a demo app aimed to the automotive industry.
 
