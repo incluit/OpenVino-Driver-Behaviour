@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
     {
         timer.start("face_identified");
         dlib::shape_predictor sp;
-        dlib::deserialize("../data/shape_predictor_68_face_landmarks.dat") >> sp;
+        dlib::deserialize("shape_predictor_68_face_landmarks.dat") >> sp;
         std::vector<dlib::full_object_detection> shapes;
 
         std::chrono::high_resolution_clock::time_point slp1, slp2;
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
         const size_t height = (size_t)cap.get(cv::CAP_PROP_FRAME_HEIGHT);
 
         int x = 200;
-        int y = 140;
+        int y = 155;
         int x_truck_i = width - (x + 10);
         int y_driver_i = y + 30;
 
@@ -900,6 +900,10 @@ int main(int argc, char *argv[])
                         cv::putText(prev_frame, "Trailer: ON", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.2);
                     else
                         cv::putText(prev_frame, "Trailer: OFF", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
+                    if (truck.getParkingBrake())
+                        cv::putText(prev_frame, "Parking Brake: ON", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
+                    else
+                        cv::putText(prev_frame, "Parking Brake: OFF", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
 
                     // Driver Label
                     cv::putText(prev_frame, "Driver Information", cv::Point2f(x_truck_i, y_driver_i + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);

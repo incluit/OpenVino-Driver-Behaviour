@@ -79,14 +79,22 @@ set_target_properties(${TARGET_NAME} PROPERTIES "CMAKE_CXX_FLAGS" "${CMAKE_CXX_F
 
 target_link_libraries(${TARGET_NAME} format_reader IE::ie_cpu_extension ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
 
+target_include_directories(${PROJECT_NAME} PUBLIC
+        /home/h/incluit/OpenVino-Driver-Behaviour/aws-crt-cpp/build/deps/install/include)
+
 if(UNIX)
     target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib ao sndfile)
 endif()
 
-install(TARGETS driver_behavior
-    DESTINATION bin/${PROJECT_NAME})
+add_custom_command(TARGET driver_behavior POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_CURRENT_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:driver_behavior>)
 
 if ( SIMULATOR )
+install(TARGETS driver_behavior
+    DESTINATION bin)
+install(FILES data/beep.ogg data/shape_predictor_68_face_landmarks.dat DESTINATION bin)
+
 ament_target_dependencies(driver_behavior
     "rclcpp"
     "rcutils"

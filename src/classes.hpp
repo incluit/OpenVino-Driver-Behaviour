@@ -36,9 +36,10 @@ private:
 	bool		engine_running;
 	bool		trailer_connected;
 	Pos_t		position;
+	bool		parking_brake;
 public:
 	/* Member Initializer & Constructor*/
-	Truck() : speed(.0), rpm(0), gear(0), engine_running(false), trailer_connected(false) {
+	Truck() : speed(.0), rpm(0), gear(0), engine_running(false), trailer_connected(false), parking_brake(false) {
 		this->setAcc(.0, .0, .0);
 		this->setPosition(.0, .0, .0, .0, .0, .0);
 	}
@@ -50,6 +51,7 @@ public:
 	bool		getEngine() { return this->engine_running; }
 	bool		getTrailer() { return this->trailer_connected; }
 	Pos_t		getPosition() { return this->position; }
+	bool		getParkingBrake() { return this->parking_brake; }
 
 	/* Set Function */
 	void setSpeed(double _speed) { this->speed = _speed; }
@@ -61,6 +63,7 @@ public:
 	void setTrailer(bool _trailer) { this->trailer_connected = _trailer; }
 	void setPosition(Pos_t _position) { this->position = _position; }
 	void setPosition(double _x, double _y, double _z, double _heading, double _pitch, double _roll) { this->position.x = _x; this->position.y = _y; this->position.z = _z; this->position.heading = _heading; this->position.pitch = _pitch; this->position.roll = _roll; }
+	void setParkingBrake(bool _parking_brake) { this->parking_brake = _parking_brake; }
 
 #ifdef SIMULATOR
         void ros_callback(const ets_msgs::msg::Truck::SharedPtr msg);
