@@ -592,7 +592,7 @@ int main(int argc, char *argv[])
         bool headbutt = false;
 
         bool processing_finished = false;
-        Player beep("../data/beep.ogg");
+        Player beep("beep.ogg");
         std::thread beep_thread(beeping, &beep, &processing_finished);
 
         while (true)

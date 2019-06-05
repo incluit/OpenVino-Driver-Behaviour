@@ -196,6 +196,13 @@ cmake -DCMAKE_BUILD_TYPE=Release ../
 make
 ----
 
+**7.** Move to the executable's dir:
+
+[source,bash]
+----
+cd intel64/Release
+----
+
 === Simulator Build
 
 In order to run the simulator you will need to install:
@@ -257,13 +264,12 @@ or the ATS folder:
    cp install/ets_plugin/lib/ets_plugin/libetsros2.so ~/.local/share/Steam/steamapps/common/American\ Truck\ Simulator/bin/linux_x64/plugins/
 ----
 
-**5.** Lastly, source our workspace and copy the `data` directory:
+**5.** Lastly, source our workspace:
 
 [source,bash]
 ----
 source <ros2_ws>/install/setup.bash
-cd <ros2_ws>/build/driver_behavior
-cp -r ../../src/ets_ros2/OpenVino-Driver-Behaviour/data ../
+cd <ros2_ws>/install/driver_behavior/bin
 ----
 
 == Usage
@@ -277,14 +283,14 @@ synchronous mode.
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/img_1.jpg
+./driver_behavior -m $face132 -i ../../../data/img_1.jpg
 ----
 
 **2.** For video files:
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4
+./driver_behavior -m $face132 -i ../../../data/video1.mp4
 ----
 
 **3.** You can also run the command in asynchronous mode using the option
@@ -292,7 +298,7 @@ synchronous mode.
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face132 -i ../data/video1.mp4 -async
+./driver_behavior -m $face132 -i ../../../data/video1.mp4 -async
 ----
 
 **4.** You can also load the models into the **GPU** or **MYRIAD**:
@@ -301,12 +307,12 @@ synchronous mode.
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face132 -d GPU -i ../data/video1.mp4
+./driver_behavior -m $face132 -d GPU -i ../../../data/video1.mp4
 ----
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face132 -d MYRIAD -i ../data/video1.mp4
+./driver_behavior -m $face132 -d MYRIAD -i ../../../data/video1.mp4
 ----
 
 ===== Other models
@@ -329,7 +335,7 @@ In order to enable drowsiness and yawn detection, we add to the pipeline a face 
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face232 -dlib_lm -i ../data/video2.mp4
+./driver_behavior -m $face232 -dlib_lm -i ../../../data/video2.mp4
 ----
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink.gif[blinking]
@@ -342,7 +348,7 @@ To analize if the driver is paying attention to the road, we enable the head/pos
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face232 -m_hp $hp32 -i ../data/video3.mp4
+./driver_behavior -m $face232 -m_hp $hp32 -i ../../../data/video3.mp4
 ----
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/gaze.gif[gaze]
@@ -353,10 +359,10 @@ Removing the '-i' flag, if the computer has a video camera enabled, the programs
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face232
-./intel64/Release/driver_behaviour_tutorial -m $face232 -dlib_lm
-./intel64/Release/driver_behaviour_tutorial -m $face232 -d GPU -dlib_lm -async
-./intel64/Release/driver_behaviour_tutorial -m $face232 -m_hp $hp32
+./driver_behavior -m $face232
+./driver_behavior -m $face232 -dlib_lm
+./driver_behavior -m $face232 -d GPU -dlib_lm -async
+./driver_behavior -m $face232 -m_hp $hp32
 ----
 
 ==== Driver recognition
@@ -373,11 +379,11 @@ python3 create_list.py ../drivers/
 
 You should now see a file named `faces_gallery.json` with your name and the path to your photo there.
 
-Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../scripts/faces_gallery.json` as follows:
+Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../../../scripts/faces_gallery.json`. We automatically copy this file to the executable's path after compilation, so if you created the gallery before compiling everything should be ready, if not, copy it to that path manually. (`cp faces_gallery.json ../build/intel64/Release/`). The final commando would be as follows:
 
 [source,bash]
 ----
-./intel64/Release/driver_behaviour_tutorial -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../scripts/faces_gallery.json
+./driver_behavior -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg faces_gallery.json
 ----
 
 It will wait there until an authorized driver sits in front of the camera for a couple of seconds and then will continue with the previous features.

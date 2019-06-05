@@ -87,13 +87,21 @@ if(UNIX)
 endif()
 
 add_custom_command(TARGET driver_behavior POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_CURRENT_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:driver_behavior>)
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/data/shape_predictor_68_face_landmarks.dat $<TARGET_FILE_DIR:driver_behavior>)
+
+add_custom_command(TARGET driver_behavior POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/data/beep.ogg $<TARGET_FILE_DIR:driver_behavior>)
+
+add_custom_command(TARGET driver_behavior POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy
+                   ${CMAKE_CURRENT_SOURCE_DIR}/scripts/faces_gallery.json $<TARGET_FILE_DIR:driver_behavior>)
 
 if ( SIMULATOR )
 install(TARGETS driver_behavior
     DESTINATION bin)
-install(FILES data/beep.ogg data/shape_predictor_68_face_landmarks.dat DESTINATION bin)
+install(FILES data/beep.ogg data/shape_predictor_68_face_landmarks.dat scripts/faces_gallery.json DESTINATION bin)
 
 ament_target_dependencies(driver_behavior
     "rclcpp"
