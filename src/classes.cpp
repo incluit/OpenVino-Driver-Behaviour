@@ -10,6 +10,7 @@ void Truck::ros_callback(const ets_msgs::msg::Truck::SharedPtr msg)
     this->setEngine(msg->engine_running);
     this->setTrailer(msg->trailer_connected);
     this->setPosition(msg->x, msg->y, msg->z, msg->heading, msg->pitch, msg->roll);
+    this->setParkingBrake(msg->parking_brake);
 }
 #endif
 
