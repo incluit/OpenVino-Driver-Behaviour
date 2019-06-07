@@ -238,7 +238,7 @@ The OpenVino path may vary depending on the version installed. If it's a 2018 Re
 source /opt/intel/computer_vision_sdk/bin/setupvars.sh
 ----
 
-**3.** Compile:
+**3.** Change to <ros2_ws> location and compile:
 
 [source,bash]
 ----
