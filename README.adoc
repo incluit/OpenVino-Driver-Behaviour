@@ -229,7 +229,7 @@ working we can build or program.
 ----
 source /opt/intel/openvino/bin/setupvars.sh
 source /opt/ros/<ros-version>/setup.bash
-source <ros2_ws>src/ets_ros2/OpenVino-Driver-Behaviour/scripts/setupenv.sh
+source <ros2_ws>/src/ets_ros2/OpenVino-Driver-Behaviour/scripts/setupenv.sh
 ----
 
 The OpenVino path may vary depending on the version installed. If it's a 2018 Release or older, the path should be:
