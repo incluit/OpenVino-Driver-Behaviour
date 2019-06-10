@@ -205,13 +205,13 @@ void alarmDrowsiness(cv::Mat prev_frame, int yawn_total, int blinl_total, int wi
 {
 
     //VU Meter Logic
-    if ((tDrowsiness <= maxNormal) && (vYawn != 0 || vBlink != 0))
+    if ((tDrowsiness <= maxNormal) && (vYawn != 0 || vBlink != 0) && !truck.getParkingBrake())
     {
         tDrowsiness += 10 * vYawn + 5 * vBlink * (timeBlink / 1000);
         startNoDrowsiness = 0;
     }
 
-    else if ((tDrowsiness > maxNormal) && (vYawn != 0 || vBlink != 0))
+    else if ((tDrowsiness > maxNormal) && (vYawn != 0 || vBlink != 0) && !truck.getParkingBrake())
     {
         tDrowsiness += 5 * vYawn + 10 * vBlink * (timeBlink / 1000);
         startNoDrowsiness = 0;
@@ -226,6 +226,7 @@ void alarmDrowsiness(cv::Mat prev_frame, int yawn_total, int blinl_total, int wi
         if (startNoDrowsiness == 1 && timer["NoDrowsiness"].getSmoothedDuration() >= 1000)
         {
             if (tDrowsiness >= 1) tDrowsiness--;
+                else tDrowsiness = 0.0; //This is because the variable is rounded when it is displayed, and could show 1.
             startNoDrowsiness = 0;
         }
     }
@@ -966,11 +967,16 @@ int main(int argc, char *argv[])
                         cv::putText(prev_frame, "Trailer: ON", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1.2);
                     else
                         cv::putText(prev_frame, "Trailer: OFF", cv::Point2f(x_truck_i, 140), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
+                    
                     if (truck.getParkingBrake())
-                        cv::putText(prev_frame, "Parking Brake: ON", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
+                        cv::putText(prev_frame, "GearStatus: Parking", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1.2);
+                    else if (truck.getSpeed() < -0.03)
+                        cv::putText(prev_frame, "GearStatus: Reverse", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    else if (truck.getSpeed() > 0.03)
+                        cv::putText(prev_frame, "GearStatus: Driving", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
                     else
-                        cv::putText(prev_frame, "Parking Brake: OFF", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
-
+                        cv::putText(prev_frame, "GearStatus: Stopped", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    
                     // Driver Label
                     cv::putText(prev_frame, "Driver Information", cv::Point2f(x_truck_i, y_driver_i + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
 
