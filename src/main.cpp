@@ -171,8 +171,7 @@ bool identify_driver(cv::Mat frame, std::vector<FaceDetection::Result> *results,
 }
 
 // Global variables declaration
-int timer_danger = 150; // N frames for DANGER sign
-int timer_off = 0;      // N frames for Welcome sign
+int timer_off = 0; // N frames for Welcome sign
 bool face_identified = false;
 bool first_stage_completed = (FLAGS_d_recognition ? false : true);
 int biggest_head = 0;
@@ -261,7 +260,7 @@ void alarmDrowsiness(cv::Mat prev_frame, int yawn_total, int blinl_total, int wi
     }
     vYawn = 0;
 
-    int x_vum_drow = x_truck_i - 20;
+    int x_vum_drow = x_truck_i + 15;
     int y_vum_drow = y_alarm + 55;
 
     //Drawing VU Meters
@@ -376,9 +375,9 @@ void alarmDistraction(cv::Mat prev_frame, int is_dist, int y_alarm, int x_truck_
         }
     }
 
-    cv::putText(prev_frame, labelAlarm, cv::Point2f(x_truck_i, y_alarm + y_vum + 95), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 0, 255), 2);
+    cv::putText(prev_frame, labelAlarm, cv::Point2f(x_truck_i - 20, y_alarm + y_vum + 95), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 0, 255), 2);
 
-    int x_vum_dist = x_truck_i + 80;
+    int x_vum_dist = x_truck_i + 115;
     int y_vum_dist = y_alarm + 55;
 
     //Drawing VU Meters
@@ -424,7 +423,7 @@ void alarmDistraction(cv::Mat prev_frame, int is_dist, int y_alarm, int x_truck_
 }
 
 // Thread 1: Driver Recognition
-void driver_recognition(cv::Mat prev_frame, std::vector<FaceDetection::Result> prev_detection_results, VectorCNN landmarks_detector, VectorCNN face_reid, EmbeddingsGallery face_gallery, std::string *driver_name)
+void driver_recognition(cv::Mat prev_frame, std::vector<FaceDetection::Result> prev_detection_results, VectorCNN landmarks_detector, VectorCNN face_reid, EmbeddingsGallery face_gallery, std::string *driver_name, int x_truck_i, int y_driver_i)
 {
     if (timer["face_identified"].getSmoothedDuration() > 60000.0 && face_identified && firstTime == 1 ||
         timer["face_identified"].getSmoothedDuration() > 1000.0 && !face_identified && firstTime == 1 ||
@@ -437,44 +436,28 @@ void driver_recognition(cv::Mat prev_frame, std::vector<FaceDetection::Result> p
         firstTime = 1;
         timer.start("face_identified");
         //Take Photo
-        if (!face_identified && firstPhoto)
+        if (!face_identified && firstPhoto) // Only save the first picture of the "Not Authorized Driver".
         {
             cv::imwrite("../../../drivers/unknown/Unknown-Driver.jpg", face_save);
             firstPhoto = false;
         }
     }
-}
+    
+    // Driver Label
+    cv::putText(prev_frame, "Driver Information", cv::Point2f(x_truck_i, y_driver_i + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
 
-// Thread 2: Driver Behavior
-void driver_behavior(cv::Mat frame, cv::Mat prev_frame, std::vector<FaceDetection::Result> prev_detection_results, std::ostringstream out, dlib::shape_predictor sp, HeadPoseDetection headPoseDetector, size_t width, size_t height)
-{
-    float EYE_AR_THRESH = 0.195;
-    float MOUTH_EAR_THRESH = 0.65;
-    float EYE_AR_CONSEC_FRAMES = 3;
-    float MOUTH_EAR_CONSEC_FRAMES = 5;
-
-    bool eye_closed = false;
-
-    int blink_counter = 0;
-    int yawn_counter = 0;
-    int last_blink_counter = 0;
-    int last_yawn_counter = 0;
-    int blinl_total = 0;
-    int yawn_total = 0;
-    boost::circular_buffer<float> ear_5(5);
-    boost::circular_buffer<float> ear_5_mouth(5);
-
-    int i = 0;
-    std::vector<cv::Point2f> left_eye, right_eye, mouth;
-    for (auto &result : prev_detection_results)
+    if (face_identified)
     {
-        // Complete this thread.
+        cv::putText(prev_frame, "Driver: " + *driver_name, cv::Point2f(x_truck_i, y_driver_i + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+    }
+    else if (!face_identified && *driver_name == "Unknown")
+    {
+        cv::putText(prev_frame, "Driver: " + *driver_name, cv::Point2f(x_truck_i, y_driver_i + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
     }
 }
 
 void beeping(Player *beep, bool *finished)
 {
-
     while (!(*finished))
     {
         if (tDrowsiness <= 100)
@@ -536,7 +519,6 @@ int main(int argc, char *argv[])
         int blink_counter = 0;
         int yawn_counter = 0;
         int last_blink_counter = 0;
-        int last_yawn_counter = 0;
         int blinl_total = 0;
         int yawn_total = 0;
         boost::circular_buffer<float> ear_5(5);
@@ -584,6 +566,7 @@ int main(int argc, char *argv[])
         int y = 155;
         int x_truck_i = width - (x + 10);
         int y_driver_i = y + 30;
+        int y_driver = y - 60;
 
         // read input (video) frame
         cv::Mat frame;
@@ -872,17 +855,14 @@ int main(int argc, char *argv[])
                                 cv::Scalar(255, 0, 0));
                 }
 
-                if ((truck.getEngine() && fSim) || !fSim)
-                { // Detect if Engine = ON and Simulator Flag
+                if ((truck.getEngine() && fSim) || !fSim) // Detect if Engine = ON and Simulator Flag
+                { 
                     // Thread 1: Driver Recognition
-                    std::thread thread_recognition(driver_recognition, prev_frame, prev_detection_results, landmarks_detector, face_reid, face_gallery, &driver_name);
-
-                    // Tread 2: Diver Behavior
-                    // std::thread thread_behavior(driver_behavior, frame, prev_frame, prev_detection_results, out, sp, headPoseDetector, width, height);
+                    std::thread thread_recognition(driver_recognition, prev_frame, prev_detection_results, landmarks_detector, face_reid, face_gallery, &driver_name, x_truck_i, y_driver_i);
 
                     // Driver Label (CHECK! -> Not here)
-                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y - 20), cv::Scalar(0, 0, 0), -1);
-                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y - 20), cv::Scalar(255, 255, 255), 2);
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y_driver), cv::Scalar(0, 0, 0), -1);
+                    cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y_driver), cv::Scalar(255, 255, 255), 2);
 
                     // For every detected face.
                     int i = 0;
@@ -971,17 +951,6 @@ int main(int argc, char *argv[])
                                 firstBlink = true;
                                 // End Blink Logic
                             }
-                            if (eye_closed && timer_danger > 0)
-                            {
-                                //cv::putText(frame, "DANGER", cv::Point2f(50, 250), cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(0, 0, 255), 5);
-                                cv::putText(frame, "Blink time: " + std::to_string(last_blink_counter) + " frames", cv::Point2f(250, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                                timer_danger--;
-                            }
-                            if (timer_danger == 0)
-                            {
-                                eye_closed = false;
-                                timer_danger = 150;
-                            }
 
                             cv::putText(prev_frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(x_truck_i, y_driver_i + 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1);
                             //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
@@ -1005,14 +974,11 @@ int main(int argc, char *argv[])
                                 {
                                     vYawn = 1;
                                     yawn_total += 1;
-                                    last_yawn_counter = yawn_counter;
                                 }
                                 yawn_counter = 0;
                             }
-                            cv::putText(prev_frame, "Yawn time: " + std::to_string(last_yawn_counter) + " frames", cv::Point2f(x_truck_i, y_driver_i + 100), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1);
                             cv::putText(prev_frame, "Yawns: " + std::to_string(yawn_total), cv::Point2f(x_truck_i, y_driver_i + 80), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1);
-                            // cv::putText(frame, "EAR: " + std::to_string(ear_avg_mouth), cv::Point2f(10, 160), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
-                        }
+                            }
 
                         cv::putText(prev_frame,
                                     out.str(),
@@ -1038,14 +1004,14 @@ int main(int argc, char *argv[])
                             int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
 
                             // Alarm Label
-                            int x_alarm = width - (x + 20) - 50;
-                            int y_alarm = y_driver_i + y;
-                            cv::rectangle(prev_frame, cv::Rect(x_alarm, y_alarm, x + 50, y + 120), cv::Scalar(0, 0, 0), -1);
-                            cv::rectangle(prev_frame, cv::Rect(x_alarm, y_alarm, x + 50, y + 120), cv::Scalar(255, 255, 255), 2);
+                            int x_alarm = width - (x + 20) - 20;
+                            int y_alarm = y_driver_i + y_driver + 10;
+                            cv::rectangle(prev_frame, cv::Rect(x_alarm, y_alarm, x + 20, y + 100), cv::Scalar(0, 0, 0), -1);
+                            cv::rectangle(prev_frame, cv::Rect(x_alarm, y_alarm, x + 20, y + 100), cv::Scalar(255, 255, 255), 2);
 
-                            cv::putText(prev_frame, "Alarms", cv::Point2f(x_truck_i - 50, y_alarm + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
-                            cv::putText(prev_frame, "Drowsiness | Distraction", cv::Point2f(x_truck_i - 50, y_alarm + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
-                            cv::putText(prev_frame, "Description", cv::Point2f(x_truck_i - 50, y_alarm + y_vum + 75), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+                            cv::putText(prev_frame, "Alarms", cv::Point2f(x_truck_i - 20, y_alarm + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
+                            cv::putText(prev_frame, "Drowsiness | Distraction", cv::Point2f(x_truck_i - 20, y_alarm + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
+                            cv::putText(prev_frame, "Description", cv::Point2f(x_truck_i - 20, y_alarm + y_vum + 75), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
 
                             // Thread: Drowsiness Alarm
                             std::thread thread_drowsiness(alarmDrowsiness, prev_frame, yawn_total, blinl_total, width, height, x_alarm, y_alarm, x_truck_i, headbutt);
@@ -1056,12 +1022,6 @@ int main(int argc, char *argv[])
                         }
                         i++;
                     }
-
-                    // End Thread 1: Driver Recognition
-                    thread_recognition.join();
-
-                    // End Thread 2: Driver Behavior
-                    //thread_behavior.join();
 
                     // Truck Label
                     cv::rectangle(prev_frame, cv::Rect(width - (x + 20), 20, x, y), cv::Scalar(0, 0, 0), -1);
@@ -1088,18 +1048,10 @@ int main(int argc, char *argv[])
                         cv::putText(prev_frame, "GearStatus: Driving", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
                     else
                         cv::putText(prev_frame, "GearStatus: Stopped", cv::Point2f(x_truck_i, 160), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1.2);
+                    
+                    // End Thread 1: Driver Recognition
+                    thread_recognition.join();
 
-                    // Driver Label
-                    cv::putText(prev_frame, "Driver Information", cv::Point2f(x_truck_i, y_driver_i + 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2);
-
-                    if (face_identified)
-                    {
-                        cv::putText(prev_frame, "Driver: " + driver_name, cv::Point2f(x_truck_i, y_driver_i + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
-                    }
-                    else if (!face_identified && driver_name == "Unknown")
-                    {
-                        cv::putText(prev_frame, "Driver: " + driver_name, cv::Point2f(x_truck_i, y_driver_i + 40), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
-                    }
                 }
 
                 // Sample of Results
