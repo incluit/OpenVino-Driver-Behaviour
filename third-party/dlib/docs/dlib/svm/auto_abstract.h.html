@@ -1,0 +1,39 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - auto_abstract.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#undef</font> DLIB_AUTO_LEARnING_ABSTRACT_Hh_
+<font color='#0000FF'>#ifdef</font> DLIB_AUTO_LEARnING_ABSTRACT_Hh_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='kernel_abstract.h.html'>kernel_abstract.h</a>"
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='function_abstract.h.html'>function_abstract.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>chrono<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&gt;</font>
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+    normalized_function<font color='#5555FF'>&lt;</font>decision_function<font color='#5555FF'>&lt;</font>radial_basis_kernel<font color='#5555FF'>&lt;</font>matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>0</font>,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <b><a name='auto_train_rbf_classifier'></a>auto_train_rbf_classifier</b> <font face='Lucida Console'>(</font>
+        std::vector<font color='#5555FF'>&lt;</font>matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>0</font>,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> x,
+        std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font> y,
+        <font color='#0000FF'>const</font> std::chrono::nanoseconds max_runtime,
+        <font color='#0000FF'><u>bool</u></font> be_verbose <font color='#5555FF'>=</font> <font color='#979000'>true</font>
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - is_binary_classification_problem(x,y) == true
+            - y contains at least 6 examples of each class.
+        ensures
+            - This routine trains a radial basis function SVM on the given binary
+              classification training data.  It uses the svm_c_trainer to do this.  It also
+              uses find_max_global() and 6-fold cross-validation to automatically determine
+              the best settings of the SVM's hyper parameters.
+            - The hyperparameter search will run for about max_runtime and will print
+              messages to the screen as it runs if be_verbose==true.
+    !*/</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_AUTO_LEARnING_ABSTRACT_Hh_
+</font>
+
+
+</pre></body></html>

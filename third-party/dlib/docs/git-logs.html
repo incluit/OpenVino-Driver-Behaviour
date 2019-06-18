@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<u>Revision</u>: 810ef7937d87c9265bcb<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 10, 2019
+         (07:04:56 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Created release v19.17</p><pre class="files_changed"> dlib/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: ffce4af6e21e2b91f4f0<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 10, 2019
+         (05:58:19 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Make cusolver finding work for really old versions of cmake with CUDA 10.1</p><pre class="files_changed"> dlib/CMakeLists.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 5faf8ccce35520e22335<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 08, 2019
+         (03:05:11 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Automatically test for NEON instructions when building python extensions and enable them if available.</p><pre class="files_changed"> dlib/cmake_utils/set_compiler_specific_options.cmake | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 83385e235666b3f13e7f<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 08, 2019
+         (02:32:49 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Added more dianostic messages from cmake.</p><pre class="files_changed"> dlib/CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 663a1b712781846e1c45<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (16:35:15 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Fixed more gcc 8 warnings.</p><pre class="files_changed"> dlib/cpp_tokenizer/cpp_tokenizer_kernel_1.h | 2 +-
+ dlib/svm/pegasos.h                          | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: f9b7ad9ae6ff63df39b2<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (16:17:20 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Fixed compiler warnings in gcc 8</p><pre class="files_changed"> dlib/array/array_kernel.h                            |  4 ++--
+ dlib/array2d/array2d_kernel.h                        |  4 ++--
+ dlib/array2d/serialize_pixel_overloads.h             | 20 ++++++++++----------
+ .../binary_search_tree/binary_search_tree_kernel_1.h |  2 +-
+ .../binary_search_tree/binary_search_tree_kernel_2.h |  2 +-
+ dlib/gui_widgets/fonts.cpp                           |  4 ++--
+ dlib/hash_map/hash_map_kernel_1.h                    |  2 +-
+ dlib/hash_set/hash_set_kernel_1.h                    |  2 +-
+ dlib/hash_table/hash_table_kernel_1.h                |  2 +-
+ dlib/hash_table/hash_table_kernel_2.h                |  2 +-
+ dlib/map/map_kernel_1.h                              |  2 +-
+ dlib/optimization/optimization_bobyqa.h              |  2 +-
+ dlib/queue/queue_kernel_1.h                          |  2 +-
+ dlib/queue/queue_kernel_2.h                          |  2 +-
+ dlib/sequence/sequence_kernel_1.h                    |  2 +-
+ dlib/sequence/sequence_kernel_2.h                    |  2 +-
+ dlib/set/set_kernel_1.h                              |  2 +-
+ dlib/sliding_buffer/sliding_buffer_kernel_1.h        |  2 +-
+ dlib/stack/stack_kernel_1.h                          |  2 +-
+ dlib/static_set/static_set_kernel_1.h                |  2 +-
+ dlib/test/compress_stream.cpp                        |  2 +-
+ 21 files changed, 33 insertions(+), 33 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 5d03b99a08e24e14a64c<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (15:12:43 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Changed to avoid compiler warning.</p><pre class="files_changed"> examples/dnn_semantic_segmentation_train_ex.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 02ed083c4c8f2d9c5edb<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (12:01:48 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Work around bug in nvcc in cuda 10.1</p><pre class="files_changed"> dlib/matrix/matrix.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 70f9a9f11fb2ae82a057<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 02, 2019
+         (04:45:08 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Made cusolver finding work in newer versions of cmake and cuda</p><pre class="files_changed"> dlib/CMakeLists.txt | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: f7f6f6761817f2e6e5cf<br><u>Author</u>: <a href="mailto:ksachdeva17@gmail.com">Kapil Sachdeva</a><br><u>Date</u>: Feb 25, 2019
+         (13:10:04 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Add python api that generates desciptor(s) from the aligned image(s) (#1667)</p><pre class="files_changed"> python_examples/face_recognition.py   | 17 +++++++++
+ tools/python/src/face_recognition.cpp | 72 ++++++++++++++++++++++++++++++++++-
+ 2 files changed, 87 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 04a2387cfca242c8d003<br><u>Author</u>: <a href="mailto:juha.reunanen@tomaattinen.com">Juha Reunanen</a><br><u>Date</u>: Feb 20, 2019
+         (17:33:01 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Make sure CUDA_VERSION is defined (#1663)</p><pre class="files_changed"> dlib/cuda/gpu_data.cpp | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 41a87e5926935c2328e9<br><u>Author</u>: <a href="mailto:branko@kokanovic.org">Branko Kokanovic</a><br><u>Date</u>: Feb 07, 2019
+         (14:59:04 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Exposing chinese_whispers directly, closes #1642 (#1644)</p><pre class="files_changed"> tools/python/src/face_recognition.cpp      | 35 +++++++++++++++++++
+ tools/python/test/test_chinese_whispers.py | 56 ++++++++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 84b72278b56c9adca02d<br><u>Author</u>: <a href="mailto:davemers@umail.iu.edu">davemers0160</a><br><u>Date</u>: Jan 19, 2019
+         (15:45:46 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">fixed check for excessive detections in loss_mmod_ (#1625)</p><pre class="files_changed"> dlib/dnn/loss.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: ea451995728a625319bb<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Jan 19, 2019
+         (15:40:21 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Remove Python 3.5 tests on AppVeyor because something is wrong with python 3.5 on appveyor and the other tests are sufficient for python coverage.</p><pre class="files_changed"> dlib/appveyor/python.yml | 2 --
+ 1 file changed, 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 5c623e3c93feb96e2484<br><u>Author</u>: <a href="mailto:juha.reunanen@tomaattinen.com">Juha Reunanen</a><br><u>Date</u>: Jan 08, 2019
+         (07:43:34 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Apply the #1514 fix even on non-Windows platforms, and change all remaining cudaStreamSynchronize calls (#1596)</p><pre class="files_changed"> dlib/cuda/gpu_data.cpp | 51 ++++++++++++++++++++++++--------------------------
+ 1 file changed, 24 insertions(+), 27 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 9ca72b3e1cb1233d4b64<br><u>Author</u>: <a href="mailto:aklhfex@gmail.com">Chris Mayo</a><br><u>Date</u>: Jan 08, 2019
+         (03:41:26 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Reliably detect AVX2 at runtime on Linux (#1614)</p><pre class="files_changed"> dlib/simd/simd_check.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: be8dc9269bd07f9a978a<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Jan 06, 2019
+         (10:34:04 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">merged</p><pre class="files_changed"></pre><hr class="fullhr"><u>Revision</u>: c763fafde9191f6cfcf7<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Jan 06, 2019
+         (10:32:20 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Fixed broken memcpy overload.</p><pre class="files_changed"> dlib/cuda/cuda_data_ptr.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: f685cb4249b19bac5437<br><u>Author</u>: <a href="mailto:juha.reunanen@tomaattinen.com">Juha Reunanen</a><br><u>Date</u>: Jan 06, 2019
+         (18:11:39 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Add U-net style skip connections to the semantic-segmentation example (#1600)</p><pre class="files_changed"> dlib/dnn/layers.h                               | 100 +++++++++++++++++
+ dlib/dnn/layers_abstract.h                      |  50 +++++++++
+ dlib/test/dnn.cpp                               |   4 +-
+ examples/dnn_semantic_segmentation_ex.cpp       |   8 +-
+ examples/dnn_semantic_segmentation_ex.h         | 137 ++++++++++++++++--------
+ examples/dnn_semantic_segmentation_train_ex.cpp |  29 ++---
+ 6 files changed, 262 insertions(+), 66 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: fb4c62cc674c835988fc<br><u>Author</u>: <a href="mailto:thomas.d.peters@gmail.com">Thomas Peters</a><br><u>Date</u>: Jan 04, 2019
+         (17:38:55 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">remove register keyword from jdhuff for C++17 (#1612)</p><pre class="files_changed"> dlib/external/libjpeg/jdhuff.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 61a021c932b74e591ce6<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Dec 11, 2018
+         (06:22:14 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Add pointwise_divide function (#1586)</p><pre class="files_changed"> dlib/dnn/layers.h                       |   2 +-
+ dlib/matrix/matrix_utilities.h          | 153 ++++++++++++++++++++++++++++++++
+ dlib/matrix/matrix_utilities_abstract.h |  40 +++++++++
+ dlib/test/matrix.cpp                    |   4 +
+ dlib/test/matrix2.cpp                   |  34 ++++---
+ 5 files changed, 221 insertions(+), 12 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 99af7b9d54f47fc06094<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Dec 05, 2018
+         (16:41:34 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Fixed code not compiling.</p><pre class="files_changed"> dlib/cuda/cuda_data_ptr.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 4b2ef5b8f9ed7667858d<br><u>Author</u>: <a href="mailto:45621980+RedfalconAI@users.noreply.github.com">RedfalconAI</a><br><u>Date</u>: Dec 06, 2018
+         (06:36:50 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Update CmakeLists: add png for arm (#1580)</p><pre class="files_changed"> dlib/CMakeLists.txt | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: e73d3adc0e7a4c123c35<br><u>Author</u>: <a href="mailto:miks@cubesystems.lv">Miks Miķelsons</a><br><u>Date</u>: Dec 05, 2018
+         (16:18:40 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Add padding argument support for Python compute_face_descriptor methods (#1578)</p><pre class="files_changed"> python_examples/face_recognition.py   |  6 +++++-
+ tools/python/src/face_recognition.cpp | 33 +++++++++++++++++++++------------
+ 2 files changed, 26 insertions(+), 13 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 2cf6b9d5567371c48ec0<br><u>Author</u>: <a href="mailto:kingpsy11@gmail.com">Nishant Charas</a><br><u>Date</u>: Nov 25, 2018
+         (22:79:28 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">printing error (#1568)</p><pre class="files_changed"> python_examples/train_object_detector.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 165d1e356b3cb10eb337<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Nov 24, 2018
+         (19:38:43 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Add MKL with TBB support to CMake (#1561)</p><pre class="files_changed"> dlib/CMakeLists.txt              | 12 ++++++++++-
+ dlib/cmake_utils/find_blas.cmake | 45 ++++++++++++++++++++++++++++++----------
+ 2 files changed, 45 insertions(+), 12 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 3e9d361f8969b89fce0e<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Nov 20, 2018
+         (10:36:07 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Minor changes to avoid bugs in some compilers.</p><pre class="files_changed"> tools/python/src/decision_functions.cpp     |  2 +-
+ tools/python/src/face_recognition.cpp       | 10 +++++-----
+ tools/python/src/global_optimization.cpp    | 14 +++++++-------
+ tools/python/src/gui.cpp                    |  2 +-
+ tools/python/src/image2.cpp                 |  4 ++--
+ tools/python/src/image4.cpp                 |  2 +-
+ tools/python/src/image_dataset_metadata.cpp |  8 ++++----
+ tools/python/src/numpy_returns.cpp          |  4 ++--
+ tools/python/src/shape_predictor.cpp        |  2 +-
+ 9 files changed, 24 insertions(+), 24 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 9ff911696cb5fce3aff4<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Nov 19, 2018
+         (18:46:13 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Fix find_blas.cmake bug: find mkl fft on windows. (#1557)</p><pre class="files_changed"> dlib/cmake_utils/find_blas.cmake | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 3b9b702c1bacb6460a93<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Nov 12, 2018
+         (20:07:27 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Set CMake policy CMP0048 to NEW when available. (#1549)</p><pre class="files_changed"> dlib/CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: b54b1c4474ce62e27368<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Nov 11, 2018
+         (16:23:44 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">merged</p><pre class="files_changed"></pre><hr class="fullhr"><u>Revision</u>: f2ad208701c074578513<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Nov 11, 2018
+         (16:22:53 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">When building python extensions in Visual Studio, never link to any system copies of libpng or libjpeg, instead, use the copies what come with dlib.  We are doing this because too many Visual Studio users have busted copies of these libraries on their machines.  This will make things just always work.</p><pre class="files_changed"> dlib/CMakeLists.txt | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: d7e6f1d726da2e74d42c<br><u>Author</u>: <a href="mailto:juha.reunanen@gmail.com">Juha Reunanen</a><br><u>Date</u>: Nov 11, 2018
+         (19:33:15 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Apparently fix #1513 by avoiding the cudaStreamSynchronize call (#1514)</p><pre class="files_changed"> dlib/cuda/gpu_data.cpp | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: d2dcdd66adce13740abe<br><u>Author</u>: <a href="mailto:36853188+Lukas-Buricin@users.noreply.github.com">Lukas-Buricin</a><br><u>Date</u>: Nov 11, 2018
+         (15:09:30 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Fixed random_forest_regression.h warnings (#1544)</p><pre class="files_changed"> dlib/random_forest/random_forest_regression.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: ba361d73abb06eda6a2a<br><u>Author</u>: <a href="mailto:davis685@gmail.com">Davis E. King</a><br><u>Date</u>: Nov 09, 2018
+         (04:40:18 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Avoid compiler bug</p><pre class="files_changed"> tools/python/src/object_detection.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 27a52936119f10d796c1<br><u>Author</u>: <a href="mailto:Raincode@users.noreply.github.com">Matthias Stauber</a><br><u>Date</u>: Nov 04, 2018
+         (24:50:56 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Added weighted labels to loss_binary_log layer. (#1538)</p><pre class="files_changed"> dlib/dnn/loss.h          | 10 +++++-----
+ dlib/dnn/loss_abstract.h | 14 ++++++++++----
+ 2 files changed, 15 insertions(+), 9 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 08709e8ec121ec51d8e5<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Oct 25, 2018
+         (19:23:53 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Add header needed in some contexts</p><pre class="files_changed"> dlib/sockets/sockets_kernel_2.cpp | 1 +
+ 1 file changed, 1 insertion(+)</pre><hr class="fullhr"><u>Revision</u>: 6747122ca5e8038305e7<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Oct 22, 2018
+         (15:14:05 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Added --box-images to imglab</p><pre class="files_changed"> tools/imglab/src/main.cpp | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 9b82f4b0f65a2152b4a4<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Sep 29, 2018
+         (05:05:19 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Record last changeset and set PATCH version to 99</p><pre class="files_changed"> dlib/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: e3cf2349f47988e11834<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Sep 29, 2018
+         (05:03:21 UTC)
+      <br><p xmlns:gcse="googleCustomSearch" style="margin:0.4em">Created release v19.16</p><pre class="files_changed"> dlib/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)</pre><hr class="fullhr">

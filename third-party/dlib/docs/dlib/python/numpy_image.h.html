@@ -1,0 +1,426 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - numpy_image.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2014  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_PYTHON_NuMPY_IMAGE_Hh_
+<font color='#0000FF'>#define</font> DLIB_PYTHON_NuMPY_IMAGE_Hh_
+
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>dlib<font color='#5555FF'>/</font>algs.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>dlib<font color='#5555FF'>/</font>error.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>dlib<font color='#5555FF'>/</font>matrix.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>dlib<font color='#5555FF'>/</font>pixel.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>string<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>memory<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>pybind11<font color='#5555FF'>/</font>numpy.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>pybind11<font color='#5555FF'>/</font>pybind11.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>dlib<font color='#5555FF'>/</font>image_transforms<font color='#5555FF'>/</font>assign_image.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>stdint.h<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>type_traits<font color='#5555FF'>&gt;</font>
+
+<font color='#0000FF'>namespace</font> py <font color='#5555FF'>=</font> pybind11;
+
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> pixel_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>bool</u></font> <b><a name='is_image'></a>is_image</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> py::array<font color='#5555FF'>&amp;</font> img 
+    <font face='Lucida Console'>)</font>
+    <font color='#009900'>/*!
+        ensures
+            - returns true if and only if the given python numpy array can reasonably be
+              interpreted as an image containing pixel_type pixels.
+    !*/</font>
+    <b>{</b>
+        <font color='#0000FF'>using</font> basic_pixel_type <font color='#5555FF'>=</font> <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type;
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> expected_channels <font color='#5555FF'>=</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::num;
+
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>bool</u></font> has_correct_number_of_dims <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>2</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> expected_channels<font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>1</font><font face='Lucida Console'>)</font> <font color='#5555FF'>|</font><font color='#5555FF'>|</font> 
+                                                <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>3</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font>expected_channels<font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'>return</font> img.<font color='#BB00BB'>dtype</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.<font color='#BB00BB'>kind</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> py::dtype::of<font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.<font color='#BB00BB'>kind</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> 
+               img.<font color='#BB00BB'>itemsize</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>basic_pixel_type<font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> 
+               has_correct_number_of_dims;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> pixel_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='assert_correct_num_channels_in_image'></a>assert_correct_num_channels_in_image</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> py::array<font color='#5555FF'>&amp;</font> img
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> expected_channels <font color='#5555FF'>=</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::num;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>expected_channels <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#5555FF'>!</font><font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>2</font> <font color='#5555FF'>|</font><font color='#5555FF'>|</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>3</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font>img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>1</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Expected a 2D numpy array, but instead got one with </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> dimensions.</font>"<font face='Lucida Console'>)</font>;
+        <b>}</b>
+        <font color='#0000FF'>else</font>
+        <b>{</b>
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>3</font><font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Expected a numpy array with 3 dimensions, but instead got one with </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> dimensions.</font>"<font face='Lucida Console'>)</font>;
+            <b>}</b>
+            <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> expected_channels<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::rgb<font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Expected a RGB image with </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>expected_channels<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> channels but got an image with </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> channels.</font>"<font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>else</font>
+                    <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Expected an image with </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>expected_channels<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> channels but got an image with </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> channels.</font>"<font face='Lucida Console'>)</font>;
+            <b>}</b>
+        <b>}</b>
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> pixel_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='assert_is_image'></a>assert_is_image</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> py::array<font color='#5555FF'>&amp;</font> obj
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#5555FF'>!</font>is_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>obj<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+        <b>{</b>
+            assert_correct_num_channels_in_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>obj<font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>using</font> basic_pixel_type <font color='#5555FF'>=</font> <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type;
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> expected_type <font color='#5555FF'>=</font> py::dtype::of<font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.<font color='#BB00BB'>kind</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> got_type <font color='#5555FF'>=</font> obj.<font color='#BB00BB'>dtype</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.<font color='#BB00BB'>kind</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> expected_size <font color='#5555FF'>=</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>basic_pixel_type<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> got_size <font color='#5555FF'>=</font> obj.<font color='#BB00BB'>itemsize</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>auto</font> toname <font color='#5555FF'>=</font> []<font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font> type, <font color='#0000FF'><u>size_t</u></font> size<font face='Lucida Console'>)</font> <b>{</b>
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>i</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>int8</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>i</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>2</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>int16</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>i</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>4</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>int32</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>i</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>8</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>int64</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>u</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>uint8</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>u</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>2</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>uint16</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>u</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>4</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>uint32</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>u</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>8</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>uint64</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>f</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>4</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>float32</font>";
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>type <font color='#5555FF'>=</font><font color='#5555FF'>=</font> '<font color='#FF0000'>d</font>' <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> size <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>8</font><font face='Lucida Console'>)</font> <font color='#0000FF'>return</font> "<font color='#CC0000'>float64</font>";
+                <font color='#0000FF'>else</font> <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font><font color='#979000'>false</font>, "<font color='#CC0000'>unknown type</font>"<font face='Lucida Console'>)</font>;
+            <b>}</b>;
+
+            <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Expected numpy array with elements of type </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>string</font><font face='Lucida Console'>(</font><font color='#BB00BB'>toname</font><font face='Lucida Console'>(</font>expected_type,expected_size<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'> but got </font>" <font color='#5555FF'>+</font> <font color='#BB00BB'>toname</font><font face='Lucida Console'>(</font>got_type, got_size<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> "<font color='#CC0000'>.</font>"<font face='Lucida Console'>)</font>;
+        <b>}</b>
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> pixel_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>class</font> <b><a name='numpy_image'></a>numpy_image</b> : <font color='#0000FF'>public</font> py::array_t<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font>
+    <b>{</b>
+        <font color='#009900'>/*!
+            REQUIREMENTS ON pixel_type
+                - is a dlib pixel type, this just means that dlib::pixel_traits&lt;pixel_type&gt;
+                  is defined.
+
+            WHAT THIS OBJECT REPRESENTS
+                This is an image object that implements dlib's generic image interface and
+                is backed by a numpy array.  It therefore is easily interchanged with
+                python since there is no copying.  It is functionally just a pybind11
+                array_t object with the additional routines needed to conform to dlib's
+                generic image API.  It also includes appropriate runtime checks to make
+                sure that the numpy array is always typed and sized appropriately relative
+                to the supplied pixel_type. 
+        !*/</font>
+    <font color='#0000FF'>public</font>:
+
+        <b><a name='numpy_image'></a>numpy_image</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <b><a name='numpy_image'></a>numpy_image</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> py::array<font color='#5555FF'>&amp;</font> img
+        <font face='Lucida Console'>)</font> : py::array_t<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>
+        <b>{</b>
+            assert_is_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <b><a name='numpy_image'></a>numpy_image</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>long</u></font> rows,
+            <font color='#0000FF'><u>long</u></font> cols
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>set_size</font><font face='Lucida Console'>(</font>rows,cols<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <b><a name='numpy_image'></a>numpy_image</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> py::object<font color='#5555FF'>&amp;</font> img
+        <font face='Lucida Console'>)</font> : numpy_image<font face='Lucida Console'>(</font>img.cast<font color='#5555FF'>&lt;</font>py::array<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+
+        <b><a name='numpy_image'></a>numpy_image</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> numpy_image<font color='#5555FF'>&amp;</font> img
+        <font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        numpy_image<font color='#5555FF'>&amp;</font> <b><a name='operator'></a>operator</b><font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> py::object<font color='#5555FF'>&amp;</font> rhs
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#5555FF'>*</font><font color='#0000FF'>this</font> <font color='#5555FF'>=</font> <font color='#BB00BB'>numpy_image</font><font face='Lucida Console'>(</font>rhs<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>return</font> <font color='#5555FF'>*</font><font color='#0000FF'>this</font>;
+        <b>}</b>
+
+        numpy_image<font color='#5555FF'>&amp;</font> <b><a name='operator'></a>operator</b><font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> py::array_t<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> rhs
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#5555FF'>*</font><font color='#0000FF'>this</font> <font color='#5555FF'>=</font> <font color='#BB00BB'>numpy_image</font><font face='Lucida Console'>(</font>rhs<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>return</font> <font color='#5555FF'>*</font><font color='#0000FF'>this</font>;
+        <b>}</b>
+
+        numpy_image<font color='#5555FF'>&amp;</font> <b><a name='operator'></a>operator</b><font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> numpy_image<font color='#5555FF'>&amp;</font> rhs
+        <font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>long</u></font> NR, <font color='#0000FF'><u>long</u></font> NC<font color='#5555FF'>&gt;</font>
+        <b><a name='numpy_image'></a>numpy_image</b> <font face='Lucida Console'>(</font>
+            matrix<font color='#5555FF'>&lt;</font>pixel_type,NR,NC<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> rhs
+        <font face='Lucida Console'>)</font> : numpy_image<font face='Lucida Console'>(</font>convert_to_numpy<font face='Lucida Console'>(</font>std::move<font face='Lucida Console'>(</font>rhs<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>long</u></font> NR, <font color='#0000FF'><u>long</u></font> NC<font color='#5555FF'>&gt;</font>
+        numpy_image<font color='#5555FF'>&amp;</font> <b><a name='operator'></a>operator</b><font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>
+            matrix<font color='#5555FF'>&lt;</font>pixel_type,NR,NC<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> rhs
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#5555FF'>*</font><font color='#0000FF'>this</font> <font color='#5555FF'>=</font> <font color='#BB00BB'>numpy_image</font><font face='Lucida Console'>(</font>rhs<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>return</font> <font color='#5555FF'>*</font><font color='#0000FF'>this</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_size'></a>set_size</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> rows, <font color='#0000FF'><u>size_t</u></font> cols<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>using</font> basic_pixel_type <font color='#5555FF'>=</font> <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type;
+            constexpr <font color='#0000FF'><u>size_t</u></font> channels <font color='#5555FF'>=</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::num;
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>channels <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font>
+                <font color='#5555FF'>*</font><font color='#0000FF'>this</font> <font color='#5555FF'>=</font> py::array_t<font color='#5555FF'>&lt;</font>basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><b>{</b>rows, cols, channels<b>}</b><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>else</font>
+                <font color='#5555FF'>*</font><font color='#0000FF'>this</font> <font color='#5555FF'>=</font> py::array_t<font color='#5555FF'>&lt;</font>basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><b>{</b>rows, cols<b>}</b><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+        <font color='#0000FF'>static</font> py::array_t<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font> <b><a name='convert_to_numpy'></a>convert_to_numpy</b><font face='Lucida Console'>(</font>matrix<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> img<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>using</font> basic_pixel_type <font color='#5555FF'>=</font> <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type;
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> dtype_size <font color='#5555FF'>=</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>basic_pixel_type<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> rows <font color='#5555FF'>=</font> <font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font><font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font color='#BB00BB'>num_rows</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> cols <font color='#5555FF'>=</font> <font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font><font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font color='#BB00BB'>num_columns</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> channels <font color='#5555FF'>=</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::num;
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> image_size <font color='#5555FF'>=</font> dtype_size <font color='#5555FF'>*</font> rows <font color='#5555FF'>*</font> cols <font color='#5555FF'>*</font> channels;
+
+            std::unique_ptr<font color='#5555FF'>&lt;</font>pixel_type[]<font color='#5555FF'>&gt;</font> arr_ptr <font color='#5555FF'>=</font> img.<font color='#BB00BB'>steal_memory</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            basic_pixel_type<font color='#5555FF'>*</font> arr <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>basic_pixel_type <font color='#5555FF'>*</font><font face='Lucida Console'>)</font> arr_ptr.<font color='#BB00BB'>release</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>channels <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>return</font> pybind11::<font color='#0000FF'>template</font> array_t<font color='#5555FF'>&lt;</font>basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>
+                    <b>{</b>rows, cols<b>}</b>,                                                       <font color='#009900'>// shape
+</font>                    <b>{</b>dtype_size<font color='#5555FF'>*</font>cols, dtype_size<b>}</b>,                                      <font color='#009900'>// strides
+</font>                    arr,                                                                <font color='#009900'>// pointer
+</font>                    pybind11::capsule<b>{</b> arr, []<font face='Lucida Console'>(</font><font color='#0000FF'><u>void</u></font> <font color='#5555FF'>*</font>arr_p<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>delete</font>[] <font color='#0000FF'>reinterpret_cast</font><font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>*</font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>arr_p<font face='Lucida Console'>)</font>; <b>}</b> <b>}</b>
+                <font face='Lucida Console'>)</font>;
+            <b>}</b>
+            <font color='#0000FF'>else</font>
+            <b>{</b>
+                <font color='#0000FF'>return</font> pybind11::<font color='#0000FF'>template</font> array_t<font color='#5555FF'>&lt;</font>basic_pixel_type, py::array::c_style<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>
+                    <b>{</b>rows, cols, channels<b>}</b>,                                                     <font color='#009900'>// shape
+</font>                    <b>{</b>dtype_size <font color='#5555FF'>*</font> cols <font color='#5555FF'>*</font> channels, dtype_size <font color='#5555FF'>*</font> channels, dtype_size<b>}</b>,          <font color='#009900'>// strides
+</font>                    arr,                                                                        <font color='#009900'>// pointer
+</font>                    pybind11::capsule<b>{</b> arr, []<font face='Lucida Console'>(</font><font color='#0000FF'><u>void</u></font> <font color='#5555FF'>*</font>arr_p<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>delete</font>[] <font color='#0000FF'>reinterpret_cast</font><font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>*</font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>arr_p<font face='Lucida Console'>)</font>; <b>}</b> <b>}</b>
+                <font face='Lucida Console'>)</font>;
+            <b>}</b>
+        <b>}</b>
+
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='assign_image'></a>assign_image</b> <font face='Lucida Console'>(</font>
+        numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> dest,
+        <font color='#0000FF'>const</font> py::array<font color='#5555FF'>&amp;</font> src
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>     dest <font color='#5555FF'>=</font> src;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>uint8_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>   <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>uint8_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>uint16_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>  <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>uint16_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>uint32_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>  <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>uint32_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>uint64_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>  <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>uint64_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>int8_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>    <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>int8_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>int16_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>   <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>int16_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>int32_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>   <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>int32_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>int64_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>   <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>int64_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>     <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>    <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>is_image<font color='#5555FF'>&lt;</font>rgb_pixel<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#BB00BB'>assign_image</font><font face='Lucida Console'>(</font>dest, numpy_image<font color='#5555FF'>&lt;</font>rgb_pixel<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font> <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font><font color='#979000'>false</font>, "<font color='#CC0000'>Unsupported pixel type used in assign_image().</font>"<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font><font color='#009900'>// ----------------------------------------------------------------------------------------
+</font><font color='#009900'>//                          BORING IMPLEMENTATION STUFF
+</font><font color='#009900'>// ----------------------------------------------------------------------------------------
+</font><font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>long</u></font> <b><a name='num_rows'></a>num_rows</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> img<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>return</font> <font color='#979000'>0</font>;
+
+        assert_correct_num_channels_in_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>return</font> img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>long</u></font> <b><a name='num_columns'></a>num_columns</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> img<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>return</font> <font color='#979000'>0</font>;
+
+        assert_correct_num_channels_in_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>return</font> img.<font color='#BB00BB'>shape</font><font face='Lucida Console'>(</font><font color='#979000'>1</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='set_image_size'></a>set_image_size</b><font face='Lucida Console'>(</font>numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> img, <font color='#0000FF'><u>size_t</u></font> rows, <font color='#0000FF'><u>size_t</u></font> cols<font face='Lucida Console'>)</font>
+    <b>{</b>
+        img.<font color='#BB00BB'>set_size</font><font face='Lucida Console'>(</font>rows, cols<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font><font color='#5555FF'>*</font> <b><a name='image_data'></a>image_data</b><font face='Lucida Console'>(</font>numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> img<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>return</font> <font color='#979000'>0</font>;
+
+        assert_is_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>return</font> img.<font color='#BB00BB'>mutable_data</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>void</u></font><font color='#5555FF'>*</font> <b><a name='image_data'></a>image_data</b> <font face='Lucida Console'>(</font><font color='#0000FF'>const</font> numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> img<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>return</font> <font color='#979000'>0</font>;
+
+        assert_is_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>return</font> img.<font color='#BB00BB'>data</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>long</u></font> <b><a name='width_step'></a>width_step</b> <font face='Lucida Console'>(</font><font color='#0000FF'>const</font> numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> img<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>return</font> <font color='#979000'>0</font>;
+
+        assert_correct_num_channels_in_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>img<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>using</font> basic_pixel_type <font color='#5555FF'>=</font> <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>ndim</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>3</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> img.<font color='#BB00BB'>strides</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>basic_pixel_type<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>The stride of the 3rd dimension (the channel dimension) of the numpy array must be </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font><font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>basic_pixel_type<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>img.<font color='#BB00BB'>strides</font><font face='Lucida Console'>(</font><font color='#979000'>1</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>pixel_type<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>The stride of the 2nd dimension (the columns dimension) of the numpy array must be </font>" <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font><font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>pixel_type<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'>return</font> img.<font color='#BB00BB'>strides</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='swap'></a>swap</b><font face='Lucida Console'>(</font>numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> a, numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> b<font face='Lucida Console'>)</font>
+    <b>{</b>
+        std::<font color='#BB00BB'>swap</font><font face='Lucida Console'>(</font>a,b<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font> 
+    <font color='#0000FF'>struct</font> <b><a name='image_traits'></a>image_traits</b><font color='#5555FF'>&lt;</font>numpy_image<font color='#5555FF'>&lt;</font>T<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font>
+    <b>{</b>
+        <font color='#0000FF'>typedef</font> T pixel_type;
+    <b>}</b>;
+<b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<font color='#0000FF'>namespace</font> pybind11
+<b>{</b>
+    <font color='#0000FF'>namespace</font> detail
+    <b>{</b>
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font> <font color='#0000FF'>struct</font> <b><a name='handle_type_name'></a>handle_type_name</b><font color='#5555FF'>&lt;</font>dlib::numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> 
+        <b>{</b>
+            <font color='#0000FF'>using</font> basic_pixel_type <font color='#5555FF'>=</font> <font color='#0000FF'>typename</font> dlib::pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type;
+
+            <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> channels<font color='#5555FF'>&gt;</font> 
+            <font color='#0000FF'>static</font> PYBIND11_DESCR <b><a name='getname'></a>getname</b><font face='Lucida Console'>(</font><font color='#0000FF'>typename</font> std::enable_if<font color='#5555FF'>&lt;</font>channels<font color='#5555FF'>=</font><font color='#5555FF'>=</font><font color='#979000'>1</font>,<font color='#0000FF'><u>int</u></font><font color='#5555FF'>&gt;</font>::type<font face='Lucida Console'>)</font> <b>{</b>
+                <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>numpy.ndarray[(rows,cols),</font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> npy_format_descriptor<font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>name</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>]</font>"<font face='Lucida Console'>)</font>;
+            <b>}</b>
+            <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> channels<font color='#5555FF'>&gt;</font> 
+            <font color='#0000FF'>static</font> PYBIND11_DESCR <b><a name='getname'></a>getname</b><font face='Lucida Console'>(</font><font color='#0000FF'>typename</font> std::enable_if<font color='#5555FF'>&lt;</font>channels<font color='#5555FF'>!</font><font color='#5555FF'>=</font><font color='#979000'>1</font>,<font color='#0000FF'><u>int</u></font><font color='#5555FF'>&gt;</font>::type<font face='Lucida Console'>)</font> <b>{</b>
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>channels <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>2</font><font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>numpy.ndarray[(rows,cols,2),</font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> npy_format_descriptor<font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>name</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>]</font>"<font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>channels <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>3</font><font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>numpy.ndarray[(rows,cols,3),</font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> npy_format_descriptor<font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>name</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>]</font>"<font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>channels <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>4</font><font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>numpy.ndarray[(rows,cols,4),</font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> npy_format_descriptor<font color='#5555FF'>&lt;</font>basic_pixel_type<font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>name</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>]</font>"<font face='Lucida Console'>)</font>;
+            <b>}</b>
+
+            <font color='#0000FF'>static</font> PYBIND11_DESCR <b><a name='name'></a>name</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b>
+                constexpr <font color='#0000FF'><u>size_t</u></font> channels <font color='#5555FF'>=</font> dlib::pixel_traits<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>::num;
+                <font color='#009900'>// The reason we have to call getname() in this wonky way is because
+</font>                <font color='#009900'>// pybind11 uses a type that records the length of the returned string in
+</font>                <font color='#009900'>// the type.  So we have to do this overloading to make the return type
+</font>                <font color='#009900'>// from name() consistent.  In C++17 this would be a lot cleaner with
+</font>                <font color='#009900'>// constexpr if, but can't use C++17 yet because of lack of wide support  :(
+</font>                <font color='#0000FF'>return</font> getname<font color='#5555FF'>&lt;</font>channels<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            <b>}</b>
+        <b>}</b>;
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> pixel_type<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'>struct</font> <b><a name='pyobject_caster'></a>pyobject_caster</b><font color='#5555FF'>&lt;</font>dlib::numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <b>{</b>
+            <font color='#0000FF'>using</font> type <font color='#5555FF'>=</font> dlib::numpy_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font>;
+
+            <font color='#0000FF'><u>bool</u></font> <b><a name='load'></a>load</b><font face='Lucida Console'>(</font>handle src, <font color='#0000FF'><u>bool</u></font> convert<font face='Lucida Console'>)</font> <b>{</b>
+                <font color='#009900'>// If passed a tuple where the first element of the tuple is a valid
+</font>                <font color='#009900'>// numpy_image then bind the numpy_image to that element of the tuple.
+</font>                <font color='#009900'>// We do this because there is a pattern of returning an image and some
+</font>                <font color='#009900'>// associated metadata.  This allows the returned tuple from such functions
+</font>                <font color='#009900'>// to also be treated as an image without needing to unpack the first
+</font>                <font color='#009900'>// argument.
+</font>                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>PyTuple_Check</font><font face='Lucida Console'>(</font>src.<font color='#BB00BB'>ptr</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> <font color='#BB00BB'>PyTuple_Size</font><font face='Lucida Console'>(</font>src.<font color='#BB00BB'>ptr</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font>
+                    src <font color='#5555FF'>=</font> reinterpret_borrow<font color='#5555FF'>&lt;</font>py::tuple<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font>[<font color='#979000'>0</font>];
+
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#5555FF'>!</font>type::<font color='#BB00BB'>check_</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>return</font> <font color='#979000'>false</font>;
+                <font color='#009900'>// stash the output of ensure into a temp variable since assigning it to
+</font>                <font color='#009900'>// value (the member variable created by the PYBIND11_TYPE_CASTER)
+</font>                <font color='#009900'>// apparently causes the return bool value to be ignored? 
+</font>                <font color='#0000FF'>auto</font> temp <font color='#5555FF'>=</font> type::<font color='#BB00BB'>ensure</font><font face='Lucida Console'>(</font>src<font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#5555FF'>!</font>dlib::is_image<font color='#5555FF'>&lt;</font>pixel_type<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>temp<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>return</font> <font color='#979000'>false</font>;
+                value <font color='#5555FF'>=</font> temp;
+                <font color='#0000FF'>return</font> <font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>value<font face='Lucida Console'>)</font>;
+            <b>}</b>
+
+            <font color='#0000FF'>static</font> handle <b><a name='cast'></a>cast</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> handle <font color='#5555FF'>&amp;</font>src, return_value_policy <font color='#009900'>/* policy */</font>, handle <font color='#009900'>/* parent */</font><font face='Lucida Console'>)</font> <b>{</b>
+                <font color='#0000FF'>return</font> src.<font color='#BB00BB'>inc_ref</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            <b>}</b>
+            <b><a name='PYBIND11_TYPE_CASTER'></a>PYBIND11_TYPE_CASTER</b><font face='Lucida Console'>(</font>type, handle_type_name<font color='#5555FF'>&lt;</font>type<font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>name</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <b>}</b>;
+    <b>}</b>
+<b>}</b>
+
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_PYTHON_NuMPY_IMAGE_Hh_
+</font>
+
+</pre></body></html>

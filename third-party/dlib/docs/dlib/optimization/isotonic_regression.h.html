@@ -1,0 +1,172 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - isotonic_regression.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_ISOTONIC_ReGRESSION_H_
+<font color='#0000FF'>#define</font> DLIB_ISOTONIC_ReGRESSION_H_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='isotonic_regression_abstract.h.html'>isotonic_regression_abstract.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>utility<font color='#5555FF'>&gt;</font>
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+    <font color='#0000FF'>class</font> <b><a name='isotonic_regression'></a>isotonic_regression</b>
+    <b>{</b>
+    <font color='#0000FF'>public</font>:
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+            <font color='#0000FF'>typename</font> const_iterator, 
+            <font color='#0000FF'>typename</font> iterator
+            <font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'><u>void</u></font> <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font face='Lucida Console'>(</font>
+            const_iterator begin,
+            const_iterator end,
+            iterator obegin
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>do_isotonic_regression</font><font face='Lucida Console'>(</font>begin, end<font face='Lucida Console'>)</font>;
+
+            <font color='#009900'>// unpack blocks to output
+</font>            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> block : blocks<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> k <font color='#5555FF'>=</font> <font color='#979000'>0</font>; k <font color='#5555FF'>&lt;</font> block.num; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>k<font face='Lucida Console'>)</font>
+                    <font color='#BB00BB'>set_val</font><font face='Lucida Console'>(</font><font color='#5555FF'>*</font>obegin<font color='#5555FF'>+</font><font color='#5555FF'>+</font>, block.avg<font face='Lucida Console'>)</font>;
+            <b>}</b>
+
+            blocks.<font color='#BB00BB'>clear</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font face='Lucida Console'>(</font>
+            std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> vect
+        <font face='Lucida Console'>)</font> <b>{</b> <font face='Lucida Console'>(</font><font color='#5555FF'>*</font><font color='#0000FF'>this</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font>vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>end</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>; <b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'><u>void</u></font> <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font face='Lucida Console'>(</font>
+            std::vector<font color='#5555FF'>&lt;</font>std::pair<font color='#5555FF'>&lt;</font>T,U<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> vect
+        <font face='Lucida Console'>)</font> <b>{</b> <font face='Lucida Console'>(</font><font color='#5555FF'>*</font><font color='#0000FF'>this</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font>vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>end</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>; <b>}</b>
+
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+            <font color='#0000FF'>typename</font> const_iterator, 
+            <font color='#0000FF'>typename</font> iterator
+            <font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'><u>void</u></font> <b><a name='fit_with_linear_output_interpolation'></a>fit_with_linear_output_interpolation</b> <font face='Lucida Console'>(</font>
+            const_iterator begin,
+            const_iterator end,
+            iterator obegin
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>do_isotonic_regression</font><font face='Lucida Console'>(</font>begin, end<font face='Lucida Console'>)</font>;
+
+            <font color='#009900'>// Unpack blocks to output, but here instead of producing the step function
+</font>            <font color='#009900'>// output we linearly interpolate.  Note that this actually fits the data less
+</font>            <font color='#009900'>// than the step-function, but in many applications might be closer to what you
+</font>            <font color='#009900'>// really when when using isotonic_regression than the step function.
+</font>            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> blocks.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> block <font color='#5555FF'>=</font> blocks[i];
+
+                <font color='#0000FF'><u>double</u></font> prev <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>blocks.<font color='#BB00BB'>front</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.avg <font color='#5555FF'>+</font> block.avg<font face='Lucida Console'>)</font><font color='#5555FF'>/</font><font color='#979000'>2</font>;
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>i <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                    prev <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>blocks[i<font color='#5555FF'>-</font><font color='#979000'>1</font>].avg<font color='#5555FF'>+</font>block.avg<font face='Lucida Console'>)</font><font color='#5555FF'>/</font><font color='#979000'>2</font>;
+
+                <font color='#0000FF'><u>double</u></font> next <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>blocks.<font color='#BB00BB'>back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.avg <font color='#5555FF'>+</font> block.avg<font face='Lucida Console'>)</font><font color='#5555FF'>/</font><font color='#979000'>2</font>;
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>i<font color='#5555FF'>+</font><font color='#979000'>1</font> <font color='#5555FF'>&lt;</font> blocks.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                    next <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>blocks[i<font color='#5555FF'>+</font><font color='#979000'>1</font>].avg<font color='#5555FF'>+</font>block.avg<font face='Lucida Console'>)</font><font color='#5555FF'>/</font><font color='#979000'>2</font>;
+
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> k <font color='#5555FF'>=</font> <font color='#979000'>0</font>; k <font color='#5555FF'>&lt;</font> block.num; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>k<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> mid <font color='#5555FF'>=</font> block.num<font color='#5555FF'>/</font><font color='#979000'>2.0</font>;
+                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>k <font color='#5555FF'>&lt;</font> mid<font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> alpha <font color='#5555FF'>=</font> k<font color='#5555FF'>/</font>mid;
+                        <font color='#BB00BB'>set_val</font><font face='Lucida Console'>(</font><font color='#5555FF'>*</font>obegin<font color='#5555FF'>+</font><font color='#5555FF'>+</font>, <font face='Lucida Console'>(</font><font color='#979000'>1</font><font color='#5555FF'>-</font>alpha<font face='Lucida Console'>)</font><font color='#5555FF'>*</font>prev <font color='#5555FF'>+</font> alpha<font color='#5555FF'>*</font>block.avg<font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                    <font color='#0000FF'>else</font>
+                    <b>{</b>
+                        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> alpha <font color='#5555FF'>=</font> k<font color='#5555FF'>/</font>mid<font color='#5555FF'>-</font><font color='#979000'>1</font>;
+                        <font color='#BB00BB'>set_val</font><font face='Lucida Console'>(</font><font color='#5555FF'>*</font>obegin<font color='#5555FF'>+</font><font color='#5555FF'>+</font>, alpha<font color='#5555FF'>*</font>next <font color='#5555FF'>+</font> <font face='Lucida Console'>(</font><font color='#979000'>1</font><font color='#5555FF'>-</font>alpha<font face='Lucida Console'>)</font><font color='#5555FF'>*</font>block.avg<font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                <b>}</b>
+            <b>}</b>
+
+            blocks.<font color='#BB00BB'>clear</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='fit_with_linear_output_interpolation'></a>fit_with_linear_output_interpolation</b> <font face='Lucida Console'>(</font>
+            std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> vect
+        <font face='Lucida Console'>)</font> <b>{</b> <font color='#BB00BB'>fit_with_linear_output_interpolation</font><font face='Lucida Console'>(</font>vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>end</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>; <b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'><u>void</u></font> <b><a name='fit_with_linear_output_interpolation'></a>fit_with_linear_output_interpolation</b> <font face='Lucida Console'>(</font>
+            std::vector<font color='#5555FF'>&lt;</font>std::pair<font color='#5555FF'>&lt;</font>T,U<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> vect
+        <font face='Lucida Console'>)</font> <b>{</b> <font color='#BB00BB'>fit_with_linear_output_interpolation</font><font face='Lucida Console'>(</font>vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>end</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, vect.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>; <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+            <font color='#0000FF'>typename</font> const_iterator
+            <font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'><u>void</u></font> <b><a name='do_isotonic_regression'></a>do_isotonic_regression</b> <font face='Lucida Console'>(</font>
+            const_iterator begin,
+            const_iterator end
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            blocks.<font color='#BB00BB'>clear</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+            <font color='#009900'>// Do the actual isotonic regression.  The output is a step-function and is
+</font>            <font color='#009900'>// stored in the vector of blocks.
+</font>            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font> i <font color='#5555FF'>=</font> begin; i <font color='#5555FF'>!</font><font color='#5555FF'>=</font> end; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                blocks.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font><font color='#BB00BB'>get_val</font><font face='Lucida Console'>(</font><font color='#5555FF'>*</font>i<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>while</font> <font face='Lucida Console'>(</font>blocks.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>1</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> <font color='#BB00BB'>prev_block</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.avg <font color='#5555FF'>&gt;</font> <font color='#BB00BB'>current_block</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>.avg<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#009900'>// merge the last two blocks.
+</font>                    <font color='#BB00BB'>prev_block</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#BB00BB'>prev_block</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>current_block</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+                    blocks.<font color='#BB00BB'>pop_back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+                <b>}</b>
+            <b>}</b>
+        <b>}</b>
+
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'>static</font> <font color='#0000FF'><u>double</u></font> <b><a name='get_val'></a>get_val</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> T<font color='#5555FF'>&amp;</font> v<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> v;<b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'>static</font> <font color='#0000FF'><u>double</u></font> <b><a name='get_val'></a>get_val</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>T,U<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> v<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> v.second;<b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'>static</font> <font color='#0000FF'><u>void</u></font> <b><a name='set_val'></a>set_val</b><font face='Lucida Console'>(</font>T<font color='#5555FF'>&amp;</font> v, <font color='#0000FF'><u>double</u></font> val<font face='Lucida Console'>)</font> <b>{</b> v <font color='#5555FF'>=</font> val;<b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+        <font color='#0000FF'>static</font> <font color='#0000FF'><u>void</u></font> <b><a name='set_val'></a>set_val</b><font face='Lucida Console'>(</font>std::pair<font color='#5555FF'>&lt;</font>T,U<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> v, <font color='#0000FF'><u>double</u></font> val<font face='Lucida Console'>)</font> <b>{</b> v.second <font color='#5555FF'>=</font> val;<b>}</b>
+
+
+
+        <font color='#0000FF'>struct</font> <b><a name='block_t'></a>block_t</b>
+        <b>{</b>
+            <b><a name='block_t'></a>block_t</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>double</u></font> val<font face='Lucida Console'>)</font> : num<font face='Lucida Console'>(</font><font color='#979000'>1</font><font face='Lucida Console'>)</font>, avg<font face='Lucida Console'>(</font>val<font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+            <b><a name='block_t'></a>block_t</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> n, <font color='#0000FF'><u>double</u></font> val<font face='Lucida Console'>)</font> : num<font face='Lucida Console'>(</font>n<font face='Lucida Console'>)</font>, avg<font face='Lucida Console'>(</font>val<font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+
+            <font color='#0000FF'><u>size_t</u></font> num;
+            <font color='#0000FF'><u>double</u></font> avg;
+
+            <font color='#0000FF'>inline</font> block_t <b><a name='operator'></a>operator</b><font color='#5555FF'>+</font><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> block_t<font color='#5555FF'>&amp;</font> rhs<font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+            <b>{</b>
+                <font color='#0000FF'>return</font> <font color='#BB00BB'>block_t</font><font face='Lucida Console'>(</font>num<font color='#5555FF'>+</font>rhs.num,
+                    <font face='Lucida Console'>(</font>num<font color='#5555FF'>*</font>avg <font color='#5555FF'>+</font> rhs.num<font color='#5555FF'>*</font>rhs.avg<font face='Lucida Console'>)</font><font color='#5555FF'>/</font><font face='Lucida Console'>(</font>num<font color='#5555FF'>+</font>rhs.num<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            <b>}</b>
+        <b>}</b>;
+
+        <font color='#0000FF'>inline</font> block_t<font color='#5555FF'>&amp;</font> <b><a name='prev_block'></a>prev_block</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> blocks[blocks.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>-</font><font color='#979000'>2</font>]; <b>}</b>
+        <font color='#0000FF'>inline</font> block_t<font color='#5555FF'>&amp;</font> <b><a name='current_block'></a>current_block</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> blocks.<font color='#BB00BB'>back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <b>}</b>
+
+        std::vector<font color='#5555FF'>&lt;</font>block_t<font color='#5555FF'>&gt;</font> blocks;
+    <b>}</b>;
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_ISOTONIC_ReGRESSION_H_
+</font>
+
+
+</pre></body></html>

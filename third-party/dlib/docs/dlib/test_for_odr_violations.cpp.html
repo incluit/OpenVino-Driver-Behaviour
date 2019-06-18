@@ -1,0 +1,50 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - test_for_odr_violations.cpp</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2014  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_TEST_FOR_ODR_VIOLATIONS_CPp_
+<font color='#0000FF'>#define</font> DLIB_TEST_FOR_ODR_VIOLATIONS_CPp_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='test_for_odr_violations.h.html'>test_for_odr_violations.h</a>"
+
+<font color='#0000FF'>extern</font> "<font color='#CC0000'>C</font>"
+<b>{</b>
+<font color='#009900'>// The point of this block of code is to cause a link time error that will prevent a user
+</font><font color='#009900'>// from compiling part of their application with DLIB_ASSERT enabled and part with them
+</font><font color='#009900'>// disabled since doing that would be a violation of C++'s one definition rule. 
+</font><font color='#0000FF'>#ifdef</font> ENABLE_ASSERTS
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>int</u></font> USER_ERROR__inconsistent_build_configuration__see_dlib_faq_1 <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+<font color='#0000FF'>#else</font>
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>int</u></font> USER_ERROR__inconsistent_build_configuration__see_dlib_faq_1_ <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+<font color='#0000FF'>#endif</font>
+
+
+<font color='#009900'>// The point of this block of code is to cause a link time error if someone builds dlib via
+</font><font color='#009900'>// cmake as a separately installable library, and therefore generates a dlib/config.h from
+</font><font color='#009900'>// cmake, but then proceeds to use the default unconfigured dlib/config.h from version
+</font><font color='#009900'>// control.  It should be obvious why this is bad, if it isn't you need to read a book
+</font><font color='#009900'>// about C++.  Moreover, it can only happen if someone manually copies files around and
+</font><font color='#009900'>// messes things up.  If instead they run `make install` or `cmake --build .  --target
+</font><font color='#009900'>// install` things will be setup correctly, which is what they should do.  To summarize: DO
+</font><font color='#009900'>// NOT BUILD A STANDALONE DLIB AND THEN GO CHERRY PICKING FILES FROM THE BUILD FOLDER AND
+</font><font color='#009900'>// MIXING THEM WITH THE SOURCE FROM GITHUB.  USE CMAKE'S INSTALL SCRIPTS TO INSTALL DLIB.
+</font><font color='#009900'>// Or even better, don't install dlib at all and instead build your program as shown in
+</font><font color='#009900'>// examples/CMakeLists.txt
+</font><font color='#0000FF'>#if</font> defined<font face='Lucida Console'>(</font>DLIB_NOT_CONFIGURED<font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> <font color='#5555FF'>!</font>defined<font face='Lucida Console'>(</font>DLIB__CMAKE_GENERATED_A_CONFIG_H_FILE<font face='Lucida Console'>)</font>
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>int</u></font> USER_ERROR__inconsistent_build_configuration__see_dlib_faq_2 <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+<font color='#0000FF'>#endif</font>
+
+
+
+
+
+<font color='#0000FF'>#ifdef</font> DLIB_CHECK_FOR_VERSION_MISMATCH
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>int</u></font> DLIB_CHECK_FOR_VERSION_MISMATCH <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+<font color='#0000FF'>#endif</font>
+
+<b>}</b>
+
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_TEST_FOR_ODR_VIOLATIONS_CPp_
+</font>
+
+</pre></body></html>

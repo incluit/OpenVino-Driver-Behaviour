@@ -1,0 +1,463 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - random_forest_regression_abstract.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#undef</font> DLIB_RANdOM_FOREST_REGRESION_ABSTRACT_H_
+<font color='#0000FF'>#ifdef</font> DLIB_RANdOM_FOREST_REGRESION_ABSTRACT_H_
+
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../matrix.h.html'>../matrix.h</a>"
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>class</font> <b><a name='dense_feature_extractor'></a>dense_feature_extractor</b>
+    <b>{</b>
+        <font color='#009900'>/*!
+            WHAT THIS OBJECT REPRESENTS
+                This object is a tool for extracting features from objects.  In particular,
+                it is designed to be used with the random forest regression tools discussed
+                below.
+
+                This particular feature extract does almost nothing since it works on
+                vectors in R^n and simply selects elements from each vector.  However, the
+                tools below are templated and allow you to design your own feature extractors
+                that operate on whatever object types you create.  So for example, maybe
+                you want to perform regression on images rather than vectors.  Moreover,
+                your feature extraction could be more complex.  Maybe you are selecting
+                differences between pairs of pixels in an image or doing something
+                involving geometric transforms during feature extraction.  Any of these
+                kinds of more complex feature extraction patterns can be realized with the
+                random forest tools by implementing your own feature extractor object and
+                using it with the random forest objects.
+
+                Therefore, you should consider this dense_feature_extractor as an example
+                that documents the interface as well as the simple default extractor for
+                use with dense vectors.
+
+
+            THREAD SAFETY
+                It is safe to call const members of this object from multiple threads.  ANY
+                USER DEFINED FEATURE EXTRACTORS MUST ALSO MEET THIS GUARONTEE AS WELL SINCE
+                IT IS ASSUMED BY THE RANDOM FOREST TRAINING ROUTINES.
+        !*/</font>
+
+    <font color='#0000FF'>public</font>:
+        <font color='#0000FF'>typedef</font> uint32_t feature;
+        <font color='#0000FF'>typedef</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>0</font>,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font> sample_type;
+
+        <b><a name='dense_feature_extractor'></a>dense_feature_extractor</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #max_num_feats() == 0
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='setup'></a>setup</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y 
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            requires
+                - x.size() == y.size()
+                - x.size() &gt; 0
+                - x[0].size() &gt; 0
+                - all the vectors in x have the same dimensionality.
+            ensures
+                - Configures this feature extractor to work on the given training data.
+                  For dense feature extractors all we do is record the dimensionality of
+                  the training vectors.
+                - #max_num_feats() == x[0].size()
+                  (In general, setup() sets max_num_feats() to some non-zero value so that
+                  the other methods of this object can then be called.  The point of setup() 
+                  is to allow a feature extractor to gather whatever statistics it needs from 
+                  training data.  That is, more complex feature extraction strategies my
+                  themselves be trained from data.)
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='get_random_features'></a>get_random_features</b> <font face='Lucida Console'>(</font>
+            dlib::rand<font color='#5555FF'>&amp;</font> rnd,
+            <font color='#0000FF'><u>size_t</u></font> num,
+            std::vector<font color='#5555FF'>&lt;</font>feature<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> feats
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            requires
+                - max_num_feats() != 0
+            ensures
+                - #feats.size() == min(num, max_num_feats())
+                - This function randomly identifies num features and stores them into feats.  
+                  These feature objects can then be used with extract_feature_value() to
+                  obtain a value from any particular sample_type object.  This value is the
+                  "feature value" used by a decision tree algorithm to deice how to split
+                  and traverse trees.   
+                - The above two conditions define the behavior of get_random_features() in
+                  general. For this specific implementation of the feature extraction interface 
+                  this function selects num integer values from the range [0, max_num_feats()), 
+                  without replacement.  These values are stored into feats.
+        !*/</font>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='extract_feature_value'></a>extract_feature_value</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> sample_type<font color='#5555FF'>&amp;</font> item,
+            <font color='#0000FF'>const</font> feature<font color='#5555FF'>&amp;</font> f
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            requires
+                - #max_num_feats() != 0
+                - f was produced from a call to get_random_features().
+            ensures
+                - Extracts the feature value corresponding to f. For this simple dense
+                  feature extractor this simply means returning item(f).  But in general
+                  you can design feature extractors that do something more complex.
+        !*/</font>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='max_num_feats'></a>max_num_feats</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - returns the number of distinct features this object might extract.  That is,
+                  a feature extractor essentially defines a mapping from sample_type objects to
+                  vectors in R^max_num_feats().
+        !*/</font>
+    <b>}</b>;
+
+    <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> dense_feature_extractor<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>;
+    <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>dense_feature_extractor<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        provides serialization support
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> feature_extractor
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>struct</font> <b><a name='internal_tree_node'></a>internal_tree_node</b>
+    <b>{</b>
+        <font color='#009900'>/*!
+            WHAT THIS OBJECT REPRESENTS
+                This object is an internal node in a regression tree.  See the code of
+                random_forest_regression_function to see how it is used to create a tree.
+        !*/</font>
+
+        uint32_t left;
+        uint32_t right;
+        <font color='#0000FF'><u>float</u></font> split_threshold;
+        <font color='#0000FF'>typename</font> feature_extractor::feature split_feature;
+    <b>}</b>;
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> feature_extractor<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>;
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> feature_extractor<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        provides serialization support
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> feature_extractor <font color='#5555FF'>=</font> dense_feature_extractor
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>class</font> <b><a name='random_forest_regression_function'></a>random_forest_regression_function</b>
+    <b>{</b>
+        <font color='#009900'>/*!
+            REQUIREMENTS ON feature_extractor
+                feature_extractor must be dense_feature_extractor or a type with a
+                compatible interface.
+
+            WHAT THIS OBJECT REPRESENTS
+                This object represents a regression forest.  This is a collection of
+                decision trees that take an object as input and each vote on a real value
+                to associate with the object.  The final real value output is the average
+                of all the votes from each of the trees.
+        !*/</font>
+
+    <font color='#0000FF'>public</font>:
+
+        <font color='#0000FF'>typedef</font> feature_extractor feature_extractor_type;
+        <font color='#0000FF'>typedef</font> <font color='#0000FF'>typename</font> feature_extractor::sample_type sample_type;
+
+        <b><a name='random_forest_regression_function'></a>random_forest_regression_function</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #num_trees() == 0
+        !*/</font>
+
+        <b><a name='random_forest_regression_function'></a>random_forest_regression_function</b> <font face='Lucida Console'>(</font>
+            feature_extractor_type<font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> fe_,
+            std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> trees_,
+            std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> leaves_
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            requires
+                - trees.size() &gt; 0
+                - trees.size() = leaves.size()
+                - for all valid i:
+                    - leaves[i].size() &gt; 0 
+                    - trees[i].size()+leaves[i].size() &gt; the maximal left or right index values in trees[i].
+                      (i.e. each left or right value must index to some existing internal tree node or leaf node).
+            ensures
+                - #get_internal_tree_nodes() == trees_
+                - #get_tree_leaves() == leaves_
+                - #get_feature_extractor() == fe_
+        !*/</font>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='get_num_trees'></a>get_num_trees</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - returns the number of trees in this regression forest.
+        !*/</font>
+
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_internal_tree_nodes'></a>get_internal_tree_nodes</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>; 
+        <font color='#009900'>/*!
+            ensures
+                - returns the internal tree nodes that define the regression trees.
+                - get_internal_tree_nodes().size() == get_num_trees()
+        !*/</font>
+
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_tree_leaves'></a>get_tree_leaves</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>; 
+        <font color='#009900'>/*!
+            ensures
+                - returns the tree leaves that define the regression trees.
+                - get_tree_leaves().size() == get_num_trees()
+        !*/</font>
+
+        <font color='#0000FF'>const</font> feature_extractor_type<font color='#5555FF'>&amp;</font> <b><a name='get_feature_extractor'></a>get_feature_extractor</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - returns the feature extractor used by the trees. 
+        !*/</font>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> sample_type<font color='#5555FF'>&amp;</font> x
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            requires
+                - get_num_trees() &gt; 0
+            ensures
+                - Maps x to a real value and returns the value.  To do this, we find the
+                  get_num_trees() leaf values associated with x and then return the average
+                  of these leaf values.   
+        !*/</font>
+    <b>}</b>;
+
+    <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> random_forest_regression_function<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>;
+    <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>random_forest_regression_function<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        provides serialization support
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> feature_extractor <font color='#5555FF'>=</font> dense_feature_extractor
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>class</font> <b><a name='random_forest_regression_trainer'></a>random_forest_regression_trainer</b>
+    <b>{</b>
+        <font color='#009900'>/*!
+            REQUIREMENTS ON feature_extractor
+                feature_extractor must be dense_feature_extractor or a type with a
+                compatible interface.
+
+            WHAT THIS OBJECT REPRESENTS
+                This object implements Breiman's classic random forest regression
+                algorithm.  The algorithm learns to map objects, nominally vectors in R^n,
+                into the reals.  It essentially optimizes the mean squared error by fitting
+                a bunch of decision trees, each of which vote on the output value of the
+                regressor. The final prediction is obtained by averaging all the
+                predictions. 
+
+                For more information on the algorithm see:
+                    Breiman, Leo. "Random forests." Machine learning 45.1 (2001): 5-32.
+        !*/</font>
+
+    <font color='#0000FF'>public</font>:
+        <font color='#0000FF'>typedef</font> feature_extractor feature_extractor_type;
+        <font color='#0000FF'>typedef</font> random_forest_regression_function<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font> trained_function_type;
+        <font color='#0000FF'>typedef</font> <font color='#0000FF'>typename</font> feature_extractor::sample_type sample_type;
+
+
+        <b><a name='random_forest_regression_trainer'></a>random_forest_regression_trainer</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #get_min_samples_per_leaf() == 5
+                - #get_num_trees() == 1000
+                - #get_feature_subsampling_frac() == 1.0/3.0
+                - #get_feature_extractor() == a default initialized feature extractor.
+                - #get_random_seed() == ""
+                - this object is not verbose.
+        !*/</font>
+
+        <font color='#0000FF'>const</font> feature_extractor_type<font color='#5555FF'>&amp;</font> <b><a name='get_feature_extractor'></a>get_feature_extractor</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - returns the feature extractor used when train() is invoked.
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_feature_extractor'></a>set_feature_extractor</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> feature_extractor_type<font color='#5555FF'>&amp;</font> feat_extractor
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #get_feature_extractor() == feat_extractor
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_seed'></a>set_seed</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::string<font color='#5555FF'>&amp;</font> seed
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #get_random_seed() == seed
+        !*/</font>
+
+        <font color='#0000FF'>const</font> std::string<font color='#5555FF'>&amp;</font> <b><a name='get_random_seed'></a>get_random_seed</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - A central part of this algorithm is random selection of both training
+                  samples and features. This function returns the seed used to initialized
+                  the random number generator used for these random selections.
+        !*/</font>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='get_num_trees'></a>get_num_trees</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - Random forests built by this object will contain get_num_trees() trees.
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_num_trees'></a>set_num_trees</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>size_t</u></font> num
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            requires
+                - num &gt; 0
+            ensures
+                - #get_num_trees() == num
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_feature_subsampling_fraction'></a>set_feature_subsampling_fraction</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>double</u></font> frac
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            requires
+                - 0 &lt; frac &lt;= 1
+            ensures
+                - #get_feature_subsampling_frac() == frac
+        !*/</font>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='get_feature_subsampling_frac'></a>get_feature_subsampling_frac</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - When we build trees, at each node we don't look at all the available
+                  features.  We consider only get_feature_subsampling_frac() fraction of
+                  them, selected at random.
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_min_samples_per_leaf'></a>set_min_samples_per_leaf</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>size_t</u></font> num
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            requires
+                - num &gt; 0
+            ensures
+                - #get_min_samples_per_leaf() == num
+        !*/</font>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='get_min_samples_per_leaf'></a>get_min_samples_per_leaf</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - When building trees, each leaf node in a tree will contain at least
+                  get_min_samples_per_leaf() samples.  This means that the output votes of
+                  each tree are averages of at least get_min_samples_per_leaf() y values.
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='be_verbose'></a>be_verbose</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - This object will print status messages to standard out so that the
+                  progress of training can be tracked..
+        !*/</font>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='be_quiet'></a>be_quiet</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - this object will not print anything to standard out
+        !*/</font>
+
+        random_forest_regression_function<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font> <b><a name='train'></a>train</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y,
+            std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> oob_values 
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            requires
+                - x.size() == y.size()
+                - x.size() &gt; 0
+                - Running following code:
+                    auto fe = get_feature_extractor()
+                    fe.setup(x,y);
+                  Must be valid and result in fe.max_num_feats() != 0
+            ensures
+                - This function fits a regression forest to the given training data.  The
+                  goal being to regress x to y in the mean squared sense.  It therefore
+                  fits regression trees and returns the resulting random_forest_regression_function 
+                  RF, which will have the following properties:
+                    - RF.get_num_trees() == get_num_trees()
+                    - for all valid i:
+                        - RF(x[i]) should output a value close to y[i]
+                    - RF.get_feature_extractor() will be a copy of this-&gt;get_feature_extractor() 
+                      that has been configured by a call the feature extractor's setup() routine.
+                  To run the algorithm we need to use a feature extractor.  We obtain a
+                  valid feature extractor by making a copy of get_feature_extractor(), then
+                  invoking setup(x,y) on it.  This feature extractor is what is used to fit
+                  the trees and is also the feature extractor stored in the returned random
+                  forest.
+                - #oob_values.size() == y.size()
+                - for all valid i:  
+                    - #oob_values[i] == the "out of bag" prediction for y[i].  It is
+                      calculated by computing the average output from trees not trained on
+                      y[i].  This is similar to a leave-one-out cross-validation prediction
+                      of y[i] and can be used to estimate the generalization error of the
+                      regression forest.  
+                - Training uses all the available CPU cores.
+        !*/</font>
+
+        random_forest_regression_function<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font> <b><a name='train'></a>train</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y 
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            requires
+                - x.size() == y.size()
+                - x.size() &gt; 0
+                - Running following code:
+                    auto fe = get_feature_extractor()
+                    fe.setup(x,y);
+                  Must be valid and result in fe.max_num_feats() != 0
+            ensures
+                - This function is identical to train(x,y,oob_values) except that the
+                  oob_values are not calculated.
+        !*/</font>
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_RANdOM_FOREST_REGRESION_ABSTRACT_H_
+</font>
+
+</pre></body></html>

@@ -1,0 +1,188 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - descr.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>/*
+    pybind11/detail/descr.h: Helper type for concatenating type signatures
+    either at runtime (C++11) or compile time (C++14)
+
+    Copyright (c) 2016 Wenzel Jakob &lt;wenzel.jakob@epfl.ch&gt;
+
+    All rights reserved. Use of this source code is governed by a
+    BSD-style license that can be found in the LICENSE file.
+*/</font>
+
+<font color='#0000FF'>#pragma</font> once
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='common.h.html'>common.h</a>"
+
+<b><a name='NAMESPACE_BEGIN'></a>NAMESPACE_BEGIN</b><font face='Lucida Console'>(</font>PYBIND11_NAMESPACE<font face='Lucida Console'>)</font>
+<b><a name='NAMESPACE_BEGIN'></a>NAMESPACE_BEGIN</b><font face='Lucida Console'>(</font>detail<font face='Lucida Console'>)</font>
+
+<font color='#009900'>/* Concatenate type signatures at compile time using C++14 */</font>
+<font color='#0000FF'>#if</font> defined<font face='Lucida Console'>(</font>PYBIND11_CPP14<font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> <font color='#5555FF'>!</font>defined<font face='Lucida Console'>(</font>_MSC_VER<font face='Lucida Console'>)</font>
+<font color='#0000FF'>#define</font> PYBIND11_CONSTEXPR_DESCR
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size1, <font color='#0000FF'><u>size_t</u></font> Size2<font color='#5555FF'>&gt;</font> <font color='#0000FF'>class</font> <b><a name='descr'></a>descr</b> <b>{</b>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size1_, <font color='#0000FF'><u>size_t</u></font> Size2_<font color='#5555FF'>&gt;</font> <font color='#0000FF'>friend</font> <font color='#0000FF'>class</font> descr;
+<font color='#0000FF'>public</font>:
+    constexpr <b><a name='descr'></a>descr</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font> <font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>text<font face='Lucida Console'>)</font> [Size1<font color='#5555FF'>+</font><font color='#979000'>1</font>], <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font> <font color='#0000FF'>const</font> <font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>types<font face='Lucida Console'>)</font>[Size2<font color='#5555FF'>+</font><font color='#979000'>1</font>]<font face='Lucida Console'>)</font>
+        : descr<font face='Lucida Console'>(</font>text, types,
+                make_index_sequence<font color='#5555FF'>&lt;</font>Size1<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>,
+                make_index_sequence<font color='#5555FF'>&lt;</font>Size2<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <b>{</b> <b>}</b>
+
+    constexpr <font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font><b><a name='text'></a>text</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> m_text; <b>}</b>
+    constexpr <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font> <font color='#0000FF'>const</font> <font color='#5555FF'>*</font> <b><a name='types'></a>types</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> m_types; <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> OtherSize1, <font color='#0000FF'><u>size_t</u></font> OtherSize2<font color='#5555FF'>&gt;</font>
+    constexpr descr<font color='#5555FF'>&lt;</font>Size1 <font color='#5555FF'>+</font> OtherSize1, Size2 <font color='#5555FF'>+</font> OtherSize2<font color='#5555FF'>&gt;</font> <b><a name='operator'></a>operator</b><font color='#5555FF'>+</font><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> descr<font color='#5555FF'>&lt;</font>OtherSize1, OtherSize2<font color='#5555FF'>&gt;</font> <font color='#5555FF'>&amp;</font>other<font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>concat</font><font face='Lucida Console'>(</font>other,
+                      make_index_sequence<font color='#5555FF'>&lt;</font>Size1<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>,
+                      make_index_sequence<font color='#5555FF'>&lt;</font>Size2<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>,
+                      make_index_sequence<font color='#5555FF'>&lt;</font>OtherSize1<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>,
+                      make_index_sequence<font color='#5555FF'>&lt;</font>OtherSize2<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#0000FF'>protected</font>:
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font>... Indices1, <font color='#0000FF'><u>size_t</u></font>... Indices2<font color='#5555FF'>&gt;</font>
+    constexpr <b><a name='descr'></a>descr</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font> <font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>text<font face='Lucida Console'>)</font> [Size1<font color='#5555FF'>+</font><font color='#979000'>1</font>],
+        <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font> <font color='#0000FF'>const</font> <font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>types<font face='Lucida Console'>)</font> [Size2<font color='#5555FF'>+</font><font color='#979000'>1</font>],
+        index_sequence<font color='#5555FF'>&lt;</font>Indices1...<font color='#5555FF'>&gt;</font>, index_sequence<font color='#5555FF'>&lt;</font>Indices2...<font color='#5555FF'>&gt;</font><font face='Lucida Console'>)</font>
+        : m_text<b>{</b>text[Indices1]..., '<font color='#FF0000'>\0</font>'<b>}</b>,
+          m_types<b>{</b>types[Indices2]...,  nullptr <b>}</b> <b>{</b><b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> OtherSize1, <font color='#0000FF'><u>size_t</u></font> OtherSize2, <font color='#0000FF'><u>size_t</u></font>... Indices1,
+              <font color='#0000FF'><u>size_t</u></font>... Indices2, <font color='#0000FF'><u>size_t</u></font>... OtherIndices1, <font color='#0000FF'><u>size_t</u></font>... OtherIndices2<font color='#5555FF'>&gt;</font>
+    constexpr descr<font color='#5555FF'>&lt;</font>Size1 <font color='#5555FF'>+</font> OtherSize1, Size2 <font color='#5555FF'>+</font> OtherSize2<font color='#5555FF'>&gt;</font>
+    <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> descr<font color='#5555FF'>&lt;</font>OtherSize1, OtherSize2<font color='#5555FF'>&gt;</font> <font color='#5555FF'>&amp;</font>other,
+           index_sequence<font color='#5555FF'>&lt;</font>Indices1...<font color='#5555FF'>&gt;</font>, index_sequence<font color='#5555FF'>&lt;</font>Indices2...<font color='#5555FF'>&gt;</font>,
+           index_sequence<font color='#5555FF'>&lt;</font>OtherIndices1...<font color='#5555FF'>&gt;</font>, index_sequence<font color='#5555FF'>&lt;</font>OtherIndices2...<font color='#5555FF'>&gt;</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b>
+        <font color='#0000FF'>return</font> descr<font color='#5555FF'>&lt;</font>Size1 <font color='#5555FF'>+</font> OtherSize1, Size2 <font color='#5555FF'>+</font> OtherSize2<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>
+            <b>{</b> m_text[Indices1]..., other.m_text[OtherIndices1]..., '<font color='#FF0000'>\0</font>' <b>}</b>,
+            <b>{</b> m_types[Indices2]..., other.m_types[OtherIndices2]..., nullptr <b>}</b>
+        <font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#0000FF'>protected</font>:
+    <font color='#0000FF'><u>char</u></font> m_text[Size1 <font color='#5555FF'>+</font> <font color='#979000'>1</font>];
+    <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font> m_types[Size2 <font color='#5555FF'>+</font> <font color='#979000'>1</font>];
+<b>}</b>;
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size<font color='#5555FF'>&gt;</font> constexpr descr<font color='#5555FF'>&lt;</font>Size <font color='#5555FF'>-</font> <font color='#979000'>1</font>, <font color='#979000'>0</font><font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font><font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>text<font face='Lucida Console'>)</font>[Size]<font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>return</font> descr<font color='#5555FF'>&lt;</font>Size <font color='#5555FF'>-</font> <font color='#979000'>1</font>, <font color='#979000'>0</font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>text, <b>{</b> nullptr <b>}</b><font face='Lucida Console'>)</font>;
+<b>}</b>
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Rem, <font color='#0000FF'><u>size_t</u></font>... Digits<font color='#5555FF'>&gt;</font> <font color='#0000FF'>struct</font> <b><a name='int_to_str'></a>int_to_str</b> : int_to_str<font color='#5555FF'>&lt;</font>Rem<font color='#5555FF'>/</font><font color='#979000'>10</font>, Rem<font color='#5555FF'>%</font><font color='#979000'>10</font>, Digits...<font color='#5555FF'>&gt;</font> <b>{</b> <b>}</b>;
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font>...Digits<font color='#5555FF'>&gt;</font> <font color='#0000FF'>struct</font> <b><a name='int_to_str'></a>int_to_str</b><font color='#5555FF'>&lt;</font><font color='#979000'>0</font>, Digits...<font color='#5555FF'>&gt;</font> <b>{</b>
+    <font color='#0000FF'>static</font> constexpr <font color='#0000FF'>auto</font> digits <font color='#5555FF'>=</font> descr<font color='#5555FF'>&lt;</font><font color='#0000FF'>sizeof</font>...<font face='Lucida Console'>(</font>Digits<font face='Lucida Console'>)</font>, <font color='#979000'>0</font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><b>{</b> <font face='Lucida Console'>(</font>'<font color='#FF0000'>0</font>' <font color='#5555FF'>+</font> Digits<font face='Lucida Console'>)</font>..., '<font color='#FF0000'>\0</font>' <b>}</b>, <b>{</b> nullptr <b>}</b><font face='Lucida Console'>)</font>;
+<b>}</b>;
+
+<font color='#009900'>// Ternary description (like std::conditional)
+</font><font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B, <font color='#0000FF'><u>size_t</u></font> Size1, <font color='#0000FF'><u>size_t</u></font> Size2<font color='#5555FF'>&gt;</font>
+constexpr enable_if_t<font color='#5555FF'>&lt;</font>B, descr<font color='#5555FF'>&lt;</font>Size1 <font color='#5555FF'>-</font> <font color='#979000'>1</font>, <font color='#979000'>0</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font><font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>text1<font face='Lucida Console'>)</font>[Size1], <font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font><font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font><font face='Lucida Console'>)</font>[Size2]<font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>text1<font face='Lucida Console'>)</font>;
+<b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B, <font color='#0000FF'><u>size_t</u></font> Size1, <font color='#0000FF'><u>size_t</u></font> Size2<font color='#5555FF'>&gt;</font>
+constexpr enable_if_t<font color='#5555FF'>&lt;</font><font color='#5555FF'>!</font>B, descr<font color='#5555FF'>&lt;</font>Size2 <font color='#5555FF'>-</font> <font color='#979000'>1</font>, <font color='#979000'>0</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font><font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font><font face='Lucida Console'>)</font>[Size1], <font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font><font face='Lucida Console'>(</font><font color='#5555FF'>&amp;</font>text2<font face='Lucida Console'>)</font>[Size2]<font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>text2<font face='Lucida Console'>)</font>;
+<b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B, <font color='#0000FF'><u>size_t</u></font> SizeA1, <font color='#0000FF'><u>size_t</u></font> SizeA2, <font color='#0000FF'><u>size_t</u></font> SizeB1, <font color='#0000FF'><u>size_t</u></font> SizeB2<font color='#5555FF'>&gt;</font>
+constexpr enable_if_t<font color='#5555FF'>&lt;</font>B, descr<font color='#5555FF'>&lt;</font>SizeA1, SizeA2<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font>descr<font color='#5555FF'>&lt;</font>SizeA1, SizeA2<font color='#5555FF'>&gt;</font> d, descr<font color='#5555FF'>&lt;</font>SizeB1, SizeB2<font color='#5555FF'>&gt;</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> d; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B, <font color='#0000FF'><u>size_t</u></font> SizeA1, <font color='#0000FF'><u>size_t</u></font> SizeA2, <font color='#0000FF'><u>size_t</u></font> SizeB1, <font color='#0000FF'><u>size_t</u></font> SizeB2<font color='#5555FF'>&gt;</font>
+constexpr enable_if_t<font color='#5555FF'>&lt;</font><font color='#5555FF'>!</font>B, descr<font color='#5555FF'>&lt;</font>SizeB1, SizeB2<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font>descr<font color='#5555FF'>&lt;</font>SizeA1, SizeA2<font color='#5555FF'>&gt;</font>, descr<font color='#5555FF'>&lt;</font>SizeB1, SizeB2<font color='#5555FF'>&gt;</font> d<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> d; <b>}</b>
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size<font color='#5555FF'>&gt;</font> <font color='#0000FF'>auto</font> constexpr <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>-</font><font color='#5555FF'>&gt;</font> <b><a name='decltype'></a>decltype</b><font face='Lucida Console'>(</font>int_to_str<font color='#5555FF'>&lt;</font>Size <font color='#5555FF'>/</font> <font color='#979000'>10</font>, Size <font color='#5555FF'>%</font> <font color='#979000'>10</font><font color='#5555FF'>&gt;</font>::digits<font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>return</font> int_to_str<font color='#5555FF'>&lt;</font>Size <font color='#5555FF'>/</font> <font color='#979000'>10</font>, Size <font color='#5555FF'>%</font> <font color='#979000'>10</font><font color='#5555FF'>&gt;</font>::digits;
+<b>}</b>
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> Type<font color='#5555FF'>&gt;</font> constexpr descr<font color='#5555FF'>&lt;</font><font color='#979000'>1</font>, <font color='#979000'>1</font><font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>return</font> descr<font color='#5555FF'>&lt;</font><font color='#979000'>1</font>, <font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><b>{</b> '<font color='#FF0000'>%</font>', '<font color='#FF0000'>\0</font>' <b>}</b>, <b>{</b> <font color='#5555FF'>&amp;</font><font color='#0000FF'>typeid</font><font face='Lucida Console'>(</font>Type<font face='Lucida Console'>)</font>, nullptr <b>}</b><font face='Lucida Console'>)</font>;
+<b>}</b>
+
+<font color='#0000FF'>inline</font> constexpr descr<font color='#5555FF'>&lt;</font><font color='#979000'>0</font>, <font color='#979000'>0</font><font color='#5555FF'>&gt;</font> <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'></font>"<font face='Lucida Console'>)</font>; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size1, <font color='#0000FF'><u>size_t</u></font> Size2, <font color='#0000FF'>typename</font>... Args<font color='#5555FF'>&gt;</font> <font color='#0000FF'>auto</font> constexpr <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font>descr<font color='#5555FF'>&lt;</font>Size1, Size2<font color='#5555FF'>&gt;</font> descr<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> descr; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size1, <font color='#0000FF'><u>size_t</u></font> Size2, <font color='#0000FF'>typename</font>... Args<font color='#5555FF'>&gt;</font> <font color='#0000FF'>auto</font> constexpr <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font>descr<font color='#5555FF'>&lt;</font>Size1, Size2<font color='#5555FF'>&gt;</font> descr, Args<font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font>... args<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> descr <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>, </font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>concat</font><font face='Lucida Console'>(</font>args...<font face='Lucida Console'>)</font>; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size1, <font color='#0000FF'><u>size_t</u></font> Size2<font color='#5555FF'>&gt;</font> <font color='#0000FF'>auto</font> constexpr <b><a name='type_descr'></a>type_descr</b><font face='Lucida Console'>(</font>descr<font color='#5555FF'>&lt;</font>Size1, Size2<font color='#5555FF'>&gt;</font> descr<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>{</font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> descr <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>}</font>"<font face='Lucida Console'>)</font>; <b>}</b>
+
+<font color='#0000FF'>#define</font> PYBIND11_DESCR constexpr <font color='#0000FF'>auto</font>
+
+<font color='#0000FF'>#else</font> <font color='#009900'>/* Simpler C++11 implementation based on run-time memory allocation and copying */</font>
+
+<font color='#0000FF'>class</font> <b><a name='descr'></a>descr</b> <b>{</b>
+<font color='#0000FF'>public</font>:
+    PYBIND11_NOINLINE <b><a name='descr'></a>descr</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font>text, <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font> <font color='#0000FF'>const</font> <font color='#5555FF'>*</font> types<font face='Lucida Console'>)</font> <b>{</b>
+        <font color='#0000FF'><u>size_t</u></font> nChars <font color='#5555FF'>=</font> <font color='#BB00BB'>len</font><font face='Lucida Console'>(</font>text<font face='Lucida Console'>)</font>, nTypes <font color='#5555FF'>=</font> <font color='#BB00BB'>len</font><font face='Lucida Console'>(</font>types<font face='Lucida Console'>)</font>;
+        m_text  <font color='#5555FF'>=</font> <font color='#0000FF'>new</font> <font color='#0000FF'><u>char</u></font>[nChars];
+        m_types <font color='#5555FF'>=</font> <font color='#0000FF'>new</font> <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font>[nTypes];
+        <font color='#BB00BB'>memcpy</font><font face='Lucida Console'>(</font>m_text, text, nChars <font color='#5555FF'>*</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>memcpy</font><font face='Lucida Console'>(</font>m_types, types, nTypes <font color='#5555FF'>*</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    PYBIND11_NOINLINE descr <b><a name='operator'></a>operator</b><font color='#5555FF'>+</font><font face='Lucida Console'>(</font>descr <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font>d2<font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> <b>{</b>
+        descr r;
+
+        <font color='#0000FF'><u>size_t</u></font> nChars1 <font color='#5555FF'>=</font> <font color='#BB00BB'>len</font><font face='Lucida Console'>(</font>m_text<font face='Lucida Console'>)</font>,    nTypes1 <font color='#5555FF'>=</font> <font color='#BB00BB'>len</font><font face='Lucida Console'>(</font>m_types<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'><u>size_t</u></font> nChars2 <font color='#5555FF'>=</font> <font color='#BB00BB'>len</font><font face='Lucida Console'>(</font>d2.m_text<font face='Lucida Console'>)</font>, nTypes2 <font color='#5555FF'>=</font> <font color='#BB00BB'>len</font><font face='Lucida Console'>(</font>d2.m_types<font face='Lucida Console'>)</font>;
+
+        r.m_text  <font color='#5555FF'>=</font> <font color='#0000FF'>new</font> <font color='#0000FF'><u>char</u></font>[nChars1 <font color='#5555FF'>+</font> nChars2 <font color='#5555FF'>-</font> <font color='#979000'>1</font>];
+        r.m_types <font color='#5555FF'>=</font> <font color='#0000FF'>new</font> <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font>[nTypes1 <font color='#5555FF'>+</font> nTypes2 <font color='#5555FF'>-</font> <font color='#979000'>1</font>];
+        <font color='#BB00BB'>memcpy</font><font face='Lucida Console'>(</font>r.m_text, m_text, <font face='Lucida Console'>(</font>nChars1<font color='#5555FF'>-</font><font color='#979000'>1</font><font face='Lucida Console'>)</font> <font color='#5555FF'>*</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>memcpy</font><font face='Lucida Console'>(</font>r.m_text <font color='#5555FF'>+</font> nChars1 <font color='#5555FF'>-</font> <font color='#979000'>1</font>, d2.m_text, nChars2 <font color='#5555FF'>*</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>memcpy</font><font face='Lucida Console'>(</font>r.m_types, m_types, <font face='Lucida Console'>(</font>nTypes1<font color='#5555FF'>-</font><font color='#979000'>1</font><font face='Lucida Console'>)</font> <font color='#5555FF'>*</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>std::type_info <font color='#5555FF'>*</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>memcpy</font><font face='Lucida Console'>(</font>r.m_types <font color='#5555FF'>+</font> nTypes1 <font color='#5555FF'>-</font> <font color='#979000'>1</font>, d2.m_types, nTypes2 <font color='#5555FF'>*</font> <font color='#0000FF'>sizeof</font><font face='Lucida Console'>(</font>std::type_info <font color='#5555FF'>*</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'>delete</font>[] m_text;    <font color='#0000FF'>delete</font>[] m_types;
+        <font color='#0000FF'>delete</font>[] d2.m_text; <font color='#0000FF'>delete</font>[] d2.m_types;
+
+        <font color='#0000FF'>return</font> r;
+    <b>}</b>
+
+    <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font><b><a name='text'></a>text</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> m_text; <b>}</b>
+    <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font> <font color='#5555FF'>*</font> <b><a name='types'></a>types</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> m_types; <b>}</b>
+
+<font color='#0000FF'>protected</font>:
+    PYBIND11_NOINLINE <b><a name='descr'></a>descr</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font> <font color='#0000FF'>static</font> <font color='#0000FF'><u>size_t</u></font> <b><a name='len'></a>len</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> T <font color='#5555FF'>*</font>ptr<font face='Lucida Console'>)</font> <b>{</b> <font color='#009900'>// return length including null termination
+</font>        <font color='#0000FF'>const</font> T <font color='#5555FF'>*</font>it <font color='#5555FF'>=</font> ptr;
+        <font color='#0000FF'>while</font> <font face='Lucida Console'>(</font><font color='#5555FF'>*</font>it<font color='#5555FF'>+</font><font color='#5555FF'>+</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>T<font face='Lucida Console'>)</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            ;
+        <font color='#0000FF'>return</font> <font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>it <font color='#5555FF'>-</font> ptr<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font><font color='#5555FF'>*</font>m_types <font color='#5555FF'>=</font> nullptr;
+    <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font>m_text <font color='#5555FF'>=</font> nullptr;
+<b>}</b>;
+
+<font color='#009900'>/* The 'PYBIND11_NOINLINE inline' combinations below are intentional to get the desired linkage while producing as little object code as possible */</font>
+
+PYBIND11_NOINLINE <font color='#0000FF'>inline</font> descr <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font>text<font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font>types[<font color='#979000'>1</font>] <font color='#5555FF'>=</font> <b>{</b> nullptr <b>}</b>;
+    <font color='#0000FF'>return</font> <font color='#BB00BB'>descr</font><font face='Lucida Console'>(</font>text, types<font face='Lucida Console'>)</font>;
+<b>}</b>
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE enable_if_t<font color='#5555FF'>&lt;</font>B, descr<font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font>text1, <font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>text1<font face='Lucida Console'>)</font>; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE enable_if_t<font color='#5555FF'>&lt;</font><font color='#5555FF'>!</font>B, descr<font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font color='#0000FF'><u>char</u></font> <font color='#0000FF'>const</font> <font color='#5555FF'>*</font>, <font color='#0000FF'>const</font> <font color='#0000FF'><u>char</u></font> <font color='#5555FF'>*</font>text2<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>text2<font face='Lucida Console'>)</font>; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE enable_if_t<font color='#5555FF'>&lt;</font>B, descr<font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font>descr d, descr<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> d; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>bool</u></font> B<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE enable_if_t<font color='#5555FF'>&lt;</font><font color='#5555FF'>!</font>B, descr<font color='#5555FF'>&gt;</font> <b><a name='_'></a>_</b><font face='Lucida Console'>(</font>descr, descr d<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> d; <b>}</b>
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> Type<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE descr <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font>types[<font color='#979000'>2</font>] <font color='#5555FF'>=</font> <b>{</b> <font color='#5555FF'>&amp;</font><font color='#0000FF'>typeid</font><font face='Lucida Console'>(</font>Type<font face='Lucida Console'>)</font>, nullptr <b>}</b>;
+    <font color='#0000FF'>return</font> <font color='#BB00BB'>descr</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>%</font>", types<font face='Lucida Console'>)</font>;
+<b>}</b>
+
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'><u>size_t</u></font> Size<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE descr <b><a name='_'></a>_</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b>
+    <font color='#0000FF'>const</font> std::type_info <font color='#5555FF'>*</font>types[<font color='#979000'>1</font>] <font color='#5555FF'>=</font> <b>{</b> nullptr <b>}</b>;
+    <font color='#0000FF'>return</font> <font color='#BB00BB'>descr</font><font face='Lucida Console'>(</font>std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>Size<font face='Lucida Console'>)</font>.<font color='#BB00BB'>c_str</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, types<font face='Lucida Console'>)</font>;
+<b>}</b>
+
+PYBIND11_NOINLINE <font color='#0000FF'>inline</font> descr <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'></font>"<font face='Lucida Console'>)</font>; <b>}</b>
+PYBIND11_NOINLINE <font color='#0000FF'>inline</font> descr <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font>descr <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font>d<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> d; <b>}</b>
+<font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font>... Args<font color='#5555FF'>&gt;</font> PYBIND11_NOINLINE descr <b><a name='concat'></a>concat</b><font face='Lucida Console'>(</font>descr <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font>d, Args<font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font>... args<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> std::<font color='#BB00BB'>move</font><font face='Lucida Console'>(</font>d<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>, </font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>concat</font><font face='Lucida Console'>(</font>std::forward<font color='#5555FF'>&lt;</font>Args<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>args<font face='Lucida Console'>)</font>...<font face='Lucida Console'>)</font>; <b>}</b>
+PYBIND11_NOINLINE <font color='#0000FF'>inline</font> descr <b><a name='type_descr'></a>type_descr</b><font face='Lucida Console'>(</font>descr<font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> d<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>{</font>"<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> std::<font color='#BB00BB'>move</font><font face='Lucida Console'>(</font>d<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> <font color='#BB00BB'>_</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>}</font>"<font face='Lucida Console'>)</font>; <b>}</b>
+
+<font color='#0000FF'>#define</font> PYBIND11_DESCR ::pybind11::detail::descr
+<font color='#0000FF'>#endif</font>
+
+<b><a name='NAMESPACE_END'></a>NAMESPACE_END</b><font face='Lucida Console'>(</font>detail<font face='Lucida Console'>)</font>
+<b><a name='NAMESPACE_END'></a>NAMESPACE_END</b><font face='Lucida Console'>(</font>PYBIND11_NAMESPACE<font face='Lucida Console'>)</font>
+
+</pre></body></html>

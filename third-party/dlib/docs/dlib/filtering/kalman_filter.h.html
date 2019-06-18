@@ -1,0 +1,385 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - kalman_filter.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2012  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_KALMAN_FiLTER_Hh_
+<font color='#0000FF'>#define</font> DLIB_KALMAN_FiLTER_Hh_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='kalman_filter_abstract.h.html'>kalman_filter_abstract.h</a>"
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../matrix.h.html'>../matrix.h</a>"
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../geometry.h.html'>../geometry.h</a>"
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'><u>long</u></font> states,
+        <font color='#0000FF'><u>long</u></font> measurements
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>class</font> <b><a name='kalman_filter'></a>kalman_filter</b>
+    <b>{</b>
+    <font color='#0000FF'>public</font>:
+
+        <b><a name='kalman_filter'></a>kalman_filter</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>
+        <b>{</b>
+            H <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            A <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            Q <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            R <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            x <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            xb <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            P <font color='#5555FF'>=</font> identity_matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>states<font face='Lucida Console'>)</font>;
+            got_first_meas <font color='#5555FF'>=</font> <font color='#979000'>false</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_observation_model'></a>set_observation_model</b> <font face='Lucida Console'>(</font> <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> H_<font face='Lucida Console'>)</font> <b>{</b> H <font color='#5555FF'>=</font> H_; <b>}</b>
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_transition_model'></a>set_transition_model</b>  <font face='Lucida Console'>(</font> <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> A_<font face='Lucida Console'>)</font> <b>{</b> A <font color='#5555FF'>=</font> A_; <b>}</b>
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_process_noise'></a>set_process_noise</b>     <font face='Lucida Console'>(</font> <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> Q_<font face='Lucida Console'>)</font> <b>{</b> Q <font color='#5555FF'>=</font> Q_; <b>}</b>
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_measurement_noise'></a>set_measurement_noise</b> <font face='Lucida Console'>(</font> <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,measurements<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> R_<font face='Lucida Console'>)</font> <b>{</b> R <font color='#5555FF'>=</font> R_; <b>}</b>
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_estimation_error_covariance'></a>set_estimation_error_covariance</b><font face='Lucida Console'>(</font> <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> P_<font face='Lucida Console'>)</font> <b>{</b> P <font color='#5555FF'>=</font> P_; <b>}</b>
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_state'></a>set_state</b>             <font face='Lucida Console'>(</font> <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> xb_<font face='Lucida Console'>)</font> 
+        <b>{</b>
+            xb <font color='#5555FF'>=</font> xb_;
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#5555FF'>!</font>got_first_meas<font face='Lucida Console'>)</font> 
+            <b>{</b>
+                x <font color='#5555FF'>=</font> xb_;
+                got_first_meas <font color='#5555FF'>=</font> <font color='#979000'>true</font>;
+            <b>}</b>
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_observation_model'></a>get_observation_model</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> H; <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_transition_model'></a>get_transition_model</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> A; <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_process_noise'></a>get_process_noise</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> Q; <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,measurements<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_measurement_noise'></a>get_measurement_noise</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> R; <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='update'></a>update</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#009900'>// propagate estimation error covariance forward
+</font>            P <font color='#5555FF'>=</font> A<font color='#5555FF'>*</font>P<font color='#5555FF'>*</font><font color='#BB00BB'>trans</font><font face='Lucida Console'>(</font>A<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> Q;
+
+            <font color='#009900'>// propagate state forward
+</font>            x <font color='#5555FF'>=</font> xb;
+            xb <font color='#5555FF'>=</font> A<font color='#5555FF'>*</font>x;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='update'></a>update</b> <font face='Lucida Console'>(</font><font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> z<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#009900'>// propagate estimation error covariance forward
+</font>            P <font color='#5555FF'>=</font> A<font color='#5555FF'>*</font>P<font color='#5555FF'>*</font><font color='#BB00BB'>trans</font><font face='Lucida Console'>(</font>A<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> Q;
+
+            <font color='#009900'>// compute Kalman gain matrix
+</font>            <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,measurements<font color='#5555FF'>&gt;</font> K <font color='#5555FF'>=</font> P<font color='#5555FF'>*</font><font color='#BB00BB'>trans</font><font face='Lucida Console'>(</font>H<font face='Lucida Console'>)</font><font color='#5555FF'>*</font><font color='#BB00BB'>pinv</font><font face='Lucida Console'>(</font>H<font color='#5555FF'>*</font>P<font color='#5555FF'>*</font><font color='#BB00BB'>trans</font><font face='Lucida Console'>(</font>H<font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> R<font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>got_first_meas<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font> res <font color='#5555FF'>=</font> z <font color='#5555FF'>-</font> H<font color='#5555FF'>*</font>xb;
+                <font color='#009900'>// correct the current state estimate
+</font>                x <font color='#5555FF'>=</font> xb <font color='#5555FF'>+</font> K<font color='#5555FF'>*</font>res;
+            <b>}</b>
+            <font color='#0000FF'>else</font>
+            <b>{</b>
+                <font color='#009900'>// Since we don't have a previous state estimate at the start of filtering,
+</font>                <font color='#009900'>// we will just set the current state to whatever is indicated by the measurement
+</font>                x <font color='#5555FF'>=</font> <font color='#BB00BB'>pinv</font><font face='Lucida Console'>(</font>H<font face='Lucida Console'>)</font><font color='#5555FF'>*</font>z; 
+                got_first_meas <font color='#5555FF'>=</font> <font color='#979000'>true</font>;
+            <b>}</b>
+
+            <font color='#009900'>// propagate state forward in time
+</font>            xb <font color='#5555FF'>=</font> A<font color='#5555FF'>*</font>x;
+
+            <font color='#009900'>// update estimation error covariance since we got a measurement.
+</font>            P <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>identity_matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>-</font> K<font color='#5555FF'>*</font>H<font face='Lucida Console'>)</font><font color='#5555FF'>*</font>P;
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_current_state'></a>get_current_state</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> x;
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_predicted_next_state'></a>get_predicted_next_state</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> xb;
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_current_estimation_error_covariance'></a>get_current_estimation_error_covariance</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> P;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'>inline</font> <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> kalman_filter<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>int</u></font> version <font color='#5555FF'>=</font> <font color='#979000'>1</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>version, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.got_first_meas, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.x, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.xb, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.P, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.H, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.A, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.Q, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.R, out<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'>inline</font> <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>kalman_filter<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>int</u></font> version <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>version, in<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>version <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font>
+                <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>serialization_error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Unknown version number found while deserializing kalman_filter object.</font>"<font face='Lucida Console'>)</font>;
+
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.got_first_meas, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.x, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.xb, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.P, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.H, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.A, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.Q, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.R, in<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        <font color='#0000FF'><u>bool</u></font> got_first_meas;
+        matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font> x, xb;
+        matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font> P;
+
+        matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,states<font color='#5555FF'>&gt;</font> H;
+        matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font> A;
+        matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,states,states<font color='#5555FF'>&gt;</font> Q;
+        matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,measurements,measurements<font color='#5555FF'>&gt;</font> R;
+
+
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>class</font> <b><a name='momentum_filter'></a>momentum_filter</b>
+    <b>{</b>
+    <font color='#0000FF'>public</font>:
+
+        <b><a name='momentum_filter'></a>momentum_filter</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>double</u></font> meas_noise,
+            <font color='#0000FF'><u>double</u></font> acc,
+            <font color='#0000FF'><u>double</u></font> max_meas_dev
+        <font face='Lucida Console'>)</font> : 
+            measurement_noise<font face='Lucida Console'>(</font>meas_noise<font face='Lucida Console'>)</font>,
+            typical_acceleration<font face='Lucida Console'>(</font>acc<font face='Lucida Console'>)</font>,
+            max_measurement_deviation<font face='Lucida Console'>(</font>max_meas_dev<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>meas_noise <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>acc <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>max_meas_dev <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+
+            kal.<font color='#BB00BB'>set_observation_model</font><font face='Lucida Console'>(</font><b>{</b><font color='#979000'>1</font>, <font color='#979000'>0</font><b>}</b><font face='Lucida Console'>)</font>;
+            kal.<font color='#BB00BB'>set_transition_model</font><font face='Lucida Console'>(</font> <b>{</b><font color='#979000'>1</font>, <font color='#979000'>1</font>,
+                <font color='#979000'>0</font>, <font color='#979000'>1</font><b>}</b><font face='Lucida Console'>)</font>;
+            kal.<font color='#BB00BB'>set_process_noise</font><font face='Lucida Console'>(</font><b>{</b><font color='#979000'>0</font>, <font color='#979000'>0</font>,
+                <font color='#979000'>0</font>, typical_acceleration<font color='#5555FF'>*</font>typical_acceleration<b>}</b><font face='Lucida Console'>)</font>;
+
+            kal.<font color='#BB00BB'>set_measurement_noise</font><font face='Lucida Console'>(</font><b>{</b>measurement_noise<font color='#5555FF'>*</font>measurement_noise<b>}</b><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <b><a name='momentum_filter'></a>momentum_filter</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>; 
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='get_measurement_noise'></a>get_measurement_noise</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> measurement_noise; <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='get_typical_acceleration'></a>get_typical_acceleration</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> typical_acceleration; <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='get_max_measurement_deviation'></a>get_max_measurement_deviation</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> max_measurement_deviation; <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='reset'></a>reset</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#5555FF'>*</font><font color='#0000FF'>this</font> <font color='#5555FF'>=</font> <font color='#BB00BB'>momentum_filter</font><font face='Lucida Console'>(</font>measurement_noise, typical_acceleration, max_measurement_deviation<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='get_predicted_next_position'></a>get_predicted_next_position</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> kal.<font color='#BB00BB'>get_predicted_next_state</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> measured_position
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>auto</font> x <font color='#5555FF'>=</font> kal.<font color='#BB00BB'>get_predicted_next_state</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> max_deviation <font color='#5555FF'>=</font> max_measurement_deviation<font color='#5555FF'>*</font>measurement_noise;
+            <font color='#009900'>// Check if measured_position has suddenly jumped in value by a whole lot. This
+</font>            <font color='#009900'>// could happen if the velocity term experiences a much larger than normal
+</font>            <font color='#009900'>// acceleration, e.g.  because the underlying object is doing a maneuver.  If
+</font>            <font color='#009900'>// this happens then we clamp the state so that the predicted next value is no
+</font>            <font color='#009900'>// more than max_deviation away from measured_position at all times.
+</font>            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> measured_position <font color='#5555FF'>+</font> max_deviation<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> measured_position <font color='#5555FF'>+</font> max_deviation;
+                kal.<font color='#BB00BB'>set_state</font><font face='Lucida Console'>(</font>x<font face='Lucida Console'>)</font>;
+            <b>}</b>
+            <font color='#0000FF'>else</font> <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&lt;</font> measured_position <font color='#5555FF'>-</font> max_deviation<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> measured_position <font color='#5555FF'>-</font> max_deviation;
+                kal.<font color='#BB00BB'>set_state</font><font face='Lucida Console'>(</font>x<font face='Lucida Console'>)</font>;
+            <b>}</b>
+
+            kal.<font color='#BB00BB'>update</font><font face='Lucida Console'>(</font><b>{</b>measured_position<b>}</b><font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>return</font> kal.<font color='#BB00BB'>get_current_state</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> std::ostream<font color='#5555FF'>&amp;</font> <b><a name='operator'></a>operator</b> <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> <font face='Lucida Console'>(</font>std::ostream<font color='#5555FF'>&amp;</font> out, <font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> item<font face='Lucida Console'>)</font>
+        <b>{</b>
+            out <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> "<font color='#CC0000'>measurement_noise:         </font>" <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> item.measurement_noise <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> "<font color='#CC0000'>\n</font>";
+            out <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> "<font color='#CC0000'>typical_acceleration:      </font>" <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> item.typical_acceleration <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> "<font color='#CC0000'>\n</font>";
+            out <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> "<font color='#CC0000'>max_measurement_deviation: </font>" <font color='#5555FF'>&lt;</font><font color='#5555FF'>&lt;</font> item.max_measurement_deviation;
+            <font color='#0000FF'>return</font> out;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>int</u></font> version <font color='#5555FF'>=</font> <font color='#979000'>15</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>version, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.measurement_noise, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.typical_acceleration, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.max_measurement_deviation, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.kal, out<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>momentum_filter<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>int</u></font> version <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>version, in<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>version <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>15</font><font face='Lucida Console'>)</font>
+                <font color='#0000FF'>throw</font> <font color='#BB00BB'>serialization_error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Unexpected version found while deserializing momentum_filter.</font>"<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.measurement_noise, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.typical_acceleration, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.max_measurement_deviation, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.kal, in<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        <font color='#0000FF'><u>double</u></font> measurement_noise <font color='#5555FF'>=</font> <font color='#979000'>2</font>;
+        <font color='#0000FF'><u>double</u></font> typical_acceleration <font color='#5555FF'>=</font> <font color='#979000'>0.1</font>;
+        <font color='#0000FF'><u>double</u></font> max_measurement_deviation <font color='#5555FF'>=</font> <font color='#979000'>3</font>; <font color='#009900'>// nominally number of standard deviations
+</font>
+        kalman_filter<font color='#5555FF'>&lt;</font><font color='#979000'>2</font>,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font> kal;
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    momentum_filter <b><a name='find_optimal_momentum_filter'></a>find_optimal_momentum_filter</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> sequences,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> smoothness <font color='#5555FF'>=</font> <font color='#979000'>1</font>
+    <font face='Lucida Console'>)</font>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    momentum_filter <b><a name='find_optimal_momentum_filter'></a>find_optimal_momentum_filter</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> sequence,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> smoothness <font color='#5555FF'>=</font> <font color='#979000'>1</font>
+    <font face='Lucida Console'>)</font>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>class</font> <b><a name='rect_filter'></a>rect_filter</b>
+    <b>{</b>
+    <font color='#0000FF'>public</font>:
+        <b><a name='rect_filter'></a>rect_filter</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <b><a name='rect_filter'></a>rect_filter</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>double</u></font> meas_noise,
+            <font color='#0000FF'><u>double</u></font> acc,
+            <font color='#0000FF'><u>double</u></font> max_meas_dev
+        <font face='Lucida Console'>)</font> : rect_filter<font face='Lucida Console'>(</font>momentum_filter<font face='Lucida Console'>(</font>meas_noise, acc, max_meas_dev<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+
+        <b><a name='rect_filter'></a>rect_filter</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> filt
+        <font face='Lucida Console'>)</font> : 
+            left<font face='Lucida Console'>(</font>filt<font face='Lucida Console'>)</font>,
+            top<font face='Lucida Console'>(</font>filt<font face='Lucida Console'>)</font>,
+            right<font face='Lucida Console'>(</font>filt<font face='Lucida Console'>)</font>,
+            bottom<font face='Lucida Console'>(</font>filt<font face='Lucida Console'>)</font>
+        <b>{</b>
+        <b>}</b>
+
+        drectangle <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> drectangle<font color='#5555FF'>&amp;</font> r<font face='Lucida Console'>)</font> 
+        <b>{</b>
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>drectangle</font><font face='Lucida Console'>(</font><font color='#BB00BB'>left</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>left</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+                            <font color='#BB00BB'>top</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>top</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+                            <font color='#BB00BB'>right</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>right</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+                            <font color='#BB00BB'>bottom</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>bottom</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        drectangle <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> rectangle<font color='#5555FF'>&amp;</font> r<font face='Lucida Console'>)</font> 
+        <b>{</b>
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>drectangle</font><font face='Lucida Console'>(</font><font color='#BB00BB'>left</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>left</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+                            <font color='#BB00BB'>top</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>top</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+                            <font color='#BB00BB'>right</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>right</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+                            <font color='#BB00BB'>bottom</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>bottom</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> <b><a name='get_left'></a>get_left</b>   <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> left; <b>}</b>
+        momentum_filter<font color='#5555FF'>&amp;</font>       <b><a name='get_left'></a>get_left</b>   <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>       <b>{</b> <font color='#0000FF'>return</font> left; <b>}</b>
+        <font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> <b><a name='get_top'></a>get_top</b>    <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> top; <b>}</b>
+        momentum_filter<font color='#5555FF'>&amp;</font>       <b><a name='get_top'></a>get_top</b>    <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>       <b>{</b> <font color='#0000FF'>return</font> top; <b>}</b>
+        <font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> <b><a name='get_right'></a>get_right</b>  <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> right; <b>}</b>
+        momentum_filter<font color='#5555FF'>&amp;</font>       <b><a name='get_right'></a>get_right</b>  <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>       <b>{</b> <font color='#0000FF'>return</font> right; <b>}</b>
+        <font color='#0000FF'>const</font> momentum_filter<font color='#5555FF'>&amp;</font> <b><a name='get_bottom'></a>get_bottom</b> <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> bottom; <b>}</b>
+        momentum_filter<font color='#5555FF'>&amp;</font>       <b><a name='get_bottom'></a>get_bottom</b> <font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>       <b>{</b> <font color='#0000FF'>return</font> bottom; <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> rect_filter<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>int</u></font> version <font color='#5555FF'>=</font> <font color='#979000'>123</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>version, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.left, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.top, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.right, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.bottom, out<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>rect_filter<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>int</u></font> version <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>version, in<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>version <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>123</font><font face='Lucida Console'>)</font>
+                <font color='#0000FF'>throw</font> dlib::<font color='#BB00BB'>serialization_error</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>Unknown version number found while deserializing rect_filter object.</font>"<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.left, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.top, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.right, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.bottom, in<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        momentum_filter left, top, right, bottom;
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    rect_filter <b><a name='find_optimal_rect_filter'></a>find_optimal_rect_filter</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>rectangle<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> rects,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> smoothness <font color='#5555FF'>=</font> <font color='#979000'>1</font>
+    <font face='Lucida Console'>)</font>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_KALMAN_FiLTER_Hh_
+</font>
+
+</pre></body></html>

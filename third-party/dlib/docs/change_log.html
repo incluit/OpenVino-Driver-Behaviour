@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html xmlns:gcse="googleCustomSearch"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="shortcut icon" href="dlib-icon.ico"><meta name="verify-v1" content="02MiiaFNVzS5/u0eQhsy3/knioFHsia1X3DXRpHkE6I="><meta name="google-site-verification" content="DGSSJMKDomaDaDTIRJ8jDkv0YMx9Cz7OESbXHjjr6Jw"><title>dlib C++ Library
+               - Change Log</title><script type="text/javascript" src="dlib.js"></script><link rel="stylesheet" type="text/css" href="dlib.css"></head><body><a name="top"></a><div id="page_header"><a href="http://dlib.net"><img src="dlib-logo.png"></a></div><div id="top_content"><div id="main_menu" class="menu"><div class="menu_top"><b>The Library</b><ul class="tree"><li><a href="algorithms.html" class="menu">Algorithms</a></li><li><a href="api.html" class="menu">API Wrappers</a></li><li><a href="bayes.html" class="menu">Bayesian Nets</a></li><li><a href="compression.html" class="menu">Compression</a></li><li><a href="containers.html" class="menu">Containers</a></li><li><a href="graph_tools.html" class="menu">Graph Tools</a></li><li><a href="imaging.html" class="menu">Image Processing</a></li><li><a href="linear_algebra.html" class="menu">Linear Algebra</a></li><li><a href="ml.html" class="menu">Machine Learning</a></li><li><a href="metaprogramming.html" class="menu">Metaprogramming</a></li><li><a href="other.html" class="menu">Miscellaneous</a></li><li><a href="network.html" class="menu">Networking</a></li><li><a href="optimization.html" class="menu">Optimization</a></li><li><a href="parsing.html" class="menu">Parsing</a></li></ul><br><b>Help/Info</b><ul class="tree"><li><a href="http://blog.dlib.net" class="menu">Dlib Blog</a></li><li><a onclick="Toggle(this)" class="sub menu"><img src="plus.gif">Examples: C++</a><ul style="display:none;"><li><a href="3d_point_cloud_ex.cpp.html" class="menu">3D Point Cloud</a></li><li><a href="assignment_learning_ex.cpp.html" class="menu">Assignment Learning</a></li><li><a href="file_to_code_ex.cpp.html" class="menu">Base64 Encoder</a></li><li><a href="bayes_net_from_disk_ex.cpp.html" class="menu">Bayesian Network From Disk</a></li><li><a href="bayes_net_gui_ex.cpp.html" class="menu">Bayesian Network GUI</a></li><li><a href="bayes_net_ex.cpp.html" class="menu">Bayesian Network</a></li><li><a href="bridge_ex.cpp.html" class="menu">Bridge</a></li><li><a href="bsp_ex.cpp.html" class="menu">BSP</a></li><li><a href="svm_c_ex.cpp.html" class="menu">C-Support Vector Machine</a></li><li><a href="compress_stream_ex.cpp.html#_top" class="menu">Cmd Line Parser</a></li><li><a href="compress_stream_ex.cpp.html" class="menu">Compress Stream</a></li><li><a href="config_reader_ex.cpp.html" class="menu">Config File Reader</a></li><li><a href="custom_trainer_ex.cpp.html" class="menu">Custom Trainers</a></li><li><a href="dnn_face_recognition_ex.cpp.html" class="menu">Deep Face Recognition</a></li><li><a href="dnn_mmod_dog_hipsterizer.cpp.html" class="menu">Deep Learning Dog Hipsterizer</a></li><li><a href="dnn_mmod_face_detection_ex.cpp.html" class="menu">Deep Learning Face Detection</a></li><li><a href="dnn_imagenet_ex.cpp.html" class="menu">Deep Learning Imagenet Classifier</a></li><li><a href="dnn_imagenet_train_ex.cpp.html" class="menu">Deep Learning Imagenet Trainer </a></li><li><a href="dnn_inception_ex.cpp.html" class="menu">Deep Learning Inception</a></li><li><a href="dnn_introduction_ex.cpp.html" class="menu">Deep Learning Introduction Part 1</a></li><li><a href="dnn_introduction2_ex.cpp.html" class="menu">Deep Learning Introduction Part 2</a></li><li><a href="dnn_mmod_ex.cpp.html" class="menu">Deep Learning Max-Margin Object Detection</a></li><li><a href="dnn_mmod_find_cars2_ex.cpp.html" class="menu">Deep Learning Multi-Class Vehicle Detection</a></li><li><a href="dnn_semantic_segmentation_train_ex.cpp.html" class="menu">Deep Learning Semantic Segmentation Trainer</a></li><li><a href="dnn_semantic_segmentation_ex.cpp.html" class="menu">Deep Learning Semantic Segmentation</a></li><li><a href="dnn_mmod_train_find_cars_ex.cpp.html" class="menu">Deep Learning Vehicle Detection Trainer</a></li><li><a href="dnn_mmod_find_cars_ex.cpp.html" class="menu">Deep Learning Vehicle Detection</a></li><li><a href="dnn_metric_learning_ex.cpp.html" class="menu">Deep Metric Learning Introduction</a></li><li><a href="dnn_metric_learning_on_images_ex.cpp.html" class="menu">Deep Metric Learning on Images</a></li><li><a href="dir_nav_ex.cpp.html" class="menu">Directory Navigation</a></li><li><a href="empirical_kernel_map_ex.cpp.html" class="menu">Empirical Kernel Map</a></li><li><a href="face_detection_ex.cpp.html" class="menu">Face Detection</a></li><li><a href="face_landmark_detection_ex.cpp.html" class="menu">Face Landmark Detection</a></li><li><a href="fhog_ex.cpp.html" class="menu">FHOG Feature Extraction</a></li><li><a href="fhog_object_detector_ex.cpp.html" class="menu">FHOG Object Detection</a></li><li><a href="graph_labeling_ex.cpp.html" class="menu">Graph Labeling</a></li><li><a href="gui_api_ex.cpp.html" class="menu">GUI</a></li><li><a href="hough_transform_ex.cpp.html" class="menu">Hough Transform</a></li><li><a href="server_http_ex.cpp.html" class="menu">HTTP Server</a></li><li><a href="image_ex.cpp.html" class="menu">Image</a></li><li><a href="iosockstream_ex.cpp.html" class="menu">IO Socket Streams</a></li><li><a href="server_iostream_ex.cpp.html" class="menu">IO Streams Server</a></li><li><a href="kcentroid_ex.cpp.html" class="menu">Kernel Centroid</a></li><li><a href="kkmeans_ex.cpp.html" class="menu">Kernel K-Means Clustering</a></li><li><a href="krr_regression_ex.cpp.html" class="menu">Kernel Ridge Regression</a></li><li><a href="krls_filter_ex.cpp.html" class="menu">Kernel RLS Filtering</a></li><li><a href="krls_ex.cpp.html" class="menu">Kernel RLS Regression</a></li><li><a href="krr_classification_ex.cpp.html" class="menu">KRR Classification</a></li><li><a href="learning_to_track_ex.cpp.html" class="menu">Learning to Track</a></li><li><a href="max_cost_assignment_ex.cpp.html" class="menu">Linear Assignment Problems</a></li><li><a href="linear_manifold_regularizer_ex.cpp.html" class="menu">Linear Manifold Regularizer</a></li><li><a href="mpc_ex.cpp.html" class="menu">Linear Model Predictive Control</a></li><li><a href="logger_ex_2.cpp.html" class="menu">Logger Advanced</a></li><li><a href="logger_custom_output_ex.cpp.html" class="menu">Logger Custom Output</a></li><li><a href="logger_ex.cpp.html" class="menu">Logger</a></li><li><a href="matrix_expressions_ex.cpp.html" class="menu">Matrix Expressions</a></li><li><a href="matrix_ex.cpp.html" class="menu">Matrix</a></li><li><a href="member_function_pointer_ex.cpp.html" class="menu">Member Function Pointer</a></li><li><a href="model_selection_ex.cpp.html" class="menu">Model Selection</a></li><li><a href="multiclass_classification_ex.cpp.html" class="menu">Multiclass Classification</a></li><li><a href="multithreaded_object_ex.cpp.html" class="menu">Multithreaded Object</a></li><li><a href="mlp_ex.cpp.html" class="menu">Neural Network</a></li><li><a href="least_squares_ex.cpp.html" class="menu">Non-Linear Least Squares</a></li><li><a href="svm_ex.cpp.html" class="menu">Nu-Support Vector Machine</a></li><li><a href="integrate_function_adapt_simp_ex.cpp.html" class="menu">Numerical Integration</a></li><li><a href="object_detector_advanced_ex.cpp.html" class="menu">Object Detector Advanced</a></li><li><a href="object_detector_ex.cpp.html" class="menu">Object Detector</a></li><li><a href="one_class_classifiers_ex.cpp.html" class="menu">One Class Classifiers</a></li><li><a href="svm_pegasos_ex.cpp.html" class="menu">Online SVM</a></li><li><a href="optimization_ex.cpp.html" class="menu">Optimization</a></li><li><a href="parallel_for_ex.cpp.html" class="menu">Parallel For Loops</a></li><li><a href="pipe_ex_2.cpp.html" class="menu">Pipe 2</a></li><li><a href="pipe_ex.cpp.html" class="menu">Pipe</a></li><li><a href="quantum_computing_ex.cpp.html" class="menu">Quantum Computing</a></li><li><a href="queue_ex.cpp.html" class="menu">Queue</a></li><li><a href="random_cropper_ex.cpp.html" class="menu">Random Cropper</a></li><li><a href="rank_features_ex.cpp.html" class="menu">Rank Features</a></li><li><a href="rvm_ex.cpp.html" class="menu">Relevance Vector Classification</a></li><li><a href="rvm_regression_ex.cpp.html" class="menu">Relevance Vector Regression</a></li><li><a href="running_stats_ex.cpp.html" class="menu">Running Stats</a></li><li><a href="sequence_labeler_ex.cpp.html" class="menu">Sequence Labeling</a></li><li><a href="sequence_segmenter_ex.cpp.html" class="menu">Sequence Segmentation</a></li><li><a href="sockets_ex.cpp.html" class="menu">Sockets</a></li><li><a href="sockstreambuf_ex.cpp.html" class="menu">Sockstreambuf</a></li><li><a href="svm_sparse_ex.cpp.html" class="menu">Sparse Vectors</a></li><li><a href="sqlite_ex.cpp.html" class="menu">SQLite</a></li><li><a href="std_allocator_ex.cpp.html" class="menu">Std C++ Allocator</a></li><li><a href="svm_struct_ex.cpp.html" class="menu">Structural Support Vector Machines</a></li><li><a href="svr_ex.cpp.html" class="menu">Support Vector Regression</a></li><li><a href="surf_ex.cpp.html" class="menu">SURF</a></li><li><a href="svm_rank_ex.cpp.html" class="menu">SVM-Rank</a></li><li><a href="thread_function_ex.cpp.html" class="menu">Thread Function</a></li><li><a href="thread_pool_ex.cpp.html" class="menu">Thread Pool</a></li><li><a href="threaded_object_ex.cpp.html" class="menu">Threaded Object</a></li><li><a href="threads_ex.cpp.html" class="menu">Threads</a></li><li><a href="timer_ex.cpp.html" class="menu">Timer</a></li><li><a href="train_object_detector.cpp.html" class="menu">Train Object Detector</a></li><li><a href="train_shape_predictor_ex.cpp.html" class="menu">Train Shape Predictor</a></li><li><a href="using_custom_kernels_ex.cpp.html" class="menu">Using Custom Kernels</a></li><li><a href="video_tracking_ex.cpp.html" class="menu">Video Object Tracking</a></li><li><a href="webcam_face_pose_ex.cpp.html" class="menu">Webcam Face Pose Estimation</a></li><li><a href="xml_parser_ex.cpp.html" class="menu">XML Parser</a></li></ul></li><li><a onclick="Toggle(this)" class="sub menu"><img src="plus.gif">Examples: Python</a><ul style="display:none;"><li><a href="svm_binary_classifier.py.html" class="menu">Binary Classification</a></li><li><a href="cnn_face_detector.py.html" class="menu">CNN Face Detector</a></li><li><a href="face_alignment.py.html" class="menu">Face Alignment</a></li><li><a href="face_clustering.py.html" class="menu">Face Clustering</a></li><li><a href="face_detector.py.html" class="menu">Face Detector</a></li><li><a href="face_jitter.py.html" class="menu">Face Jittering/Augmentation</a></li><li><a href="face_landmark_detection.py.html" class="menu">Face Landmark Detection</a></li><li><a href="face_recognition.py.html" class="menu">Face Recognition</a></li><li><a href="find_candidate_object_locations.py.html" class="menu">Find Candidate Object Locations</a></li><li><a href="global_optimization.py.html" class="menu">Global Optimization</a></li><li><a href="max_cost_assignment.py.html" class="menu">Linear Assignment Problems</a></li><li><a href="sequence_segmenter.py.html" class="menu">Sequence Segmenter</a></li><li><a href="svm_struct.py.html" class="menu">Structural Support Vector Machines</a></li><li><a href="svm_rank.py.html" class="menu">SVM-Rank</a></li><li><a href="train_object_detector.py.html" class="menu">Train Object Detector</a></li><li><a href="train_shape_predictor.py.html" class="menu">Train Shape Predictor</a></li><li><a href="correlation_tracker.py.html" class="menu">Video Object Tracking</a></li></ul></li><li><a href="faq.html" class="menu">FAQ</a></li><li><a href="index.html" class="menu">Home</a></li><li><a href="compile.html" class="menu">How to compile</a></li><li><a href="howto_contribute.html" class="menu">How to contribute</a></li><li><a href="term_index.html" class="menu">Index</a></li><li><a href="intro.html" class="menu">Introduction</a></li><li><a href="license.html" class="menu">License</a></li><li><a href="python/index.html" class="menu">Python API</a></li><li><a href="books.html" class="menu">Suggested Books</a></li><li><a href="http://sourceforge.net/p/dclib/wiki/Known_users/" class="menu">Who uses dlib?</a></li></ul><br><b>Current Release</b><ul class="tree"><li><a href="change_log.html" class="menu">Change Log</a></li><li><a href="release_notes.html" class="menu">Release Notes</a></li><li>Version: 19.17</li></ul><br></div><div class="menu_footer">
+      Last Modified:<br>Mar 10, 2019</div></div><div id="main_text"><div id="main_text_title">Change Log</div><div id="main_text_body"><u>Revision</u>: 810ef7937d87c9265bcb<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 10, 2019
+         (07:04:56 UTC)
+      <br><p style="margin:0.4em">Created release v19.17</p><pre class="files_changed"> dlib/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: ffce4af6e21e2b91f4f0<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 10, 2019
+         (05:58:19 UTC)
+      <br><p style="margin:0.4em">Make cusolver finding work for really old versions of cmake with CUDA 10.1</p><pre class="files_changed"> dlib/CMakeLists.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 5faf8ccce35520e22335<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 08, 2019
+         (03:05:11 UTC)
+      <br><p style="margin:0.4em">Automatically test for NEON instructions when building python extensions and enable them if available.</p><pre class="files_changed"> dlib/cmake_utils/set_compiler_specific_options.cmake | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 83385e235666b3f13e7f<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 08, 2019
+         (02:32:49 UTC)
+      <br><p style="margin:0.4em">Added more dianostic messages from cmake.</p><pre class="files_changed"> dlib/CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 663a1b712781846e1c45<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (16:35:15 UTC)
+      <br><p style="margin:0.4em">Fixed more gcc 8 warnings.</p><pre class="files_changed"> dlib/cpp_tokenizer/cpp_tokenizer_kernel_1.h | 2 +-
+ dlib/svm/pegasos.h                          | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: f9b7ad9ae6ff63df39b2<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (16:17:20 UTC)
+      <br><p style="margin:0.4em">Fixed compiler warnings in gcc 8</p><pre class="files_changed"> dlib/array/array_kernel.h                            |  4 ++--
+ dlib/array2d/array2d_kernel.h                        |  4 ++--
+ dlib/array2d/serialize_pixel_overloads.h             | 20 ++++++++++----------
+ .../binary_search_tree/binary_search_tree_kernel_1.h |  2 +-
+ .../binary_search_tree/binary_search_tree_kernel_2.h |  2 +-
+ dlib/gui_widgets/fonts.cpp                           |  4 ++--
+ dlib/hash_map/hash_map_kernel_1.h                    |  2 +-
+ dlib/hash_set/hash_set_kernel_1.h                    |  2 +-
+ dlib/hash_table/hash_table_kernel_1.h                |  2 +-
+ dlib/hash_table/hash_table_kernel_2.h                |  2 +-
+ dlib/map/map_kernel_1.h                              |  2 +-
+ dlib/optimization/optimization_bobyqa.h              |  2 +-
+ dlib/queue/queue_kernel_1.h                          |  2 +-
+ dlib/queue/queue_kernel_2.h                          |  2 +-
+ dlib/sequence/sequence_kernel_1.h                    |  2 +-
+ dlib/sequence/sequence_kernel_2.h                    |  2 +-
+ dlib/set/set_kernel_1.h                              |  2 +-
+ dlib/sliding_buffer/sliding_buffer_kernel_1.h        |  2 +-
+ dlib/stack/stack_kernel_1.h                          |  2 +-
+ dlib/static_set/static_set_kernel_1.h                |  2 +-
+ dlib/test/compress_stream.cpp                        |  2 +-
+ 21 files changed, 33 insertions(+), 33 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 5d03b99a08e24e14a64c<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (15:12:43 UTC)
+      <br><p style="margin:0.4em">Changed to avoid compiler warning.</p><pre class="files_changed"> examples/dnn_semantic_segmentation_train_ex.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 02ed083c4c8f2d9c5edb<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 03, 2019
+         (12:01:48 UTC)
+      <br><p style="margin:0.4em">Work around bug in nvcc in cuda 10.1</p><pre class="files_changed"> dlib/matrix/matrix.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 70f9a9f11fb2ae82a057<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Mar 02, 2019
+         (04:45:08 UTC)
+      <br><p style="margin:0.4em">Made cusolver finding work in newer versions of cmake and cuda</p><pre class="files_changed"> dlib/CMakeLists.txt | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: f7f6f6761817f2e6e5cf<br><u>Author</u>: <a href="mailto:ksachdeva17@gmail.com">Kapil Sachdeva</a><br><u>Date</u>: Feb 25, 2019
+         (13:10:04 UTC)
+      <br><p style="margin:0.4em">Add python api that generates desciptor(s) from the aligned image(s) (#1667)</p><pre class="files_changed"> python_examples/face_recognition.py   | 17 +++++++++
+ tools/python/src/face_recognition.cpp | 72 ++++++++++++++++++++++++++++++++++-
+ 2 files changed, 87 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 04a2387cfca242c8d003<br><u>Author</u>: <a href="mailto:juha.reunanen@tomaattinen.com">Juha Reunanen</a><br><u>Date</u>: Feb 20, 2019
+         (17:33:01 UTC)
+      <br><p style="margin:0.4em">Make sure CUDA_VERSION is defined (#1663)</p><pre class="files_changed"> dlib/cuda/gpu_data.cpp | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 41a87e5926935c2328e9<br><u>Author</u>: <a href="mailto:branko@kokanovic.org">Branko Kokanovic</a><br><u>Date</u>: Feb 07, 2019
+         (14:59:04 UTC)
+      <br><p style="margin:0.4em">Exposing chinese_whispers directly, closes #1642 (#1644)</p><pre class="files_changed"> tools/python/src/face_recognition.cpp      | 35 +++++++++++++++++++
+ tools/python/test/test_chinese_whispers.py | 56 ++++++++++++++++++++++++++++++
+ 2 files changed, 91 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 84b72278b56c9adca02d<br><u>Author</u>: <a href="mailto:davemers@umail.iu.edu">davemers0160</a><br><u>Date</u>: Jan 19, 2019
+         (15:45:46 UTC)
+      <br><p style="margin:0.4em">fixed check for excessive detections in loss_mmod_ (#1625)</p><pre class="files_changed"> dlib/dnn/loss.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: ea451995728a625319bb<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Jan 19, 2019
+         (15:40:21 UTC)
+      <br><p style="margin:0.4em">Remove Python 3.5 tests on AppVeyor because something is wrong with python 3.5 on appveyor and the other tests are sufficient for python coverage.</p><pre class="files_changed"> dlib/appveyor/python.yml | 2 --
+ 1 file changed, 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 5c623e3c93feb96e2484<br><u>Author</u>: <a href="mailto:juha.reunanen@tomaattinen.com">Juha Reunanen</a><br><u>Date</u>: Jan 08, 2019
+         (07:43:34 UTC)
+      <br><p style="margin:0.4em">Apply the #1514 fix even on non-Windows platforms, and change all remaining cudaStreamSynchronize calls (#1596)</p><pre class="files_changed"> dlib/cuda/gpu_data.cpp | 51 ++++++++++++++++++++++++--------------------------
+ 1 file changed, 24 insertions(+), 27 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 9ca72b3e1cb1233d4b64<br><u>Author</u>: <a href="mailto:aklhfex@gmail.com">Chris Mayo</a><br><u>Date</u>: Jan 08, 2019
+         (03:41:26 UTC)
+      <br><p style="margin:0.4em">Reliably detect AVX2 at runtime on Linux (#1614)</p><pre class="files_changed"> dlib/simd/simd_check.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: be8dc9269bd07f9a978a<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Jan 06, 2019
+         (10:34:04 UTC)
+      <br><p style="margin:0.4em">merged</p><pre class="files_changed"></pre><hr class="fullhr"><u>Revision</u>: c763fafde9191f6cfcf7<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Jan 06, 2019
+         (10:32:20 UTC)
+      <br><p style="margin:0.4em">Fixed broken memcpy overload.</p><pre class="files_changed"> dlib/cuda/cuda_data_ptr.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: f685cb4249b19bac5437<br><u>Author</u>: <a href="mailto:juha.reunanen@tomaattinen.com">Juha Reunanen</a><br><u>Date</u>: Jan 06, 2019
+         (18:11:39 UTC)
+      <br><p style="margin:0.4em">Add U-net style skip connections to the semantic-segmentation example (#1600)</p><pre class="files_changed"> dlib/dnn/layers.h                               | 100 +++++++++++++++++
+ dlib/dnn/layers_abstract.h                      |  50 +++++++++
+ dlib/test/dnn.cpp                               |   4 +-
+ examples/dnn_semantic_segmentation_ex.cpp       |   8 +-
+ examples/dnn_semantic_segmentation_ex.h         | 137 ++++++++++++++++--------
+ examples/dnn_semantic_segmentation_train_ex.cpp |  29 ++---
+ 6 files changed, 262 insertions(+), 66 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: fb4c62cc674c835988fc<br><u>Author</u>: <a href="mailto:thomas.d.peters@gmail.com">Thomas Peters</a><br><u>Date</u>: Jan 04, 2019
+         (17:38:55 UTC)
+      <br><p style="margin:0.4em">remove register keyword from jdhuff for C++17 (#1612)</p><pre class="files_changed"> dlib/external/libjpeg/jdhuff.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 61a021c932b74e591ce6<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Dec 11, 2018
+         (06:22:14 UTC)
+      <br><p style="margin:0.4em">Add pointwise_divide function (#1586)</p><pre class="files_changed"> dlib/dnn/layers.h                       |   2 +-
+ dlib/matrix/matrix_utilities.h          | 153 ++++++++++++++++++++++++++++++++
+ dlib/matrix/matrix_utilities_abstract.h |  40 +++++++++
+ dlib/test/matrix.cpp                    |   4 +
+ dlib/test/matrix2.cpp                   |  34 ++++---
+ 5 files changed, 221 insertions(+), 12 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 99af7b9d54f47fc06094<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Dec 05, 2018
+         (16:41:34 UTC)
+      <br><p style="margin:0.4em">Fixed code not compiling.</p><pre class="files_changed"> dlib/cuda/cuda_data_ptr.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 4b2ef5b8f9ed7667858d<br><u>Author</u>: <a href="mailto:45621980+RedfalconAI@users.noreply.github.com">RedfalconAI</a><br><u>Date</u>: Dec 06, 2018
+         (06:36:50 UTC)
+      <br><p style="margin:0.4em">Update CmakeLists: add png for arm (#1580)</p><pre class="files_changed"> dlib/CMakeLists.txt | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: e73d3adc0e7a4c123c35<br><u>Author</u>: <a href="mailto:miks@cubesystems.lv">Miks Miķelsons</a><br><u>Date</u>: Dec 05, 2018
+         (16:18:40 UTC)
+      <br><p style="margin:0.4em">Add padding argument support for Python compute_face_descriptor methods (#1578)</p><pre class="files_changed"> python_examples/face_recognition.py   |  6 +++++-
+ tools/python/src/face_recognition.cpp | 33 +++++++++++++++++++++------------
+ 2 files changed, 26 insertions(+), 13 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 2cf6b9d5567371c48ec0<br><u>Author</u>: <a href="mailto:kingpsy11@gmail.com">Nishant Charas</a><br><u>Date</u>: Nov 25, 2018
+         (22:79:28 UTC)
+      <br><p style="margin:0.4em">printing error (#1568)</p><pre class="files_changed"> python_examples/train_object_detector.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 165d1e356b3cb10eb337<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Nov 24, 2018
+         (19:38:43 UTC)
+      <br><p style="margin:0.4em">Add MKL with TBB support to CMake (#1561)</p><pre class="files_changed"> dlib/CMakeLists.txt              | 12 ++++++++++-
+ dlib/cmake_utils/find_blas.cmake | 45 ++++++++++++++++++++++++++++++----------
+ 2 files changed, 45 insertions(+), 12 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 3e9d361f8969b89fce0e<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Nov 20, 2018
+         (10:36:07 UTC)
+      <br><p style="margin:0.4em">Minor changes to avoid bugs in some compilers.</p><pre class="files_changed"> tools/python/src/decision_functions.cpp     |  2 +-
+ tools/python/src/face_recognition.cpp       | 10 +++++-----
+ tools/python/src/global_optimization.cpp    | 14 +++++++-------
+ tools/python/src/gui.cpp                    |  2 +-
+ tools/python/src/image2.cpp                 |  4 ++--
+ tools/python/src/image4.cpp                 |  2 +-
+ tools/python/src/image_dataset_metadata.cpp |  8 ++++----
+ tools/python/src/numpy_returns.cpp          |  4 ++--
+ tools/python/src/shape_predictor.cpp        |  2 +-
+ 9 files changed, 24 insertions(+), 24 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 9ff911696cb5fce3aff4<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Nov 19, 2018
+         (18:46:13 UTC)
+      <br><p style="margin:0.4em">Fix find_blas.cmake bug: find mkl fft on windows. (#1557)</p><pre class="files_changed"> dlib/cmake_utils/find_blas.cmake | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: 3b9b702c1bacb6460a93<br><u>Author</u>: <a href="mailto:facug91@users.noreply.github.com">Facundo Galán</a><br><u>Date</u>: Nov 12, 2018
+         (20:07:27 UTC)
+      <br><p style="margin:0.4em">Set CMake policy CMP0048 to NEW when available. (#1549)</p><pre class="files_changed"> dlib/CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: b54b1c4474ce62e27368<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Nov 11, 2018
+         (16:23:44 UTC)
+      <br><p style="margin:0.4em">merged</p><pre class="files_changed"></pre><hr class="fullhr"><u>Revision</u>: f2ad208701c074578513<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Nov 11, 2018
+         (16:22:53 UTC)
+      <br><p style="margin:0.4em">When building python extensions in Visual Studio, never link to any system copies of libpng or libjpeg, instead, use the copies what come with dlib.  We are doing this because too many Visual Studio users have busted copies of these libraries on their machines.  This will make things just always work.</p><pre class="files_changed"> dlib/CMakeLists.txt | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: d7e6f1d726da2e74d42c<br><u>Author</u>: <a href="mailto:juha.reunanen@gmail.com">Juha Reunanen</a><br><u>Date</u>: Nov 11, 2018
+         (19:33:15 UTC)
+      <br><p style="margin:0.4em">Apparently fix #1513 by avoiding the cudaStreamSynchronize call (#1514)</p><pre class="files_changed"> dlib/cuda/gpu_data.cpp | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)</pre><hr class="fullhr"><u>Revision</u>: d2dcdd66adce13740abe<br><u>Author</u>: <a href="mailto:36853188+Lukas-Buricin@users.noreply.github.com">Lukas-Buricin</a><br><u>Date</u>: Nov 11, 2018
+         (15:09:30 UTC)
+      <br><p style="margin:0.4em">Fixed random_forest_regression.h warnings (#1544)</p><pre class="files_changed"> dlib/random_forest/random_forest_regression.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: ba361d73abb06eda6a2a<br><u>Author</u>: <a href="mailto:davis685@gmail.com">Davis E. King</a><br><u>Date</u>: Nov 09, 2018
+         (04:40:18 UTC)
+      <br><p style="margin:0.4em">Avoid compiler bug</p><pre class="files_changed"> tools/python/src/object_detection.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: 27a52936119f10d796c1<br><u>Author</u>: <a href="mailto:Raincode@users.noreply.github.com">Matthias Stauber</a><br><u>Date</u>: Nov 04, 2018
+         (24:50:56 UTC)
+      <br><p style="margin:0.4em">Added weighted labels to loss_binary_log layer. (#1538)</p><pre class="files_changed"> dlib/dnn/loss.h          | 10 +++++-----
+ dlib/dnn/loss_abstract.h | 14 ++++++++++----
+ 2 files changed, 15 insertions(+), 9 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 08709e8ec121ec51d8e5<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Oct 25, 2018
+         (19:23:53 UTC)
+      <br><p style="margin:0.4em">Add header needed in some contexts</p><pre class="files_changed"> dlib/sockets/sockets_kernel_2.cpp | 1 +
+ 1 file changed, 1 insertion(+)</pre><hr class="fullhr"><u>Revision</u>: 6747122ca5e8038305e7<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Oct 22, 2018
+         (15:14:05 UTC)
+      <br><p style="margin:0.4em">Added --box-images to imglab</p><pre class="files_changed"> tools/imglab/src/main.cpp | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)</pre><hr class="fullhr"><u>Revision</u>: 9b82f4b0f65a2152b4a4<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Sep 29, 2018
+         (05:05:19 UTC)
+      <br><p style="margin:0.4em">Record last changeset and set PATCH version to 99</p><pre class="files_changed"> dlib/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)</pre><hr class="fullhr"><u>Revision</u>: e3cf2349f47988e11834<br><u>Author</u>: <a href="mailto:davis@dlib.net">Davis King</a><br><u>Date</u>: Sep 29, 2018
+         (05:03:21 UTC)
+      <br><p style="margin:0.4em">Created release v19.16</p><pre class="files_changed"> dlib/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)</pre><hr class="fullhr"></div></div></div><div id="bottom_content"></div></body></html>

@@ -1,0 +1,202 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - thresholding_abstract.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2006  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#undef</font> DLIB_THRESHOLDINg_ABSTRACT_
+<font color='#0000FF'>#ifdef</font> DLIB_THRESHOLDINg_ABSTRACT_ 
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../pixel.h.html'>../pixel.h</a>"
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>unsigned</u></font> <font color='#0000FF'><u>char</u></font> on_pixel <font color='#5555FF'>=</font> <font color='#979000'>255</font>;
+    <font color='#0000FF'>const</font> <font color='#0000FF'><u>unsigned</u></font> <font color='#0000FF'><u>char</u></font> off_pixel <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> image_traits<font color='#5555FF'>&lt;</font>image_type<font color='#5555FF'>&gt;</font>::pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type 
+    <b><a name='partition_pixels'></a>partition_pixels</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> image_type<font color='#5555FF'>&amp;</font> img
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - pixel_traits&lt;typename image_traits&lt;image_type&gt;::pixel_type&gt;::has_alpha == false
+        ensures
+            - Finds a threshold value that would be reasonable to use with
+              threshold_image(img, threshold).  It does this by finding the threshold that
+              partitions the pixels in img into two groups such that the sum of absolute
+              deviations between each pixel and the mean of its group is minimized.
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> image_type,
+        <font color='#0000FF'>typename</font> ...T
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='partition_pixels'></a>partition_pixels</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> image_type<font color='#5555FF'>&amp;</font> img,
+        <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> image_traits<font color='#5555FF'>&lt;</font>image_type<font color='#5555FF'>&gt;</font>::pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type<font color='#5555FF'>&amp;</font> pix_thresh,
+        T<font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> ...more_thresholds
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - pixel_traits&lt;typename image_traits&lt;image_type&gt;::pixel_type&gt;::has_alpha == false
+            - more_thresholds == a bunch of parameters of the same type as pix_thresh.
+        ensures
+            - This version of partition_pixels() finds multiple partitions rather than just
+              one partition.  It does this by first partitioning the pixels just as the
+              above partition_pixels(img) does.  Then it forms a new image with only pixels
+              &gt;= that first partition value and recursively partitions this new image.
+              However, the recursion is implemented in an efficient way which is faster than
+              explicitly forming these images and calling partition_pixels(), but the
+              output is the same as if you did.  For example, suppose you called
+              partition_pixels(img, t1, t2, t3).  Then we would have:
+                - t1 == partition_pixels(img)
+                - t2 == partition_pixels(an image with only pixels with values &gt;= t1 in it)
+                - t3 == partition_pixels(an image with only pixels with values &gt;= t2 in it)
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> in_image_type,
+        <font color='#0000FF'>typename</font> out_image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='threshold_image'></a>threshold_image</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> in_image_type<font color='#5555FF'>&amp;</font> in_img,
+        out_image_type<font color='#5555FF'>&amp;</font> out_img,
+        <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> image_traits<font color='#5555FF'>&lt;</font>in_image_type<font color='#5555FF'>&gt;</font>::pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type thresh
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - in_image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - out_image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - pixel_traits&lt;typename image_traits&lt;out_image_type&gt;::pixel_type&gt;::grayscale == true  
+            - pixel_traits&lt;typename image_traits&lt;in_image_type&gt;::pixel_type&gt;::has_alpha == false
+            - pixel_traits&lt;typename image_traits&lt;out_image_type&gt;::pixel_type&gt;::has_alpha == false 
+        ensures
+            - #out_img == the thresholded version of in_img (in_img is converted to a grayscale
+              intensity image if it is color).  Pixels in in_img with grayscale values &gt;= thresh 
+              have an output value of on_pixel and all others have a value of off_pixel.
+            - #out_img.nc() == in_img.nc()
+            - #out_img.nr() == in_img.nr()
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='threshold_image'></a>threshold_image</b> <font face='Lucida Console'>(</font>
+        image_type<font color='#5555FF'>&amp;</font> img,
+        <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> image_traits<font color='#5555FF'>&lt;</font>image_type<font color='#5555FF'>&gt;</font>::pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type thresh
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - it is valid to call threshold_image(img,img,thresh);
+        ensures
+            - calls threshold_image(img,img,thresh);
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> in_image_type,
+        <font color='#0000FF'>typename</font> out_image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='threshold_image'></a>threshold_image</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> in_image_type<font color='#5555FF'>&amp;</font> in_img,
+        out_image_type<font color='#5555FF'>&amp;</font> out_img
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - it is valid to call threshold_image(in_img,out_img,partition_pixels(in_img));
+        ensures
+            - calls threshold_image(in_img,out_img,partition_pixels(in_img));
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='threshold_image'></a>threshold_image</b> <font face='Lucida Console'>(</font>
+        image_type<font color='#5555FF'>&amp;</font> img
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - it is valid to call threshold_image(img,img,partition_pixels(img));
+        ensures
+            - calls threshold_image(img,img,partition_pixels(img));
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> in_image_type,
+        <font color='#0000FF'>typename</font> out_image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='hysteresis_threshold'></a>hysteresis_threshold</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> in_image_type<font color='#5555FF'>&amp;</font> in_img,
+        out_image_type<font color='#5555FF'>&amp;</font> out_img,
+        <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> image_traits<font color='#5555FF'>&lt;</font>in_image_type<font color='#5555FF'>&gt;</font>::pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type lower_thresh,
+        <font color='#0000FF'>typename</font> pixel_traits<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> image_traits<font color='#5555FF'>&lt;</font>in_image_type<font color='#5555FF'>&gt;</font>::pixel_type<font color='#5555FF'>&gt;</font>::basic_pixel_type upper_thresh
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - in_image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - out_image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - pixel_traits&lt;typename image_traits&lt;out_image_type&gt;::pixel_type&gt;::grayscale == true  
+            - pixel_traits&lt;typename image_traits&lt;in_image_type&gt;::pixel_type&gt;::has_alpha == false
+            - pixel_traits&lt;typename image_traits&lt;out_image_type&gt;::pixel_type&gt;::has_alpha == false 
+            - is_same_object(in_img, out_img) == false
+        ensures
+            - #out_img == the hysteresis thresholded version of in_img (in_img is converted to a 
+              grayscale intensity image if it is color). Pixels in in_img with grayscale 
+              values &gt;= upper_thresh have an output value of on_pixel and all others have a 
+              value of off_pixel unless they are &gt;= lower_thresh and are connected to a pixel
+              with a value &gt;= upper_thresh, in which case they have a value of on_pixel.  Here
+              pixels are connected if there is a path between them composed of pixels that 
+              would receive an output of on_pixel.
+            - #out_img.nc() == in_img.nc()
+            - #out_img.nr() == in_img.nr()
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> in_image_type,
+        <font color='#0000FF'>typename</font> out_image_type
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='hysteresis_threshold'></a>hysteresis_threshold</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> in_image_type<font color='#5555FF'>&amp;</font> in_img,
+        out_image_type<font color='#5555FF'>&amp;</font> out_img
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        requires
+            - in_image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - out_image_type == an image object that implements the interface defined in
+              dlib/image_processing/generic_image.h 
+            - pixel_traits&lt;typename image_traits&lt;out_image_type&gt;::pixel_type&gt;::grayscale == true  
+            - pixel_traits&lt;typename image_traits&lt;in_image_type&gt;::pixel_type&gt;::has_alpha == false
+            - pixel_traits&lt;typename image_traits&lt;out_image_type&gt;::pixel_type&gt;::has_alpha == false 
+            - is_same_object(in_img, out_img) == false
+        ensures
+            - performs: hysteresis_threshold(in_img, out_img, t1, t2) where the thresholds
+              are first obtained by calling partition_pixels(in_img, t1, t2).
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_THRESHOLDINg_ABSTRACT_ 
+</font>
+
+
+</pre></body></html>

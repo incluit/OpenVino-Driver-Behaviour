@@ -1,0 +1,386 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html xmlns:gcse="googleCustomSearch"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="shortcut icon" href="dlib-icon.ico"><meta name="verify-v1" content="02MiiaFNVzS5/u0eQhsy3/knioFHsia1X3DXRpHkE6I="><meta name="google-site-verification" content="DGSSJMKDomaDaDTIRJ8jDkv0YMx9Cz7OESbXHjjr6Jw"><title>dlib C++ Library
+               - Release notes</title><script type="text/javascript" src="dlib.js"></script><link rel="stylesheet" type="text/css" href="dlib.css"></head><body><a name="top"></a><div id="page_header"><a href="http://dlib.net"><img src="dlib-logo.png"></a></div><div id="top_content"><div id="main_menu" class="menu"><div class="menu_top"><b>The Library</b><ul class="tree"><li><a href="algorithms.html" class="menu">Algorithms</a></li><li><a href="api.html" class="menu">API Wrappers</a></li><li><a href="bayes.html" class="menu">Bayesian Nets</a></li><li><a href="compression.html" class="menu">Compression</a></li><li><a href="containers.html" class="menu">Containers</a></li><li><a href="graph_tools.html" class="menu">Graph Tools</a></li><li><a href="imaging.html" class="menu">Image Processing</a></li><li><a href="linear_algebra.html" class="menu">Linear Algebra</a></li><li><a href="ml.html" class="menu">Machine Learning</a></li><li><a href="metaprogramming.html" class="menu">Metaprogramming</a></li><li><a href="other.html" class="menu">Miscellaneous</a></li><li><a href="network.html" class="menu">Networking</a></li><li><a href="optimization.html" class="menu">Optimization</a></li><li><a href="parsing.html" class="menu">Parsing</a></li></ul><br><b>Help/Info</b><ul class="tree"><li><a href="http://blog.dlib.net" class="menu">Dlib Blog</a></li><li><a onclick="Toggle(this)" class="sub menu"><img src="plus.gif">Examples: C++</a><ul style="display:none;"><li><a href="3d_point_cloud_ex.cpp.html" class="menu">3D Point Cloud</a></li><li><a href="assignment_learning_ex.cpp.html" class="menu">Assignment Learning</a></li><li><a href="file_to_code_ex.cpp.html" class="menu">Base64 Encoder</a></li><li><a href="bayes_net_from_disk_ex.cpp.html" class="menu">Bayesian Network From Disk</a></li><li><a href="bayes_net_gui_ex.cpp.html" class="menu">Bayesian Network GUI</a></li><li><a href="bayes_net_ex.cpp.html" class="menu">Bayesian Network</a></li><li><a href="bridge_ex.cpp.html" class="menu">Bridge</a></li><li><a href="bsp_ex.cpp.html" class="menu">BSP</a></li><li><a href="svm_c_ex.cpp.html" class="menu">C-Support Vector Machine</a></li><li><a href="compress_stream_ex.cpp.html#_top" class="menu">Cmd Line Parser</a></li><li><a href="compress_stream_ex.cpp.html" class="menu">Compress Stream</a></li><li><a href="config_reader_ex.cpp.html" class="menu">Config File Reader</a></li><li><a href="custom_trainer_ex.cpp.html" class="menu">Custom Trainers</a></li><li><a href="dnn_face_recognition_ex.cpp.html" class="menu">Deep Face Recognition</a></li><li><a href="dnn_mmod_dog_hipsterizer.cpp.html" class="menu">Deep Learning Dog Hipsterizer</a></li><li><a href="dnn_mmod_face_detection_ex.cpp.html" class="menu">Deep Learning Face Detection</a></li><li><a href="dnn_imagenet_ex.cpp.html" class="menu">Deep Learning Imagenet Classifier</a></li><li><a href="dnn_imagenet_train_ex.cpp.html" class="menu">Deep Learning Imagenet Trainer </a></li><li><a href="dnn_inception_ex.cpp.html" class="menu">Deep Learning Inception</a></li><li><a href="dnn_introduction_ex.cpp.html" class="menu">Deep Learning Introduction Part 1</a></li><li><a href="dnn_introduction2_ex.cpp.html" class="menu">Deep Learning Introduction Part 2</a></li><li><a href="dnn_mmod_ex.cpp.html" class="menu">Deep Learning Max-Margin Object Detection</a></li><li><a href="dnn_mmod_find_cars2_ex.cpp.html" class="menu">Deep Learning Multi-Class Vehicle Detection</a></li><li><a href="dnn_semantic_segmentation_train_ex.cpp.html" class="menu">Deep Learning Semantic Segmentation Trainer</a></li><li><a href="dnn_semantic_segmentation_ex.cpp.html" class="menu">Deep Learning Semantic Segmentation</a></li><li><a href="dnn_mmod_train_find_cars_ex.cpp.html" class="menu">Deep Learning Vehicle Detection Trainer</a></li><li><a href="dnn_mmod_find_cars_ex.cpp.html" class="menu">Deep Learning Vehicle Detection</a></li><li><a href="dnn_metric_learning_ex.cpp.html" class="menu">Deep Metric Learning Introduction</a></li><li><a href="dnn_metric_learning_on_images_ex.cpp.html" class="menu">Deep Metric Learning on Images</a></li><li><a href="dir_nav_ex.cpp.html" class="menu">Directory Navigation</a></li><li><a href="empirical_kernel_map_ex.cpp.html" class="menu">Empirical Kernel Map</a></li><li><a href="face_detection_ex.cpp.html" class="menu">Face Detection</a></li><li><a href="face_landmark_detection_ex.cpp.html" class="menu">Face Landmark Detection</a></li><li><a href="fhog_ex.cpp.html" class="menu">FHOG Feature Extraction</a></li><li><a href="fhog_object_detector_ex.cpp.html" class="menu">FHOG Object Detection</a></li><li><a href="graph_labeling_ex.cpp.html" class="menu">Graph Labeling</a></li><li><a href="gui_api_ex.cpp.html" class="menu">GUI</a></li><li><a href="hough_transform_ex.cpp.html" class="menu">Hough Transform</a></li><li><a href="server_http_ex.cpp.html" class="menu">HTTP Server</a></li><li><a href="image_ex.cpp.html" class="menu">Image</a></li><li><a href="iosockstream_ex.cpp.html" class="menu">IO Socket Streams</a></li><li><a href="server_iostream_ex.cpp.html" class="menu">IO Streams Server</a></li><li><a href="kcentroid_ex.cpp.html" class="menu">Kernel Centroid</a></li><li><a href="kkmeans_ex.cpp.html" class="menu">Kernel K-Means Clustering</a></li><li><a href="krr_regression_ex.cpp.html" class="menu">Kernel Ridge Regression</a></li><li><a href="krls_filter_ex.cpp.html" class="menu">Kernel RLS Filtering</a></li><li><a href="krls_ex.cpp.html" class="menu">Kernel RLS Regression</a></li><li><a href="krr_classification_ex.cpp.html" class="menu">KRR Classification</a></li><li><a href="learning_to_track_ex.cpp.html" class="menu">Learning to Track</a></li><li><a href="max_cost_assignment_ex.cpp.html" class="menu">Linear Assignment Problems</a></li><li><a href="linear_manifold_regularizer_ex.cpp.html" class="menu">Linear Manifold Regularizer</a></li><li><a href="mpc_ex.cpp.html" class="menu">Linear Model Predictive Control</a></li><li><a href="logger_ex_2.cpp.html" class="menu">Logger Advanced</a></li><li><a href="logger_custom_output_ex.cpp.html" class="menu">Logger Custom Output</a></li><li><a href="logger_ex.cpp.html" class="menu">Logger</a></li><li><a href="matrix_expressions_ex.cpp.html" class="menu">Matrix Expressions</a></li><li><a href="matrix_ex.cpp.html" class="menu">Matrix</a></li><li><a href="member_function_pointer_ex.cpp.html" class="menu">Member Function Pointer</a></li><li><a href="model_selection_ex.cpp.html" class="menu">Model Selection</a></li><li><a href="multiclass_classification_ex.cpp.html" class="menu">Multiclass Classification</a></li><li><a href="multithreaded_object_ex.cpp.html" class="menu">Multithreaded Object</a></li><li><a href="mlp_ex.cpp.html" class="menu">Neural Network</a></li><li><a href="least_squares_ex.cpp.html" class="menu">Non-Linear Least Squares</a></li><li><a href="svm_ex.cpp.html" class="menu">Nu-Support Vector Machine</a></li><li><a href="integrate_function_adapt_simp_ex.cpp.html" class="menu">Numerical Integration</a></li><li><a href="object_detector_advanced_ex.cpp.html" class="menu">Object Detector Advanced</a></li><li><a href="object_detector_ex.cpp.html" class="menu">Object Detector</a></li><li><a href="one_class_classifiers_ex.cpp.html" class="menu">One Class Classifiers</a></li><li><a href="svm_pegasos_ex.cpp.html" class="menu">Online SVM</a></li><li><a href="optimization_ex.cpp.html" class="menu">Optimization</a></li><li><a href="parallel_for_ex.cpp.html" class="menu">Parallel For Loops</a></li><li><a href="pipe_ex_2.cpp.html" class="menu">Pipe 2</a></li><li><a href="pipe_ex.cpp.html" class="menu">Pipe</a></li><li><a href="quantum_computing_ex.cpp.html" class="menu">Quantum Computing</a></li><li><a href="queue_ex.cpp.html" class="menu">Queue</a></li><li><a href="random_cropper_ex.cpp.html" class="menu">Random Cropper</a></li><li><a href="rank_features_ex.cpp.html" class="menu">Rank Features</a></li><li><a href="rvm_ex.cpp.html" class="menu">Relevance Vector Classification</a></li><li><a href="rvm_regression_ex.cpp.html" class="menu">Relevance Vector Regression</a></li><li><a href="running_stats_ex.cpp.html" class="menu">Running Stats</a></li><li><a href="sequence_labeler_ex.cpp.html" class="menu">Sequence Labeling</a></li><li><a href="sequence_segmenter_ex.cpp.html" class="menu">Sequence Segmentation</a></li><li><a href="sockets_ex.cpp.html" class="menu">Sockets</a></li><li><a href="sockstreambuf_ex.cpp.html" class="menu">Sockstreambuf</a></li><li><a href="svm_sparse_ex.cpp.html" class="menu">Sparse Vectors</a></li><li><a href="sqlite_ex.cpp.html" class="menu">SQLite</a></li><li><a href="std_allocator_ex.cpp.html" class="menu">Std C++ Allocator</a></li><li><a href="svm_struct_ex.cpp.html" class="menu">Structural Support Vector Machines</a></li><li><a href="svr_ex.cpp.html" class="menu">Support Vector Regression</a></li><li><a href="surf_ex.cpp.html" class="menu">SURF</a></li><li><a href="svm_rank_ex.cpp.html" class="menu">SVM-Rank</a></li><li><a href="thread_function_ex.cpp.html" class="menu">Thread Function</a></li><li><a href="thread_pool_ex.cpp.html" class="menu">Thread Pool</a></li><li><a href="threaded_object_ex.cpp.html" class="menu">Threaded Object</a></li><li><a href="threads_ex.cpp.html" class="menu">Threads</a></li><li><a href="timer_ex.cpp.html" class="menu">Timer</a></li><li><a href="train_object_detector.cpp.html" class="menu">Train Object Detector</a></li><li><a href="train_shape_predictor_ex.cpp.html" class="menu">Train Shape Predictor</a></li><li><a href="using_custom_kernels_ex.cpp.html" class="menu">Using Custom Kernels</a></li><li><a href="video_tracking_ex.cpp.html" class="menu">Video Object Tracking</a></li><li><a href="webcam_face_pose_ex.cpp.html" class="menu">Webcam Face Pose Estimation</a></li><li><a href="xml_parser_ex.cpp.html" class="menu">XML Parser</a></li></ul></li><li><a onclick="Toggle(this)" class="sub menu"><img src="plus.gif">Examples: Python</a><ul style="display:none;"><li><a href="svm_binary_classifier.py.html" class="menu">Binary Classification</a></li><li><a href="cnn_face_detector.py.html" class="menu">CNN Face Detector</a></li><li><a href="face_alignment.py.html" class="menu">Face Alignment</a></li><li><a href="face_clustering.py.html" class="menu">Face Clustering</a></li><li><a href="face_detector.py.html" class="menu">Face Detector</a></li><li><a href="face_jitter.py.html" class="menu">Face Jittering/Augmentation</a></li><li><a href="face_landmark_detection.py.html" class="menu">Face Landmark Detection</a></li><li><a href="face_recognition.py.html" class="menu">Face Recognition</a></li><li><a href="find_candidate_object_locations.py.html" class="menu">Find Candidate Object Locations</a></li><li><a href="global_optimization.py.html" class="menu">Global Optimization</a></li><li><a href="max_cost_assignment.py.html" class="menu">Linear Assignment Problems</a></li><li><a href="sequence_segmenter.py.html" class="menu">Sequence Segmenter</a></li><li><a href="svm_struct.py.html" class="menu">Structural Support Vector Machines</a></li><li><a href="svm_rank.py.html" class="menu">SVM-Rank</a></li><li><a href="train_object_detector.py.html" class="menu">Train Object Detector</a></li><li><a href="train_shape_predictor.py.html" class="menu">Train Shape Predictor</a></li><li><a href="correlation_tracker.py.html" class="menu">Video Object Tracking</a></li></ul></li><li><a href="faq.html" class="menu">FAQ</a></li><li><a href="index.html" class="menu">Home</a></li><li><a href="compile.html" class="menu">How to compile</a></li><li><a href="howto_contribute.html" class="menu">How to contribute</a></li><li><a href="term_index.html" class="menu">Index</a></li><li><a href="intro.html" class="menu">Introduction</a></li><li><a href="license.html" class="menu">License</a></li><li><a href="python/index.html" class="menu">Python API</a></li><li><a href="books.html" class="menu">Suggested Books</a></li><li><a href="http://sourceforge.net/p/dclib/wiki/Known_users/" class="menu">Who uses dlib?</a></li></ul><br><b>Current Release</b><ul class="tree"><li><a href="change_log.html" class="menu">Change Log</a></li><li><a href="release_notes.html" class="menu">Release Notes</a></li><li>Version: 19.17</li></ul><br></div><div class="menu_footer">
+      Last Modified:<br>Mar 10, 2019</div></div><div id="main_text"><div id="main_text_title">Release notes</div><div id="main_text_body"><h1 style="margin:0px;">Release 19.17</h1><u>Release date</u>: Mar 10, 2019<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Added weighted labels to loss_binary_log layer.
+   - Added padding option to Python compute_face_descriptor() methods.
+   - Added pointwise_divide function.
+   - Added U-net style skip connections to the semantic-segmentation example.
+   - Exposed dlib::chinese_whispers() directly in Python API.
+   - Added python api that generates desciptor(s) from the aligned image(s).
+   - Added support for CUDA 10.1.
+   - Dlib's python install process always automatically enables all supported features.  
+     So --yes &lt;option&gt; was removed as it does nothing.
+   - Added --box-images to imglab.
+
+Non-Backwards Compatible Changes:
+
+Bug fixes:
+   - Fixed build errors on some systems or buggy compilers.
+   - Workaround for bug in cudaStreamSynchronize() causing hanging in some rare cases.
+   - Fixed broken CUDA memcpy overload.
+   - Fixed CMake not finding cusolver in CUDA 10.1. 
+
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.16</h1><u>Release date</u>: Sep 29, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Allow 64bit seeds for murmur hash.
+   - Some code paths are a little faster.
+   - Added an option to do bounding box regression to the loss_mmod layer.
+   - Added resize_image(img,scale) to Python API.
+
+Non-Backwards Compatible Changes:
+
+Bug fixes:
+   - Fixed build errors in some environments.
+   - Make older versions of CMake work with CUDA 10.
+   - Fixed is_image_type template always reporting false. This also caused
+     have_same_dimensions() to be uncallable for images, so that's fixed now too.
+
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.15</h1><u>Release date</u>: Jul 13, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+
+Non-Backwards Compatible Changes:
+
+Bug fixes:
+   - Fixed sub_image() in the Python API not working correctly for non-8bit images.
+   - Last release broke have_same_dimensions(). The version specific to images
+     was being used for tensors, which is incorrect and caused some of the DNN
+     tooling to malfunction.
+
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.14</h1><u>Release date</u>: Jul 07, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Added a --split-train-test option to imglab.
+   - Added a max runtime option to the oca solver and structural object
+     detection trainer.
+   - Added an option to do translational jittering of the bounding boxes in the
+     shape_predictor_trainer.  Using this option allows you to train
+     shape_predictors that are somewhat more robust against variation in
+     detection box placement. 
+   - Added an optional thread_pool argument to find_max_global() and
+     find_min_global() to allow for parallel execution of objective function calls.
+   - Added auto_train_rbf_classifier(), a tool that trains a RBF-SVM without requiring the user
+     to supply any hyperparameters.
+   - Added polygon_area()
+   - The image view objects now implement the generic image interface.
+   - Updates to the Python API:
+       - Added Python bindings for: extract_image_chip(),
+         extract_image_chips(), center(), get_histogram(), sub_image(),
+         polygon_area(), auto_train_rbf_classifier(), reduced(),
+         translate_rect(), spatially_filter_image(),
+         spatially_filter_image_separable(), num_separable_filters(),
+         threshold_filter_singular_values(), max_point(),
+         max_point_interpolated(), zero_border_pixels().  Also added an option
+         for training nuclear norm regularized HOG detectors.
+       - Added a bunch of new overloads and operators for existing Python types.
+       - Made decision functions more viewable from python.  You can now inspect
+         the contents of the functions rather than them being completely opaque.
+       - Made it so you can call the std::vector&lt;detectors&gt; version of
+         the object_detector constructor from python. So now you can pack
+         multiple detectors into one object via the python API.
+       - Allow batched face recognition for greater performance.
+
+Non-Backwards Compatible Changes:
+
+Bug fixes:
+   - Fixed the point and dpoint operator + doing subtraction in the Python API.
+   - Fixed label_connected_blobs_watershed() not giving contiguous labels as outputs. 
+   - Fixed AVX detection not working correctly on some systems.
+   - Fixed dlib.threshold_image() ignoring the optional thresh argument in the Python API.
+   - Fixed hough_transform::find_pixels_voting_for_lines(). It would sometimes
+     include a pixel multiple times in the output lists.
+   - Made the routines that rotate image datasets use the rectangle_transform
+     instead of the bad old way that only really worked for square boxes.  This
+     improves placement of such rotated rectangular boxes.
+
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.13</h1><u>Release date</u>: May 26, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Added a lot of new Python bindings.  You can now use these things from Python:
+      - gaussian_blur(), label_connected_blobs(), randomly_color_image(), jet(),
+        skeleton(), find_line_endpoints(), get_rect(), shrink_rect(), grow_rect(),
+        image_gradients, label_connected_blobs_watershed(), convert_image(),
+        convert_image_scaled(), dpoint, centered_rect(), centered_rects(), length(),
+        as_grayscale(), pyramid_down, find_bright_keypoints(), find_bright_lines(),
+        find_dark_lines(), find_dark_keypoints(), suppress_non_maximum_edges(),
+        find_peaks(), hysteresis_threshold(), sobel_edge_detector(), equalize_histogram(),
+        resize_image(), hough_transform, remove_incoherent_edge_pixels(),
+        normalize_image_gradients(), line, signed_distance_to_line(), distance_to_line(),
+        reverse(), intersect(), count_points_on_side_of_line(),
+        count_points_between_lines(), dot(), normalize(), point_transform_projective,
+        find_projective_transform(), inv(), transform_image(), angle_between_lines(),
+        extract_image_4points(), load_grayscale_image(), min_barrier_distance(). 
+      - Added a .add_overlay_circle() to dlib.image_window.  Also made .add_overlay()
+        take lines.
+      - Added the *_corner() routines to rectangle and drectangle and made these 
+        objects constructable from instances of each other.
+   - Made the Python extension module automatically enable AVX instructions if the host
+     machine supports them.  So you never need to say --yes USE_AVX_INSTRUCTIONS anymore
+     when installing dlib.
+
+   - New C++ routines:
+      - Added an image_window::add_overlay() overload for line object.
+      - Added angle_between_lines()
+      - Added extract_image_4points()
+      - Added is_convex_quadrilateral(), find_convex_quadrilateral(), and no_convex_quadrilateral.
+      - Added python_list_to_array()
+      - Added min_barrier_distance() 
+
+Non-Backwards Compatible Changes:
+
+Bug fixes:
+   - Fixed numpy_image and pybind11 crashing python sometimes when certain types of
+     conversions are attempted.
+   - Fixed some python functions not taking as wide a range of image types as they did in
+     previous dlib versions.
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.12</h1><u>Release date</u>: May 19, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Added Python interface to threshold_image() and partition_pixels().
+
+Non-Backwards Compatible Changes:
+   - In the Python API, renamed dlib.save_rgb_image() to dlib.save_image().
+
+Bug fixes:
+   - Dlib 19.11 had a bug that caused the Python interface to reject grayscale images.
+     This has been fixed.
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.11</h1><u>Release date</u>: May 17, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Deep Learning
+      - Added resize_to layer.
+      - Made loss_multiclass_log_per_pixel use CUDA. This greatly accelerates 
+        training with this loss layer.
+   - Image Processing
+      - Added normalize_image_gradients() and remove_incoherent_edge_pixels().
+      - Added neighbors_24 (for use with label_connected_blobs())
+      - Added partition_pixels() and made threshold_image() use it to find the
+        default threshold if none is given. Also depreciated
+        auto_threshold_image() since using partition_pixels() to pick the
+        threshold is superior.
+      - Added overload of hysteresis_threshold() that uses partition_pixels()
+        to select thresholds.
+      - Added encode_8_pixel_neighbors() and find_line_endpoints().
+      - Added image_gradients, a tool for computing multi-scale first and
+        second order image gradients. 
+      - Added find_bright_lines(), find_dark_lines(), find_bright_keypoints(),
+        and find_dark_keypoints(). 
+      - Added label_connected_blobs_watershed().
+      - Added find_peaks().
+      - Added find_pixels_voting_for_lines(), find_strong_hough_points(),
+        and perform_generic_hough_transform() to the hough_transform.
+   - Improved the stopping condition of the solve_qp_box_constrained() and
+     solve_qp_box_constrained_blockdiag() quadratic program solvers.
+   - Made find_min_single_variable() more numerically stable.
+   - Make visual studio build with all cores when building dlib.
+   - Added steal_memory() to the matrix.
+   - Improved the workflow for adding part annotations in imglab.  You can now
+     use shift+click to rapidly add parts to an object.  Each part will
+     automatically receive an integer label.
+   - Added .begin() and .end() to array2d.
+   - Added the line class and some related utility functions.
+   - Added centered_rects().
+   - Added numpy_image, which is a simple type safe interface to numpy arrays.
+     It is also a fully functional dlib image class, making interfacing dlib's
+     image processing to Python much cleaner.  
+
+Non-Backwards Compatible Changes:
+   - All CUDA code in dlib was moved to dlib/cuda.
+
+Bug fixes:
+   - Replaced all the old Python C APIs interfacing to numpy with the new
+     numpy_image.  This fixed some reference counting errors as a result.
+   - Fixed load_bmp() not loading certain types of BMP images. 
+   - Fixed compile time bugs when trying to use CBLAS in some unusual environments.
+   - Fixed bug in global_function_search's constructor that takes initial function
+     evaluations. It wasn't assigning these values into the entire state of the
+     solver.
+   - Fixed compile time error in the matlab bindings.  Also, fixed cell arrays
+     of complex types not binding correctly.
+   - Renamed BOOST_JOIN to DLIB_BOOST_JOIN to prevent name clashes when working
+     with boost.
+   - Fixed bug in hysteresis_threshold() that could cause incorrect output.
+   - The last release of dlib added more ODR violation checks.  However, these
+     could erroneously trigger when using Visual Studio and CUDA in certain
+     workflows.  This has been fixed.
+   - Fixed matrix objects not working correctly when sized greater than 4GB in
+     Visual Studio.
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.10</h1><u>Release date</u>: Mar 19, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Deep Learning:
+      - Added scale_ layer, allowing implementation of squeeze-and-excitation networks.
+      - Added loss_multimulticlass_log: used for learning a collection of multi-class classifiers.
+   - Added a random forest regression tool. See random_forest_regression_trainer.
+   - Added make_bounding_box_regression_training_data()
+   - Added isotonic_regression
+   - Added momentum_filter, rect_filter, find_optimal_momentum_filter(), and
+     find_optimal_rect_filter().
+   - Added binomial_random_vars_are_different() and event_correlation().
+   - Added xcorr_fft(), a routine for efficiently performing large cross-correlations using the FFT.
+   - Added the ramdump type decorator for invoking faster serialization routines.
+   - Added check_serialized_version()
+   - Added max_scoring_element() and min_scoring_element()
+   - Made orthogonalize() faster.
+   - Updates to the Python API:
+      - Added interface to the global_function_search object.  This is a more general
+        interface to the solver used by find_max_global().
+      - Added support for variadic Python functions in find_max_global().
+      - Added rect_filter and find_optimal_rect_filter().
+      - Added make_bounding_box_regression_training_data()
+      - Added the image_dataset_metadata routines for parsing XML datasets.
+      - Added rvm_trainer
+      - Added probability_that_sequence_is_increasing() 
+      - Added dlib.__time_compiled__ field
+      - Added num_threads to shape_predictor_training_options.
+      - Added CUDA controlling routines such as set_device() and 
+        set_dnn_prefer_smallest_algorithms().
+
+Non-Backwards Compatible Changes:
+   - Changed CMake so that there is only the dlib target and it isn't forced to
+     be static.  Instead, the build type will toggle based on the state of CMake's
+     BUILD_SHARED_LIBS variable.  So there is no longer a dlib_shared target.
+   - Changed the integer types used to represent sizes from 32bits to 64bits in numerous
+     places, such as in the tensor object.  This should be a backwards compatible change
+     for nearly all client code.
+
+Bug fixes:
+   - Fixed memory leak in java swig array binding tool.
+   - Fixed windows include order problem in all/source.cpp file.
+   - Fixed cont_ layers not printing the correct num_filters parameter when they were 
+     printed to std::cout or to XML.
+   - Fixed some code not handling OBJECT_PART_NOT_PRESENT values correctly.
+   - Fixed fft_inplace() not compiling for compile time sized matrices.
+   - The shape_predictor_trainer could have very bad runtime for some really
+     bad parameter settings.  This has been fixed and also warning messages about
+     really bad training data or parameters have been added.
+   - Fixed the decayed running stats objects so they use unbiased estimators.
+
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.9</h1><u>Release date</u>: Jan 22, 2018<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Switched the Python API from Boost.Python to pybind11.  This means Python
+     users don't need to install Boost anymore, making building dlib's Python API
+     much easier.
+   - Made the sparse version of svd_fast() use multiple CPU cores.
+   - Changed the behavior of imglab's --flip option.  It will now attempt to
+     adjust any object part labels so that the flipped dataset has the same
+     average part layout as the source dataset. There is also a new --flip-basic 
+     option that behaves like the old --flip. However, most people flipping a
+     dataset with part annotations will want to use --flip.  For more details
+     see: http://blog.dlib.net/2018/01/correctly-mirroring-datasets.html
+
+Non-Backwards Compatible Changes:
+   - Removed std::auto_ptr from dlib's old (and depreciated) smart pointers. 
+
+Bug fixes:
+   - Fixed global_optimization.py not working in Python 3.
+
+</pre></td></tr></table><hr><h1 style="margin:0px;">Release 19.8</h1><u>Release date</u>: Dec 19, 2017<br><u>Major Changes in this Release</u>:
+            <table cellspacing="5" cellpadding="0" width="100%"><tr><td width="15"></td><td><pre>
+New Features and Improvements:
+   - Added a global optimizer, find_max_global(), which is suitable for
+     optimizing expensive functions with many local optima.  For example, you
+     can use it for hyperparameter optimization.  See model_selection_ex.cpp
+     for an example.
+   - Updates to the deep learning tooling:
+      - Added semantic segmentation examples: dnn_semantic_segmentation_ex.cpp
+        and dnn_semantic_segmentation_train_ex.cpp
+      - New layers: loss_ranking, loss_epsilon_insensitive, softmax_all, and loss_dot.
+      - Made log loss layers more numerically stable.
+      - Upgraded the con layer so you can set the number of rows or columns to
+        0 in the layer specification. Doing this means "make the filter cover
+        the whole input image dimension".  This provides an easy way to make a
+        filter sized so it will have one output along that dimension,
+        effectively making it like a fully connected layer operating on a row
+        or column.
+      - Added support for non-scale-invariant MMOD.
+      - Added an optional parameter to dnn_trainer::get_net() that allows you
+        to call the function without forcing a state flush to disk.
+      - Sometimes the loss_mmod layer could experience excessively long runtime
+        during early training iterations.  This has been optimized and is now
+        much faster.
+      - Optimized the tensor's management of GPU memory.  It now uses less memory
+        in some cases.  It will also not perform a reallocation if resized to a
+        smaller size.  Instead, tensors now behave like std::vector in that
+        they just change their nominal size but keep the same memory, only
+        reallocating if they are resized to something larger than their
+        underlying memory block. This change makes some uses of dlib faster, in
+        particular, running networks on a large set of images of differing
+        sizes will now run faster since there won't be any GPU reallocations,
+        which are notoriously slow.
+      - Upgraded the input layer so you can give
+        input&lt;std::array&lt;matrix&lt;T&gt;,K&gt;&gt; types as input. Doing
+        this will create input tensors with K channels.
+   - Added disjoint_subsets_sized
+   - Added Python APIs: get_face_chips(), count_steps_without_decrease(),
+     count_steps_without_decrease_robust(), and jitter_image().
+   - Various improvements to CMake scripts: e.g. improved warning and error
+     messages, added USE_NEON_INSTRUCTIONS option.
+   - chol() will use a banded Cholesky algorithm for banded matrices, making it
+     much faster in these cases.
+   - Changed the timing code to use the C++11 high resolution clock and
+     atomics. This makes the timing code a lot more precise.
+
+Non-Backwards Compatible Changes:
+   - Changed the random_cropper's set_min_object_size() routine to take min box
+     dimensions in the same format as the mmod_options object (i.e. two lengths
+     measured in pixels). This should make defining random_cropping strategies
+     that are consistent with MMOD settings more straightforward since you can
+     simply take the mmod_options settings and give them to the random_cropper
+     and it will do the right thing.
+   - Changed the mean squared loss layers to return a loss that's the MSE, not
+     0.5*MSE. The only thing this effects is the logging messages that print
+     during training, which were confusing since the reported loss was half the
+     size you might naively expect.
+   - Changed the outputs of test_regression_function() and cross_validate_regression_trainer().
+     These functions now output 4D rather than 2D vectors.  The new output is:
+     mean squared error, correlation, mean absolute error, and standard
+     deviation of absolute error.  I also made test_regression_function() take
+     a non-const reference to the regression function so that DNN objects can
+     be tested.
+   - Fixed shape_predictor_trainer padding so it behaves as it used to. In
+     dlib 19.7 the padding code was changed and accidentally doubled the size
+     of the applied padding in some cases. It's not a huge deal either way, but
+     this change reverts back to the previous behavior.
+
+Bug fixes:
+   - Fixed toMat() not compiling in some cases.
+   - Significantly reduced the compile time of the DNN example programs in
+     visual studio.
+   - Fixed a few image processing functions that weren't using the generic
+     image interface.
+   - Fixed a bug in the random_cropper where it might crash due to division by
+     0 if small images were given as input.
+   - Fixed a bug in how the mmod_options automatically determines detection
+     window sizes. It would pick a bad size in some cases.
+   - Fixed load_image_dataset()'s skip_empty_images() option. It wasn't
+     skipping images that only have ignore boxes when you load into mmod_rect
+     objects.
+   - Fixed a bug where chinese_whispers(), when called from python, would
+     sometimes return a labels array that didn't include labels for all the
+     inputs.
+   - Fixed a bug in dlib's MS Windows GUI code that was introduced a little
+     while back when we switched everything to std::shared_ptr.  This change
+     fixes a bug where the program crashes or hangs sometimes during program
+     shutdown.
+   - Fixed error in TIME_THIS() introduced in dlib 19.7. It was printing
+     seconds when it said minutes in the output.
+   - Adding missing implementation of tabbed_display::selected_tab.
+   - Changed the windows signaler and mutex code to use the C++11 thread
+     library instead of the old win32 functions. I did this to work around how
+     windows unloads dlls. In particular, during dll unload windows will kill
+     all threads, THEN it will destruct global objects. So this can lead to
+     problems when a global object that owns threads tries to tell them to
+     shutdown, since the threads have already vanished.  The new code mitigates
+     some of these problems, in particular, there were some cases where
+     unloading dlib's python extension would deadlock.  This should now be
+     fixed.
+   - Fixed compile time errors when either of these macros were enabled:
+     DLIB_STACK_TRACE, DLIB_ISO_CPP_ONLY.
+
+</pre></td></tr></table><br><br><br><center><a href="old_release_notes.html">Old Release Notes</a></center><br></div></div></div><div id="bottom_content"></div></body></html>

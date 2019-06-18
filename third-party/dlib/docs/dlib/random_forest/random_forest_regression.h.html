@@ -1,0 +1,741 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - random_forest_regression.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_RANdOM_FOREST_REGRESSION_H_
+<font color='#0000FF'>#define</font> DLIB_RANdOM_FOREST_REGRESSION_H_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='random_forest_regression_abstract.h.html'>random_forest_regression_abstract.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../matrix.h.html'>../matrix.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>algorithm<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../threads.h.html'>../threads.h</a>"
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>class</font> <b><a name='dense_feature_extractor'></a>dense_feature_extractor</b>
+    <b>{</b>
+
+    <font color='#0000FF'>public</font>:
+        <font color='#0000FF'>typedef</font> uint32_t feature;
+        <font color='#0000FF'>typedef</font> matrix<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>0</font>,<font color='#979000'>1</font><font color='#5555FF'>&gt;</font> sample_type;
+
+        <b><a name='dense_feature_extractor'></a>dense_feature_extractor</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='setup'></a>setup</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y 
+        <font face='Lucida Console'>)</font> 
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>x.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>x.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> el : x<font face='Lucida Console'>)</font>
+                <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>el.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> x[<font color='#979000'>0</font>].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, "<font color='#CC0000'>All the vectors in a training set have to have the same dimensionality.</font>"<font face='Lucida Console'>)</font>;
+
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>x[<font color='#979000'>0</font>].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font>, "<font color='#CC0000'>The vectors can't be empty.</font>"<font face='Lucida Console'>)</font>;
+
+            num_feats <font color='#5555FF'>=</font> x[<font color='#979000'>0</font>].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='get_random_features'></a>get_random_features</b> <font face='Lucida Console'>(</font>
+            dlib::rand<font color='#5555FF'>&amp;</font> rnd,
+            <font color='#0000FF'><u>size_t</u></font> num,
+            std::vector<font color='#5555FF'>&lt;</font>feature<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> feats
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font><font color='#BB00BB'>max_num_feats</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            num <font color='#5555FF'>=</font> std::<font color='#BB00BB'>min</font><font face='Lucida Console'>(</font>num, num_feats<font face='Lucida Console'>)</font>;
+
+            feats.<font color='#BB00BB'>clear</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> num_feats; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                feats.<font color='#BB00BB'>push_back</font><font face='Lucida Console'>(</font>i<font face='Lucida Console'>)</font>;
+
+            <font color='#009900'>// now pick num features at random
+</font>            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> num; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>auto</font> idx <font color='#5555FF'>=</font> rnd.<font color='#BB00BB'>get_integer_in_range</font><font face='Lucida Console'>(</font>i,num_feats<font face='Lucida Console'>)</font>;
+                std::<font color='#BB00BB'>swap</font><font face='Lucida Console'>(</font>feats[i], feats[idx]<font face='Lucida Console'>)</font>;
+            <b>}</b>
+            feats.<font color='#BB00BB'>resize</font><font face='Lucida Console'>(</font>num<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='extract_feature_value'></a>extract_feature_value</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> sample_type<font color='#5555FF'>&amp;</font> item,
+            <font color='#0000FF'>const</font> feature<font color='#5555FF'>&amp;</font> f
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font><font color='#BB00BB'>max_num_feats</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>item</font><font face='Lucida Console'>(</font>f<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='max_num_feats'></a>max_num_feats</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> num_feats;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> dense_feature_extractor<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>dense_feature_extractor</font>", out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.num_feats, out<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>dense_feature_extractor<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>check_serialized_version</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>dense_feature_extractor</font>", in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.num_feats, in<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+        <font color='#0000FF'><u>size_t</u></font> num_feats <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> feature_extractor
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>struct</font> <b><a name='internal_tree_node'></a>internal_tree_node</b>
+    <b>{</b>
+        uint32_t left;
+        uint32_t right;
+        <font color='#0000FF'><u>float</u></font> split_threshold;
+        <font color='#0000FF'>typename</font> feature_extractor::feature split_feature;
+    <b>}</b>;
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> feature_extractor<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.left, out<font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.right, out<font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.split_threshold, out<font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.split_feature, out<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> feature_extractor<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.left, in<font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.right, in<font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.split_threshold, in<font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.split_feature, in<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> feature_extractor <font color='#5555FF'>=</font> dense_feature_extractor
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>class</font> <b><a name='random_forest_regression_function'></a>random_forest_regression_function</b>
+    <b>{</b>
+
+    <font color='#0000FF'>public</font>:
+
+        <font color='#0000FF'>typedef</font> feature_extractor feature_extractor_type;
+        <font color='#0000FF'>typedef</font> <font color='#0000FF'>typename</font> feature_extractor::sample_type sample_type;
+
+        <b><a name='random_forest_regression_function'></a>random_forest_regression_function</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <b><a name='random_forest_regression_function'></a>random_forest_regression_function</b> <font face='Lucida Console'>(</font>
+            feature_extractor_type<font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> fe_,
+            std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> trees_,
+            std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> leaves_
+        <font face='Lucida Console'>)</font> :
+            fe<font face='Lucida Console'>(</font>std::move<font face='Lucida Console'>(</font>fe_<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+            trees<font face='Lucida Console'>(</font>std::move<font face='Lucida Console'>(</font>trees_<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>,
+            leaves<font face='Lucida Console'>(</font>std::move<font face='Lucida Console'>(</font>leaves_<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>trees.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>trees.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> leaves.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, "<font color='#CC0000'>Every set of tree nodes has to have leaves</font>"<font face='Lucida Console'>)</font>;
+<font color='#0000FF'>#ifdef</font> ENABLE_ASSERTS
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> trees.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>trees[i].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font>, "<font color='#CC0000'>A tree can't have 0 leaves.</font>"<font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> node : trees[i]<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>trees[i].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>+</font>leaves[i].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> node.left, "<font color='#CC0000'>left node index in tree is too big. There is no associated tree node or leaf.</font>"<font face='Lucida Console'>)</font>;
+                    <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>trees[i].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>+</font>leaves[i].<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> node.right, "<font color='#CC0000'>right node index in tree is too big. There is no associated tree node or leaf.</font>"<font face='Lucida Console'>)</font>;
+                <b>}</b>
+            <b>}</b>
+<font color='#0000FF'>#endif</font>
+        <b>}</b>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='get_num_trees'></a>get_num_trees</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> trees.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_internal_tree_nodes'></a>get_internal_tree_nodes</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> trees; <b>}</b>
+
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> <b><a name='get_tree_leaves'></a>get_tree_leaves</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> leaves; <b>}</b>
+
+        <font color='#0000FF'>const</font> feature_extractor_type<font color='#5555FF'>&amp;</font> <b><a name='get_feature_extractor'></a>get_feature_extractor</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> fe; <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='operator'></a>operator</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> sample_type<font color='#5555FF'>&amp;</font> x
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font><font color='#BB00BB'>get_num_trees</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'><u>double</u></font> accum <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> trees.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> tree <font color='#5555FF'>=</font> trees[i];
+                <font color='#009900'>// walk the tree to the leaf
+</font>                uint32_t idx <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+                <font color='#0000FF'>while</font><font face='Lucida Console'>(</font>idx <font color='#5555FF'>&lt;</font> tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#0000FF'>auto</font> feature_value <font color='#5555FF'>=</font> fe.<font color='#BB00BB'>extract_feature_value</font><font face='Lucida Console'>(</font>x, tree[idx].split_feature<font face='Lucida Console'>)</font>;
+                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>feature_value <font color='#5555FF'>&lt;</font> tree[idx].split_threshold<font face='Lucida Console'>)</font>
+                        idx <font color='#5555FF'>=</font> tree[idx].left;
+                    <font color='#0000FF'>else</font>
+                        idx <font color='#5555FF'>=</font> tree[idx].right;
+                <b>}</b>
+                <font color='#009900'>// compute leaf index 
+</font>                accum <font color='#5555FF'>+</font><font color='#5555FF'>=</font> leaves[i][idx<font color='#5555FF'>-</font>tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>];
+            <b>}</b>
+
+            <font color='#0000FF'>return</font> accum<font color='#5555FF'>/</font>trees.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='serialize'></a>serialize</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> random_forest_regression_function<font color='#5555FF'>&amp;</font> item, std::ostream<font color='#5555FF'>&amp;</font> out<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>random_forest_regression_function</font>", out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.fe, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.trees, out<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>serialize</font><font face='Lucida Console'>(</font>item.leaves, out<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>friend</font> <font color='#0000FF'><u>void</u></font> <b><a name='deserialize'></a>deserialize</b><font face='Lucida Console'>(</font>random_forest_regression_function<font color='#5555FF'>&amp;</font> item, std::istream<font color='#5555FF'>&amp;</font> in<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>check_serialized_version</font><font face='Lucida Console'>(</font>"<font color='#CC0000'>random_forest_regression_function</font>", in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.fe, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.trees, in<font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>deserialize</font><font face='Lucida Console'>(</font>item.leaves, in<font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        <font color='#009900'>/*!
+            CONVENTION
+                - trees.size() == leaves.size()
+                - Any .left or .right index in trees that is larger than the number of
+                  nodes in the tree references a leaf. Moreover, the index of the leaf is
+                  computed by subtracting the number of nodes in the tree.
+        !*/</font>
+
+        feature_extractor_type fe;
+
+        <font color='#009900'>// internal nodes of trees
+</font>        std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> trees;
+        <font color='#009900'>// leaves of trees
+</font>        std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> leaves;
+
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font>
+        <font color='#0000FF'>typename</font> feature_extractor <font color='#5555FF'>=</font> dense_feature_extractor
+        <font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>class</font> <b><a name='random_forest_regression_trainer'></a>random_forest_regression_trainer</b>
+    <b>{</b>
+    <font color='#0000FF'>public</font>:
+        <font color='#0000FF'>typedef</font> feature_extractor feature_extractor_type;
+        <font color='#0000FF'>typedef</font> random_forest_regression_function<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font> trained_function_type;
+        <font color='#0000FF'>typedef</font> <font color='#0000FF'>typename</font> feature_extractor::sample_type sample_type;
+
+
+        <b><a name='random_forest_regression_trainer'></a>random_forest_regression_trainer</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <font color='#0000FF'>const</font> feature_extractor_type<font color='#5555FF'>&amp;</font> <b><a name='get_feature_extractor'></a>get_feature_extractor</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> fe_;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_feature_extractor'></a>set_feature_extractor</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> feature_extractor_type<font color='#5555FF'>&amp;</font> feat_extractor
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            fe_ <font color='#5555FF'>=</font> feat_extractor;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_seed'></a>set_seed</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::string<font color='#5555FF'>&amp;</font> seed
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            random_seed <font color='#5555FF'>=</font> seed;
+        <b>}</b>
+
+        <font color='#0000FF'>const</font> std::string<font color='#5555FF'>&amp;</font> <b><a name='get_random_seed'></a>get_random_seed</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> random_seed;
+        <b>}</b>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='get_num_trees'></a>get_num_trees</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> num_trees;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_num_trees'></a>set_num_trees</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>size_t</u></font> num
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>num <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            num_trees <font color='#5555FF'>=</font> num;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_feature_subsampling_fraction'></a>set_feature_subsampling_fraction</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>double</u></font> frac
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font><font color='#979000'>0</font> <font color='#5555FF'>&lt;</font> frac <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> frac <font color='#5555FF'>&lt;</font><font color='#5555FF'>=</font> <font color='#979000'>1</font><font face='Lucida Console'>)</font>;
+            feature_subsampling_frac <font color='#5555FF'>=</font> frac;
+        <b>}</b>
+
+        <font color='#0000FF'><u>double</u></font> <b><a name='get_feature_subsampling_frac'></a>get_feature_subsampling_frac</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> feature_subsampling_frac;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='set_min_samples_per_leaf'></a>set_min_samples_per_leaf</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'><u>size_t</u></font> num
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>num <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+            min_samples_per_leaf <font color='#5555FF'>=</font> num;
+        <b>}</b>
+
+        <font color='#0000FF'><u>size_t</u></font> <b><a name='get_min_samples_per_leaf'></a>get_min_samples_per_leaf</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> min_samples_per_leaf;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='be_verbose'></a>be_verbose</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            verbose <font color='#5555FF'>=</font> <font color='#979000'>true</font>;
+        <b>}</b>
+
+        <font color='#0000FF'><u>void</u></font> <b><a name='be_quiet'></a>be_quiet</b> <font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            verbose <font color='#5555FF'>=</font> <font color='#979000'>false</font>;
+        <b>}</b>
+
+        trained_function_type <b><a name='train'></a>train</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y 
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font> junk; 
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>do_train</font><font face='Lucida Console'>(</font>x,y,junk,<font color='#979000'>false</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        trained_function_type <b><a name='train'></a>train</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y,
+            std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> oob_values 
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+        <b>{</b>
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>do_train</font><font face='Lucida Console'>(</font>x,y,oob_values,<font color='#979000'>true</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        trained_function_type <b><a name='do_train'></a>do_train</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y,
+            std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> oob_values, 
+            <font color='#0000FF'><u>bool</u></font> compute_oob_values
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> 
+        <b>{</b>
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>x.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font><font color='#5555FF'>=</font> y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>x.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+
+            feature_extractor_type fe <font color='#5555FF'>=</font> fe_;
+            fe.<font color='#BB00BB'>setup</font><font face='Lucida Console'>(</font>x,y<font face='Lucida Console'>)</font>;
+
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>fe.<font color='#BB00BB'>max_num_feats</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+
+            std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font>internal_tree_node<font color='#5555FF'>&lt;</font>feature_extractor<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <font color='#BB00BB'>all_trees</font><font face='Lucida Console'>(</font>num_trees<font face='Lucida Console'>)</font>;
+            std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <font color='#BB00BB'>all_leaves</font><font face='Lucida Console'>(</font>num_trees<font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> sumy <font color='#5555FF'>=</font> <font color='#BB00BB'>sum</font><font face='Lucida Console'>(</font><font color='#BB00BB'>mat</font><font face='Lucida Console'>(</font>y<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>const</font> <font color='#0000FF'><u>size_t</u></font> feats_per_node <font color='#5555FF'>=</font> std::<font color='#BB00BB'>max</font><font face='Lucida Console'>(</font><font color='#979000'>1.0</font>,std::<font color='#BB00BB'>round</font><font face='Lucida Console'>(</font>fe.<font color='#BB00BB'>max_num_feats</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>*</font>feature_subsampling_frac<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+            <font color='#009900'>// Each tree couldn't have more than this many interior nodes.  It might
+</font>            <font color='#009900'>// end up having less though. We need to know this value because the way
+</font>            <font color='#009900'>// we mark a left or right pointer in a tree as pointing to a leaf is by
+</font>            <font color='#009900'>// making its index larger than the number of interior nodes in the tree.
+</font>            <font color='#009900'>// But we don't know the tree's size before we finish building it.  So we
+</font>            <font color='#009900'>// will use max_num_nodes as a proxy during tree construction and then go
+</font>            <font color='#009900'>// back and fix it once a tree's size is known.
+</font>            <font color='#0000FF'>const</font> uint32_t max_num_nodes <font color='#5555FF'>=</font> y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; 
+
+            std::vector<font color='#5555FF'>&lt;</font>uint32_t<font color='#5555FF'>&gt;</font> oob_hits;
+
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>compute_oob_values<font face='Lucida Console'>)</font>
+            <b>{</b>
+                oob_values.<font color='#BB00BB'>resize</font><font face='Lucida Console'>(</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                oob_hits.<font color='#BB00BB'>resize</font><font face='Lucida Console'>(</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            <b>}</b>
+
+
+            std::mutex m;
+
+            <font color='#009900'>// Calling build_tree(i) creates the ith tree and stores the results in
+</font>            <font color='#009900'>// all_trees and all_leaves.
+</font>            <font color='#0000FF'>auto</font> build_tree <font color='#5555FF'>=</font> [<font color='#5555FF'>&amp;</font>]<font face='Lucida Console'>(</font><font color='#0000FF'><u>long</u></font> i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                dlib::rand <font color='#BB00BB'>rnd</font><font face='Lucida Console'>(</font>random_seed <font color='#5555FF'>+</font> std::<font color='#BB00BB'>to_string</font><font face='Lucida Console'>(</font>i<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> tree <font color='#5555FF'>=</font> all_trees[i];
+                <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> leaves <font color='#5555FF'>=</font> all_leaves[i];
+
+                <font color='#009900'>// Check if there are fewer than min_samples_per_leaf and if so then
+</font>                <font color='#009900'>// don't make any tree.  Just average the things and be done. 
+</font>                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&lt;</font><font color='#5555FF'>=</font> min_samples_per_leaf<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    leaves.<font color='#BB00BB'>push_back</font><font face='Lucida Console'>(</font>sumy<font color='#5555FF'>/</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                    <font color='#0000FF'>return</font>;
+                <b>}</b>
+
+
+                <font color='#009900'>// pick a random bootstrap of the data.
+</font>                std::vector<font color='#5555FF'>&lt;</font>std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <font color='#BB00BB'>idxs</font><font face='Lucida Console'>(</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> idx : idxs<font face='Lucida Console'>)</font>
+                    idx <font color='#5555FF'>=</font> std::<font color='#BB00BB'>make_pair</font><font face='Lucida Console'>(</font><font color='#979000'>0.0f</font>, <font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font>uint32_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>rnd.<font color='#BB00BB'>get_integer</font><font face='Lucida Console'>(</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+                <font color='#009900'>// We are going to use ranges_to_process as a stack that tracks which
+</font>                <font color='#009900'>// range of samples we are going to split next.
+</font>                std::vector<font color='#5555FF'>&lt;</font>range_t<font color='#5555FF'>&gt;</font> ranges_to_process;
+                <font color='#009900'>// start with the root of the tree, i.e. the entire range of training
+</font>                <font color='#009900'>// samples.
+</font>                ranges_to_process.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font>sumy, <font color='#979000'>0</font>, <font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font>uint32_t<font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>y.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                <font color='#009900'>// push an unpopulated root node into the tree.  We will populate it
+</font>                <font color='#009900'>// when we process its corresponding range. 
+</font>                tree.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+                std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> feature_extractor::feature<font color='#5555FF'>&gt;</font> feats;
+
+                <font color='#0000FF'>while</font><font face='Lucida Console'>(</font>ranges_to_process.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#009900'>// Grab the next range/node to process.
+</font>                    <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> range <font color='#5555FF'>=</font> ranges_to_process.<font color='#BB00BB'>back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+                    ranges_to_process.<font color='#BB00BB'>pop_back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+
+                    <font color='#009900'>// Get the split features we will consider at this node.
+</font>                    fe.<font color='#BB00BB'>get_random_features</font><font face='Lucida Console'>(</font>rnd, feats_per_node, feats<font face='Lucida Console'>)</font>;
+                    <font color='#009900'>// Then find the best split
+</font>                    <font color='#0000FF'>auto</font> best_split <font color='#5555FF'>=</font> <font color='#BB00BB'>find_best_split_among_feats</font><font face='Lucida Console'>(</font>fe, range, feats, x, y, idxs<font face='Lucida Console'>)</font>; 
+
+                    range_t <font color='#BB00BB'>left_split</font><font face='Lucida Console'>(</font>best_split.left_sum, range.begin, best_split.split_idx<font face='Lucida Console'>)</font>;
+                    range_t <font color='#BB00BB'>right_split</font><font face='Lucida Console'>(</font>best_split.right_sum, best_split.split_idx, range.end<font face='Lucida Console'>)</font>;
+
+                    <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>left_split.begin <font color='#5555FF'>&lt;</font> left_split.end<font face='Lucida Console'>)</font>;
+                    <font color='#BB00BB'>DLIB_ASSERT</font><font face='Lucida Console'>(</font>right_split.begin <font color='#5555FF'>&lt;</font> right_split.end<font face='Lucida Console'>)</font>;
+
+                    <font color='#009900'>// Now that we know the split we can populate the parent node we popped
+</font>                    <font color='#009900'>// from ranges_to_process.
+</font>                    tree[range.tree_idx].split_threshold <font color='#5555FF'>=</font> best_split.split_threshold; 
+                    tree[range.tree_idx].split_feature <font color='#5555FF'>=</font> best_split.split_feature; 
+
+                    <font color='#009900'>// If the left split is big enough to make a new interior leaf
+</font>                    <font color='#009900'>// node. We also stop splitting if all the samples went into this node.
+</font>                    <font color='#009900'>// This could happen if the features are all uniform so there just
+</font>                    <font color='#009900'>// isn't any way to split them anymore.
+</font>                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>left_split.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> min_samples_per_leaf <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> right_split.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#009900'>// allocate an interior leaf node for it.
+</font>                        left_split.tree_idx <font color='#5555FF'>=</font> tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+                        tree.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; 
+                        <font color='#009900'>// set the pointer in the parent node to the newly allocated
+</font>                        <font color='#009900'>// node.
+</font>                        tree[range.tree_idx].left  <font color='#5555FF'>=</font> left_split.tree_idx;
+
+                        ranges_to_process.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font>left_split<font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                    <font color='#0000FF'>else</font>
+                    <b>{</b>
+                        <font color='#009900'>// Add to leaves.  Don't forget to set the pointer in the
+</font>                        <font color='#009900'>// parent node to the newly allocated leaf node.
+</font>                        tree[range.tree_idx].left <font color='#5555FF'>=</font> leaves.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> max_num_nodes;
+                        leaves.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font><font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>left_split.<font color='#BB00BB'>avg</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                    <b>}</b>
+
+
+                    <font color='#009900'>// If the right split is big enough to make a new interior leaf
+</font>                    <font color='#009900'>// node. We also stop splitting if all the samples went into this node.
+</font>                    <font color='#009900'>// This could happen if the features are all uniform so there just
+</font>                    <font color='#009900'>// isn't any way to split them anymore.
+</font>                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>right_split.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> min_samples_per_leaf <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> left_split.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#009900'>// allocate an interior leaf node for it.
+</font>                        right_split.tree_idx <font color='#5555FF'>=</font> tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+                        tree.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; 
+                        <font color='#009900'>// set the pointer in the parent node to the newly allocated
+</font>                        <font color='#009900'>// node.
+</font>                        tree[range.tree_idx].right  <font color='#5555FF'>=</font> right_split.tree_idx;
+
+                        ranges_to_process.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font>right_split<font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                    <font color='#0000FF'>else</font>
+                    <b>{</b>
+                        <font color='#009900'>// Add to leaves.  Don't forget to set the pointer in the
+</font>                        <font color='#009900'>// parent node to the newly allocated leaf node.
+</font>                        tree[range.tree_idx].right <font color='#5555FF'>=</font> leaves.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>+</font> max_num_nodes;
+                        leaves.<font color='#BB00BB'>emplace_back</font><font face='Lucida Console'>(</font><font color='#0000FF'>static_cast</font><font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font>right_split.<font color='#BB00BB'>avg</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                <b>}</b> <font color='#009900'>// end while (still building tree)
+</font>
+                <font color='#009900'>// Fix the leaf pointers in the tree now that we know the correct
+</font>                <font color='#009900'>// tree.size() value.
+</font>                <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>max_num_nodes <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>; 
+                <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> offset <font color='#5555FF'>=</font> max_num_nodes <font color='#5555FF'>-</font> tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> n : tree<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>n.left <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> max_num_nodes<font face='Lucida Console'>)</font>
+                        n.left <font color='#5555FF'>-</font><font color='#5555FF'>=</font> offset;
+                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>n.right <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> max_num_nodes<font face='Lucida Console'>)</font>
+                        n.right <font color='#5555FF'>-</font><font color='#5555FF'>=</font> offset;
+                <b>}</b>
+                
+
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>compute_oob_values<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    std::<font color='#BB00BB'>sort</font><font face='Lucida Console'>(</font>idxs.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, idxs.<font color='#BB00BB'>end</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, 
+                        []<font face='Lucida Console'>(</font><font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> a, <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> b<font face='Lucida Console'>)</font> <b>{</b><font color='#0000FF'>return</font> a.second<font color='#5555FF'>&lt;</font>b.second; <b>}</b><font face='Lucida Console'>)</font>;
+
+                    std::lock_guard<font color='#5555FF'>&lt;</font>std::mutex<font color='#5555FF'>&gt;</font> <font color='#BB00BB'>lock</font><font face='Lucida Console'>(</font>m<font face='Lucida Console'>)</font>;
+
+                    <font color='#0000FF'><u>size_t</u></font> j <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+                    <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> oob_values.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#009900'>// check if i is in idxs
+</font>                        <font color='#0000FF'>while</font><font face='Lucida Console'>(</font>j <font color='#5555FF'>&lt;</font> idxs.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> i <font color='#5555FF'>&gt;</font> idxs[j].second<font face='Lucida Console'>)</font>
+                            <font color='#5555FF'>+</font><font color='#5555FF'>+</font>j;
+
+                        <font color='#009900'>// i isn't in idxs so it's an oob sample and we should process it.
+</font>                        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>j <font color='#5555FF'>=</font><font color='#5555FF'>=</font> idxs.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>|</font><font color='#5555FF'>|</font> idxs[j].second <font color='#5555FF'>!</font><font color='#5555FF'>=</font> i<font face='Lucida Console'>)</font>
+                        <b>{</b>
+                            oob_hits[i]<font color='#5555FF'>+</font><font color='#5555FF'>+</font>;
+
+                            <font color='#009900'>// walk the tree to find the leaf value for this oob sample
+</font>                            uint32_t idx <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+                            <font color='#0000FF'>while</font><font face='Lucida Console'>(</font>idx <font color='#5555FF'>&lt;</font> tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                            <b>{</b>
+                                <font color='#0000FF'>auto</font> feature_value <font color='#5555FF'>=</font> fe.<font color='#BB00BB'>extract_feature_value</font><font face='Lucida Console'>(</font>x[i], tree[idx].split_feature<font face='Lucida Console'>)</font>;
+                                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>feature_value <font color='#5555FF'>&lt;</font> tree[idx].split_threshold<font face='Lucida Console'>)</font>
+                                    idx <font color='#5555FF'>=</font> tree[idx].left;
+                                <font color='#0000FF'>else</font>
+                                    idx <font color='#5555FF'>=</font> tree[idx].right;
+                            <b>}</b>
+                            oob_values[i] <font color='#5555FF'>+</font><font color='#5555FF'>=</font> leaves[idx<font color='#5555FF'>-</font>tree.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>];
+                        <b>}</b>
+                    <b>}</b>
+                <b>}</b>
+            <b>}</b>;
+
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>verbose<font face='Lucida Console'>)</font>
+                <font color='#BB00BB'>parallel_for_verbose</font><font face='Lucida Console'>(</font><font color='#979000'>0</font>, num_trees, build_tree<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>else</font>
+                <font color='#BB00BB'>parallel_for</font><font face='Lucida Console'>(</font><font color='#979000'>0</font>, num_trees, build_tree<font face='Lucida Console'>)</font>;
+
+
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>compute_oob_values<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#0000FF'><u>double</u></font> meanval <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+                <font color='#0000FF'><u>double</u></font> cnt <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> oob_values.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>oob_hits[i] <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        oob_values[i] <font color='#5555FF'>/</font><font color='#5555FF'>=</font> oob_hits[i];
+                        meanval <font color='#5555FF'>+</font><font color='#5555FF'>=</font> oob_values[i];
+                        <font color='#5555FF'>+</font><font color='#5555FF'>+</font>cnt;
+                    <b>}</b>
+                <b>}</b>
+
+                <font color='#009900'>// If there are some elements that didn't get hits, we set their oob values
+</font>                <font color='#009900'>// to the mean oob value.
+</font>                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>cnt <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> typical_value <font color='#5555FF'>=</font> meanval<font color='#5555FF'>/</font>cnt;
+                    <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> oob_values.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>oob_hits[i] <font color='#5555FF'>=</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                            oob_values[i] <font color='#5555FF'>=</font> typical_value;
+                    <b>}</b>
+                <b>}</b>
+            <b>}</b>
+
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>trained_function_type</font><font face='Lucida Console'>(</font>std::<font color='#BB00BB'>move</font><font face='Lucida Console'>(</font>fe<font face='Lucida Console'>)</font>, std::<font color='#BB00BB'>move</font><font face='Lucida Console'>(</font>all_trees<font face='Lucida Console'>)</font>, std::<font color='#BB00BB'>move</font><font face='Lucida Console'>(</font>all_leaves<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>struct</font> <b><a name='range_t'></a>range_t</b> 
+        <b>{</b>
+            <b><a name='range_t'></a>range_t</b><font face='Lucida Console'>(</font>
+                <font color='#0000FF'><u>double</u></font> sumy,
+                uint32_t begin,
+                uint32_t end
+            <font face='Lucida Console'>)</font> : sumy<font face='Lucida Console'>(</font>sumy<font face='Lucida Console'>)</font>, begin<font face='Lucida Console'>(</font>begin<font face='Lucida Console'>)</font>, end<font face='Lucida Console'>(</font>end<font face='Lucida Console'>)</font>, tree_idx<font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+
+            <font color='#0000FF'><u>double</u></font> sumy;
+            uint32_t begin;
+            uint32_t end;
+
+            <font color='#009900'>// Every range object corresponds to an entry in a tree. This tells you the
+</font>            <font color='#009900'>// tree node that owns the range.
+</font>            uint32_t tree_idx; 
+
+            uint32_t <b><a name='size'></a>size</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> end<font color='#5555FF'>-</font>begin; <b>}</b>
+            <font color='#0000FF'><u>double</u></font> <b><a name='avg'></a>avg</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> sumy<font color='#5555FF'>/</font><font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <b>}</b>
+        <b>}</b>;
+
+        <font color='#0000FF'>struct</font> <b><a name='best_split_details'></a>best_split_details</b>
+        <b>{</b>
+            <font color='#0000FF'><u>double</u></font> score <font color='#5555FF'>=</font> <font color='#5555FF'>-</font>std::numeric_limits<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font>::<b><a name='infinity'></a>infinity</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'><u>double</u></font> left_sum;
+            <font color='#0000FF'><u>double</u></font> right_sum;
+            uint32_t split_idx;
+            <font color='#0000FF'><u>double</u></font> split_threshold;
+            <font color='#0000FF'>typename</font> feature_extractor::feature split_feature;
+
+            <font color='#0000FF'><u>bool</u></font> <b><a name='operator'></a>operator</b> <font color='#5555FF'>&lt;</font> <font face='Lucida Console'>(</font><font color='#0000FF'>const</font> best_split_details<font color='#5555FF'>&amp;</font> rhs<font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>
+            <b>{</b>
+                <font color='#0000FF'>return</font> score <font color='#5555FF'>&lt;</font> rhs.score;
+            <b>}</b>
+        <b>}</b>;
+
+        <font color='#0000FF'>static</font> best_split_details <b><a name='find_best_split'></a>find_best_split</b> <font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> range_t<font color='#5555FF'>&amp;</font> range,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> idxs
+        <font face='Lucida Console'>)</font>
+        <font color='#009900'>/*!
+            requires
+                - max(mat(idxs)) &lt; y.size()
+                - range.sumy == sum of y[idxs[j].second] for all valid j in range [range.begin, range.end). 
+            ensures
+                - finds a threshold T such that there exists an i satisfying the following:
+                    - y[idxs[j].second] &lt; T for all j &lt;= i
+                    - y[idxs[j].second] &gt; T for all j &gt; i
+                  Therefore, the threshold T partitions the contents of y into two groups,
+                  relative to the ordering established by idxs.  Moreover the partitioning
+                  of y values into two groups has the additional requirement that it is
+                  optimal in the sense that the sum of the squared deviations from each
+                  partition's mean is minimized.
+        !*/</font>
+        <b>{</b>
+
+            <font color='#0000FF'><u>size_t</u></font> best_i <font color='#5555FF'>=</font> range.begin;
+            <font color='#0000FF'><u>double</u></font> best_score <font color='#5555FF'>=</font> <font color='#5555FF'>-</font><font color='#979000'>1</font>;
+            <font color='#0000FF'><u>double</u></font> left_sum <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            <font color='#0000FF'><u>double</u></font> best_left_sum <font color='#5555FF'>=</font> y[idxs[range.begin].second];
+            <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font> size <font color='#5555FF'>=</font> range.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+            <font color='#0000FF'><u>size_t</u></font> left_size <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> range.begin; i<font color='#5555FF'>+</font><font color='#979000'>1</font> <font color='#5555FF'>&lt;</font> range.end; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#5555FF'>+</font><font color='#5555FF'>+</font>left_size;
+                left_sum <font color='#5555FF'>+</font><font color='#5555FF'>=</font> y[idxs[i].second];
+
+                <font color='#009900'>// Don't split here because the next element has the same feature value so
+</font>                <font color='#009900'>// we can't *really* split here.
+</font>                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>idxs[i].first<font color='#5555FF'>=</font><font color='#5555FF'>=</font>idxs[i<font color='#5555FF'>+</font><font color='#979000'>1</font>].first<font face='Lucida Console'>)</font>
+                    <font color='#0000FF'>continue</font>;
+
+                <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> right_sum <font color='#5555FF'>=</font> range.sumy<font color='#5555FF'>-</font>left_sum;
+
+                <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> score <font color='#5555FF'>=</font> left_sum<font color='#5555FF'>*</font>left_sum<font color='#5555FF'>/</font>left_size <font color='#5555FF'>+</font> right_sum<font color='#5555FF'>*</font>right_sum<font color='#5555FF'>/</font><font face='Lucida Console'>(</font>size<font color='#5555FF'>-</font>left_size<font face='Lucida Console'>)</font>;
+
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>score <font color='#5555FF'>&gt;</font> best_score<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    best_score <font color='#5555FF'>=</font> score;
+                    best_i <font color='#5555FF'>=</font> i;
+                    best_left_sum <font color='#5555FF'>=</font> left_sum;
+                <b>}</b>
+            <b>}</b>
+
+            best_split_details result;
+            result.score <font color='#5555FF'>=</font> best_score;
+            result.left_sum <font color='#5555FF'>=</font> best_left_sum;
+            result.right_sum <font color='#5555FF'>=</font> range.sumy<font color='#5555FF'>-</font>best_left_sum;
+            result.split_idx <font color='#5555FF'>=</font> best_i<font color='#5555FF'>+</font><font color='#979000'>1</font>; <font color='#009900'>// one past the end of the left range
+</font>            result.split_threshold <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>idxs[best_i].first<font color='#5555FF'>+</font>idxs[best_i<font color='#5555FF'>+</font><font color='#979000'>1</font>].first<font face='Lucida Console'>)</font><font color='#5555FF'>/</font><font color='#979000'>2</font>;
+
+            <font color='#0000FF'>return</font> result;
+        <b>}</b>
+
+
+        <font color='#0000FF'>static</font> best_split_details <b><a name='find_best_split_among_feats'></a>find_best_split_among_feats</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> feature_extractor<font color='#5555FF'>&amp;</font> fe,
+            <font color='#0000FF'>const</font> range_t<font color='#5555FF'>&amp;</font> range, 
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> feature_extractor::feature<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> feats, 
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>sample_type<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> x,
+            <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> y,
+            std::vector<font color='#5555FF'>&lt;</font>std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> idxs
+        <font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>auto</font> compare_first <font color='#5555FF'>=</font> []<font face='Lucida Console'>(</font><font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> a, <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>float</u></font>,uint32_t<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> b<font face='Lucida Console'>)</font> <b>{</b> <font color='#0000FF'>return</font> a.first<font color='#5555FF'>&lt;</font>b.first; <b>}</b>;
+            best_split_details best;
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> feat : feats<font face='Lucida Console'>)</font>
+            <b>{</b>
+                <font color='#009900'>// Extract feature values for this feature and sort the indexes based on
+</font>                <font color='#009900'>// that feature so we can then find the best split.
+</font>                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font> i <font color='#5555FF'>=</font> range.begin; i <font color='#5555FF'>&lt;</font> range.end; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                    idxs[i].first <font color='#5555FF'>=</font> fe.<font color='#BB00BB'>extract_feature_value</font><font face='Lucida Console'>(</font>x[idxs[i].second], feat<font face='Lucida Console'>)</font>;
+
+                std::<font color='#BB00BB'>sort</font><font face='Lucida Console'>(</font>idxs.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>+</font>range.begin, idxs.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>+</font>range.end, compare_first<font face='Lucida Console'>)</font>;
+
+                <font color='#0000FF'>auto</font> split <font color='#5555FF'>=</font> <font color='#BB00BB'>find_best_split</font><font face='Lucida Console'>(</font>range, y, idxs<font face='Lucida Console'>)</font>;
+
+                <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>best <font color='#5555FF'>&lt;</font> split<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    best <font color='#5555FF'>=</font> split;
+                    best.split_feature <font color='#5555FF'>=</font> feat;
+                <b>}</b>
+            <b>}</b>
+
+            <font color='#009900'>// resort idxs based on winning feat
+</font>            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font> i <font color='#5555FF'>=</font> range.begin; i <font color='#5555FF'>&lt;</font> range.end; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                idxs[i].first <font color='#5555FF'>=</font> fe.<font color='#BB00BB'>extract_feature_value</font><font face='Lucida Console'>(</font>x[idxs[i].second], best.split_feature<font face='Lucida Console'>)</font>;
+            std::<font color='#BB00BB'>sort</font><font face='Lucida Console'>(</font>idxs.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>+</font>range.begin, idxs.<font color='#BB00BB'>begin</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font color='#5555FF'>+</font>range.end, compare_first<font face='Lucida Console'>)</font>;
+
+            <font color='#0000FF'>return</font> best;
+        <b>}</b>
+
+        std::string random_seed;
+        <font color='#0000FF'><u>size_t</u></font> num_trees <font color='#5555FF'>=</font> <font color='#979000'>1000</font>;
+        <font color='#0000FF'><u>double</u></font> feature_subsampling_frac <font color='#5555FF'>=</font> <font color='#979000'>1.0</font><font color='#5555FF'>/</font><font color='#979000'>3.0</font>;
+        <font color='#0000FF'><u>size_t</u></font> min_samples_per_leaf <font color='#5555FF'>=</font> <font color='#979000'>5</font>;
+        feature_extractor_type fe_;
+        <font color='#0000FF'><u>bool</u></font> verbose <font color='#5555FF'>=</font> <font color='#979000'>false</font>;
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_RANdOM_FOREST_REGRESSION_H_
+</font>
+
+
+</pre></body></html>

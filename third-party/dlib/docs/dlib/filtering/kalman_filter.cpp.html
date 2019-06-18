@@ -1,0 +1,107 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - kalman_filter.cpp</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_KALMAN_FiLTER_CPp_
+<font color='#0000FF'>#define</font> DLIB_KALMAN_FiLTER_CPp_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='kalman_filter.h.html'>kalman_filter.h</a>"
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../global_optimization.h.html'>../global_optimization.h</a>"
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../statistics.h.html'>../statistics.h</a>"
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    momentum_filter <b><a name='find_optimal_momentum_filter'></a>find_optimal_momentum_filter</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> sequences,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> smoothness 
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>sequences.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> vals : sequences<font face='Lucida Console'>)</font>
+            <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>vals.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>4</font><font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>smoothness <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+
+        <font color='#009900'>// define the objective function we optimize to find the best filter
+</font>        <font color='#0000FF'>auto</font> obj <font color='#5555FF'>=</font> [<font color='#5555FF'>&amp;</font>]<font face='Lucida Console'>(</font><font color='#0000FF'><u>double</u></font> measurement_noise, <font color='#0000FF'><u>double</u></font> typical_acceleration, <font color='#0000FF'><u>double</u></font> max_measurement_deviation<font face='Lucida Console'>)</font>
+        <b>{</b>
+            running_stats<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font> rs;
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> vals : sequences<font face='Lucida Console'>)</font>
+            <b>{</b>
+                momentum_filter <font color='#BB00BB'>filt</font><font face='Lucida Console'>(</font>measurement_noise, typical_acceleration, max_measurement_deviation<font face='Lucida Console'>)</font>;
+                <font color='#0000FF'><u>double</u></font> prev_filt <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+                <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>0</font>; i <font color='#5555FF'>&lt;</font> vals.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                <b>{</b>
+                    <font color='#009900'>// we care about smoothness and fitting the data.
+</font>                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>i <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#009900'>// the filter should fit the data
+</font>                        rs.<font color='#BB00BB'>add</font><font face='Lucida Console'>(</font>std::<font color='#BB00BB'>abs</font><font face='Lucida Console'>(</font>vals[i]<font color='#5555FF'>-</font>filt.<font color='#BB00BB'>get_predicted_next_position</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                    <font color='#0000FF'><u>double</u></font> next_filt <font color='#5555FF'>=</font> <font color='#BB00BB'>filt</font><font face='Lucida Console'>(</font>vals[i]<font face='Lucida Console'>)</font>;
+                    <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>i <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                    <b>{</b>
+                        <font color='#009900'>// the filter should also output a smooth trajectory
+</font>                        rs.<font color='#BB00BB'>add</font><font face='Lucida Console'>(</font>smoothness<font color='#5555FF'>*</font>std::<font color='#BB00BB'>abs</font><font face='Lucida Console'>(</font>next_filt<font color='#5555FF'>-</font>prev_filt<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+                    <b>}</b>
+                    prev_filt <font color='#5555FF'>=</font> next_filt;
+                <b>}</b>
+            <b>}</b>
+            <font color='#0000FF'>return</font> rs.<font color='#BB00BB'>mean</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>;
+
+        running_stats<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font> avgdiff;
+        <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> vals : sequences<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'><u>size_t</u></font> i <font color='#5555FF'>=</font> <font color='#979000'>1</font>; i <font color='#5555FF'>&lt;</font> vals.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>; <font color='#5555FF'>+</font><font color='#5555FF'>+</font>i<font face='Lucida Console'>)</font>
+                avgdiff.<font color='#BB00BB'>add</font><font face='Lucida Console'>(</font>vals[i]<font color='#5555FF'>-</font>vals[i<font color='#5555FF'>-</font><font color='#979000'>1</font>]<font face='Lucida Console'>)</font>;
+        <b>}</b>
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> scale <font color='#5555FF'>=</font> avgdiff.<font color='#BB00BB'>stddev</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+
+        function_evaluation opt <font color='#5555FF'>=</font> <font color='#BB00BB'>find_min_global</font><font face='Lucida Console'>(</font>obj, <b>{</b>scale<font color='#5555FF'>*</font><font color='#979000'>0.01</font>, scale<font color='#5555FF'>*</font><font color='#979000'>0.0001</font>, <font color='#979000'>0.00001</font><b>}</b>, <b>{</b>scale<font color='#5555FF'>*</font><font color='#979000'>10</font>, scale<font color='#5555FF'>*</font><font color='#979000'>10</font>, <font color='#979000'>10</font><b>}</b>, <font color='#BB00BB'>max_function_calls</font><font face='Lucida Console'>(</font><font color='#979000'>400</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+        momentum_filter <font color='#BB00BB'>filt</font><font face='Lucida Console'>(</font>opt.<font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>0</font><font face='Lucida Console'>)</font>, opt.<font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>1</font><font face='Lucida Console'>)</font>, opt.<font color='#BB00BB'>x</font><font face='Lucida Console'>(</font><font color='#979000'>2</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'>return</font> filt;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    momentum_filter <b><a name='find_optimal_momentum_filter'></a>find_optimal_momentum_filter</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> sequence,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> smoothness 
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>find_optimal_momentum_filter</font><font face='Lucida Console'>(</font><b>{</b><font color='#979000'>1</font>,sequence<b>}</b>, smoothness<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    rect_filter <b><a name='find_optimal_rect_filter'></a>find_optimal_rect_filter</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>rectangle<font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> rects,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font> smoothness
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>rects.<font color='#BB00BB'>size</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>4</font><font face='Lucida Console'>)</font>;
+        <font color='#BB00BB'>DLIB_CASSERT</font><font face='Lucida Console'>(</font>smoothness <font color='#5555FF'>&gt;</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>;
+
+        std::vector<font color='#5555FF'>&lt;</font>std::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font> <font color='#BB00BB'>vals</font><font face='Lucida Console'>(</font><font color='#979000'>4</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> r : rects<font face='Lucida Console'>)</font>
+        <b>{</b>
+            vals[<font color='#979000'>0</font>].<font color='#BB00BB'>push_back</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>left</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            vals[<font color='#979000'>1</font>].<font color='#BB00BB'>push_back</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>top</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            vals[<font color='#979000'>2</font>].<font color='#BB00BB'>push_back</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>right</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+            vals[<font color='#979000'>3</font>].<font color='#BB00BB'>push_back</font><font face='Lucida Console'>(</font>r.<font color='#BB00BB'>bottom</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>rect_filter</font><font face='Lucida Console'>(</font><font color='#BB00BB'>find_optimal_momentum_filter</font><font face='Lucida Console'>(</font>vals, smoothness<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_KALMAN_FiLTER_CPp_
+</font>
+
+</pre></body></html>

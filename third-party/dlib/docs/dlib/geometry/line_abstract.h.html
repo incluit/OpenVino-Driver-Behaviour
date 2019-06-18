@@ -1,0 +1,245 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - line_abstract.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#undef</font> DLIB_LInE_ABSTRACT_H_
+<font color='#0000FF'>#ifdef</font> DLIB_LInE_ABSTRACT_H_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../vector_abstract.h.html'>../vector_abstract.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&gt;</font>
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>class</font> <b><a name='line'></a>line</b>
+    <b>{</b>
+        <font color='#009900'>/*!
+            WHAT THIS OBJECT REPRESENTS
+                This object represents a line in the 2D plane.  The line is defined by two
+                points running through it, p1() and p2().  This object also includes a
+                unit normal vector that is perpendicular to the line.
+        !*/</font>
+
+    <font color='#0000FF'>public</font>:
+
+        <b><a name='line'></a>line</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - p1(), p2(), and normal() are all the 0 vector.
+        !*/</font>
+
+        <b><a name='line'></a>line</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> a, 
+            <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> b
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #p1() == a
+                - #p2() == b
+                - #normal() == A vector normal to the line passing through points a and b.
+                  In particular, it is given by: (a-b).cross(dlib::vector&lt;double,3&gt;(0,0,1)).normalize().
+                  Therefore, the normal vector is the vector (a-b) but unit normalized and rotated clockwise 90 degrees.
+        !*/</font>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+        <b><a name='line'></a>line</b><font face='Lucida Console'>(</font>
+            <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> l
+        <font face='Lucida Console'>)</font>;
+        <font color='#009900'>/*!
+            ensures
+                - #*this == line(l.first, l.second)
+        !*/</font>
+
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> <b><a name='p1'></a>p1</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>; 
+        <font color='#009900'>/*!
+            ensures
+                - returns the first endpoint of the line.
+        !*/</font>
+
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> <b><a name='p2'></a>p2</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>;
+        <font color='#009900'>/*!
+            ensures
+                - returns the second endpoint of the line.
+        !*/</font>
+
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> <b><a name='normal'></a>normal</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> <font color='#0000FF'>const</font>; 
+        <font color='#009900'>/*!
+            ensures
+                - returns a unit vector that is normal to the line passing through p1() and p2().
+        !*/</font>
+
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='signed_distance_to_line'></a>signed_distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns how far p is from the line l.  This is a signed distance.  The sign
+              indicates which side of the line the point is on and the magnitude is the
+              distance. Moreover, the direction of positive sign is pointed to by the
+              vector l.normal().
+            - To be specific, this routine returns dot(p-l.p1(), l.normal())
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='signed_distance_to_line'></a>signed_distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font> <font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns signed_distance_to_line(line(l),p);
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='distance_to_line'></a>distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font> <font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns abs(signed_distance_to_line(l,p))
+    !*/</font>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='distance_to_line'></a>distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns abs(signed_distance_to_line(l,p))
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    line <b><a name='reverse'></a>reverse</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns line(l.p2(), l.p1())
+              (i.e. returns a line object that represents the same line as l but with the
+              endpoints, and therefore, the normal vector flipped.  This means that the
+              signed distance of operator() is also flipped).
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    dpoint <b><a name='intersect'></a>intersect</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> a,
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> b
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns the point of intersection between lines a and b.  If no such point
+              exists then this function returns a point with Inf values in it.
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='angle_between_lines'></a>angle_between_lines</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> a,
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> b
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns the angle, in degrees, between the given lines.  This is a number in
+              the range [0 90].
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+    dpoint <b><a name='intersect'></a>intersect</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> a,
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> b
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - returns intersect(line(a), line(b))
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>size_t</u></font> <b><a name='count_points_on_side_of_line'></a>count_points_on_side_of_line</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> reference_point,
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> pts,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font><font color='#5555FF'>&amp;</font> dist_thresh_min <font color='#5555FF'>=</font> <font color='#979000'>0</font>,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font><font color='#5555FF'>&amp;</font> dist_thresh_max <font color='#5555FF'>=</font> std::numeric_limits<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>infinity</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - Returns a count of how many points in pts have a distance from the line l
+              that is in the range [dist_thresh_min, dist_thresh_max].  This distance is a
+              signed value that indicates how far a point is from the line. Moreover, if
+              the point is on the same side as reference_point then the distance is
+              positive, otherwise it is negative.  So for example, If this range is [0,
+              infinity] then this function counts how many points are on the same side of l
+              as reference_point.
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='count_points_between_lines'></a>count_points_between_lines</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l1,
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l2,
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> reference_point,
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> pts
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - Counts and returns the number of points in pts that are between lines l1 and
+              l2.  Since a pair of lines will, in the general case, divide the plane into 4
+              regions, we identify the region of interest as the one that contains the
+              reference_point.  Therefore, this function counts the number of points in pts
+              that appear in the same region as reference_point.
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>struct</font> <b><a name='no_convex_quadrilateral'></a>no_convex_quadrilateral</b> : dlib::error
+    <b>{</b>
+        <font color='#009900'>/*!
+            WHAT THIS OBJECT REPRESENTS
+                This is the exception thrown by find_convex_quadrilateral() if the inputs
+                can't form a convex quadrilateral.
+        !*/</font>
+        <b><a name='no_convex_quadrilateral'></a>no_convex_quadrilateral</b><font face='Lucida Console'>(</font>
+        <font face='Lucida Console'>)</font> : dlib::error<font face='Lucida Console'>(</font>"<font color='#CC0000'>Lines given to find_convex_quadrilateral() don't form any convex quadrilateral.</font>"<font face='Lucida Console'>)</font> 
+        <b>{</b><b>}</b>
+    <b>}</b>;
+
+    std::array<font color='#5555FF'>&lt;</font>dpoint,<font color='#979000'>4</font><font color='#5555FF'>&gt;</font> <b><a name='find_convex_quadrilateral'></a>find_convex_quadrilateral</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::array<font color='#5555FF'>&lt;</font>line,<font color='#979000'>4</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> lines
+    <font face='Lucida Console'>)</font>;
+    <font color='#009900'>/*!
+        ensures
+            - Is there a set of 4 points, made up of the intersections of the given lines,
+              that forms a convex quadrilateral?  If yes then this routine returns those 4
+              points and if not throws no_convex_quadrilateral.
+        throws
+            - no_convex_quadrilateral
+    !*/</font>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_LInE_ABSTRACT_H_
+</font>
+
+</pre></body></html>

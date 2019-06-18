@@ -14,8 +14,8 @@ project(dlib)
 
 set(CPACK_PACKAGE_NAME "dlib")
 set(CPACK_PACKAGE_VERSION_MAJOR "19")
-set(CPACK_PACKAGE_VERSION_MINOR "16")
-set(CPACK_PACKAGE_VERSION_PATCH "99")
+set(CPACK_PACKAGE_VERSION_MINOR "17")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 # Only print these messages once, even if dlib is added multiple times via add_subdirectory()
 if (NOT TARGET dlib)
@@ -192,7 +192,7 @@ if (NOT TARGET dlib)
    option(DLIB_ENABLE_STACK_TRACE ${DLIB_ENABLE_STACK_TRACE_STR} OFF)
    toggle_preprocessor_switch(DLIB_ENABLE_STACK_TRACE)
    option(DLIB_USE_MKL_SEQUENTIAL ${DLIB_USE_MKL_SEQUENTIAL_STR} OFF)
-   option(DLIB_USE_MKL_WITH_TBB ${DLIB_USE_MKL_WITH_TBB_STR} ON)
+   option(DLIB_USE_MKL_WITH_TBB ${DLIB_USE_MKL_WITH_TBB_STR} OFF)
 
    if(DLIB_ENABLE_ASSERTS)
       # Set these variables so they are set in the config.h.in file when dlib
@@ -716,10 +716,22 @@ if (NOT TARGET dlib)
             endif()
 
             # Find where cuSOLVER is since the FindCUDA cmake package doesn't
-            # bother to look for it.
-            get_filename_component(cuda_blas_path "${CUDA_CUBLAS_LIBRARIES}" DIRECTORY)
-            find_library(cusolver cusolver HINTS ${cuda_blas_path})
-            mark_as_advanced(cusolver)
+            # bother to look for it in older versions of cmake.
+            if (NOT CUDA_cusolver_LIBRARY)
+               get_filename_component(cuda_blas_path "${CUDA_CUBLAS_LIBRARIES}" DIRECTORY)
+               find_library(CUDA_cusolver_LIBRARY cusolver HINTS ${cuda_blas_path})
+               # CUDA 10.1 doesn't install symbolic links to libcusolver.so in
+               # the usual place.  This is probably a bug in the cuda
+               # installer.  In any case, If we haven't found cusolver yet go
+               # look in the cuda install folder for it.  New versions of cmake
+               # do this correctly, but older versions need help.
+               if (NOT CUDA_cusolver_LIBRARY)
+                  find_library(CUDA_cusolver_LIBRARY cusolver HINTS 
+                     /usr/local/cuda/lib64/
+                     )
+               endif()
+               mark_as_advanced(CUDA_cusolver_LIBRARY)
+            endif()
             # Also find OpenMP since cuSOLVER needs it.  Importantly, we only
             # look for one to link to if our use of BLAS, specifically the
             # Intel MKL, hasn't already decided what to use.  This is because
@@ -756,7 +768,7 @@ if (NOT TARGET dlib)
                ${CUDA_CUBLAS_LIBRARIES} 
                ${cudnn}
                ${CUDA_curand_LIBRARY}
-               ${cusolver}
+               ${CUDA_cusolver_LIBRARY}
                )
             if(openmp_libraries)
                list(APPEND dlib_needed_libraries ${openmp_libraries})
@@ -769,6 +781,9 @@ if (NOT TARGET dlib)
             toggle_preprocessor_switch(DLIB_USE_CUDA)
             if (USING_OLD_VISUAL_STUDIO_COMPILER)
                message(STATUS "*** Dlib CUDA support requires C++11 but your compiler doesn't support it. ***")
+            endif()
+            if (NOT CUDA_FOUND)
+               message(STATUS "DID NOT FIND CUDA")
             endif()
             message(STATUS "Disabling CUDA support for dlib.  DLIB WILL NOT USE CUDA")
          endif()

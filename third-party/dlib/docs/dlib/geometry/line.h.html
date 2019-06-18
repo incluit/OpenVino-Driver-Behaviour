@@ -1,0 +1,239 @@
+<html><!-- Created using the cpp_pretty_printer from the dlib C++ library.  See http://dlib.net for updates. --><head><title>dlib C++ Library - line.h</title></head><body bgcolor='white'><pre>
+<font color='#009900'>// Copyright (C) 2018  Davis E. King (davis@dlib.net)
+</font><font color='#009900'>// License: Boost Software License   See LICENSE.txt for the full license.
+</font><font color='#0000FF'>#ifndef</font> DLIB_LInE_H_
+<font color='#0000FF'>#define</font> DLIB_LInE_H_
+
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='line_abstract.h.html'>line_abstract.h</a>"
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='vector.h.html'>vector.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>utility<font color='#5555FF'>&gt;</font>
+<font color='#0000FF'>#include</font> "<a style='text-decoration:none' href='../numeric_constants.h.html'>../numeric_constants.h</a>"
+<font color='#0000FF'>#include</font> <font color='#5555FF'>&lt;</font>array<font color='#5555FF'>&gt;</font>
+
+<font color='#0000FF'>namespace</font> dlib
+<b>{</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>class</font> <b><a name='line'></a>line</b>
+    <b>{</b>
+    <font color='#0000FF'>public</font>:
+
+        <b><a name='line'></a>line</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#0000FF'>default</font>;
+
+        <b><a name='line'></a>line</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> a, <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> b<font face='Lucida Console'>)</font> : end1<font face='Lucida Console'>(</font>a<font face='Lucida Console'>)</font>, end2<font face='Lucida Console'>(</font>b<font face='Lucida Console'>)</font>
+        <b>{</b>
+            normal_vector <font color='#5555FF'>=</font> <font face='Lucida Console'>(</font>end1<font color='#5555FF'>-</font>end2<font face='Lucida Console'>)</font>.<font color='#BB00BB'>cross</font><font face='Lucida Console'>(</font>dlib::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>3</font><font color='#5555FF'>&gt;</font><font face='Lucida Console'>(</font><font color='#979000'>0</font>,<font color='#979000'>0</font>,<font color='#979000'>1</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>.<font color='#BB00BB'>normalize</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <b>}</b>
+
+        <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+        <b><a name='line'></a>line</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> l<font face='Lucida Console'>)</font> : line<font face='Lucida Console'>(</font>l.first, l.second<font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> <b><a name='p1'></a>p1</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> end1; <b>}</b>
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> <b><a name='p2'></a>p2</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> end2; <b>}</b>
+
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> <b><a name='normal'></a>normal</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#0000FF'>const</font> <b>{</b> <font color='#0000FF'>return</font> normal_vector; <b>}</b>
+
+    <font color='#0000FF'>private</font>:
+
+        dpoint end1;
+        dpoint end2;
+
+        dpoint normal_vector;
+    <b>}</b>;
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='signed_distance_to_line'></a>signed_distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>dot</font><font face='Lucida Console'>(</font>p<font color='#5555FF'>-</font>l.<font color='#BB00BB'>p1</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, l.<font color='#BB00BB'>normal</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='signed_distance_to_line'></a>signed_distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font> <font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font><font color='#BB00BB'>line</font><font face='Lucida Console'>(</font>l<font face='Lucida Console'>)</font>,p<font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T, <font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='distance_to_line'></a>distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font> <font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> std::<font color='#BB00BB'>abs</font><font face='Lucida Console'>(</font><font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l,p<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> U<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'><u>double</u></font> <b><a name='distance_to_line'></a>distance_to_line</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l,
+        <font color='#0000FF'>const</font> vector<font color='#5555FF'>&lt;</font>U,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> p
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> std::<font color='#BB00BB'>abs</font><font face='Lucida Console'>(</font><font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l,p<font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>inline</font> line <b><a name='reverse'></a>reverse</b><font face='Lucida Console'>(</font><font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> l<font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>line</font><font face='Lucida Console'>(</font>l.<font color='#BB00BB'>p2</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, l.<font color='#BB00BB'>p1</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>inline</font> dpoint <b><a name='intersect'></a>intersect</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> a,
+        <font color='#0000FF'>const</font> std::pair<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font>,vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> b
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#009900'>// convert to homogeneous coordinates
+</font>        dlib::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>3</font><font color='#5555FF'>&gt;</font> a1 <font color='#5555FF'>=</font> a.first;
+        dlib::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>3</font><font color='#5555FF'>&gt;</font> a2 <font color='#5555FF'>=</font> a.second;
+        dlib::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>3</font><font color='#5555FF'>&gt;</font> b1 <font color='#5555FF'>=</font> b.first;
+        dlib::vector<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font>,<font color='#979000'>3</font><font color='#5555FF'>&gt;</font> b2 <font color='#5555FF'>=</font> b.second;
+        a1.<font color='#BB00BB'>z</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#979000'>1</font>;
+        a2.<font color='#BB00BB'>z</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#979000'>1</font>;
+        b1.<font color='#BB00BB'>z</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#979000'>1</font>;
+        b2.<font color='#BB00BB'>z</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>=</font> <font color='#979000'>1</font>;
+
+        <font color='#009900'>// find lines between pairs of points.
+</font>        <font color='#0000FF'>auto</font> l1 <font color='#5555FF'>=</font> a1.<font color='#BB00BB'>cross</font><font face='Lucida Console'>(</font>a2<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>auto</font> l2 <font color='#5555FF'>=</font> b1.<font color='#BB00BB'>cross</font><font face='Lucida Console'>(</font>b2<font face='Lucida Console'>)</font>;
+
+        <font color='#009900'>// find intersection of the lines.
+</font>        <font color='#0000FF'>auto</font> p <font color='#5555FF'>=</font> l1.<font color='#BB00BB'>cross</font><font face='Lucida Console'>(</font>l2<font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>p.<font color='#BB00BB'>z</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> <font color='#5555FF'>!</font><font color='#5555FF'>=</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            <font color='#0000FF'>return</font> p<font color='#5555FF'>/</font>p.<font color='#BB00BB'>z</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>else</font>
+            <font color='#0000FF'>return</font> <font color='#BB00BB'>dpoint</font><font face='Lucida Console'>(</font>std::numeric_limits<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>infinity</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, std::numeric_limits<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>infinity</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>inline</font> dpoint <b><a name='intersect'></a>intersect</b><font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> a,
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> b
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>return</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>std::<font color='#BB00BB'>make_pair</font><font face='Lucida Console'>(</font>a.<font color='#BB00BB'>p1</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>,a.<font color='#BB00BB'>p2</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>, std::<font color='#BB00BB'>make_pair</font><font face='Lucida Console'>(</font>b.<font color='#BB00BB'>p1</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>, b.<font color='#BB00BB'>p2</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>inline</font> <font color='#0000FF'><u>size_t</u></font> <b><a name='count_points_on_side_of_line'></a>count_points_on_side_of_line</b><font face='Lucida Console'>(</font>
+        line l,
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> reference_point,
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> pts,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font><font color='#5555FF'>&amp;</font> dist_thresh_min <font color='#5555FF'>=</font> <font color='#979000'>0</font>,
+        <font color='#0000FF'>const</font> <font color='#0000FF'><u>double</u></font><font color='#5555FF'>&amp;</font> dist_thresh_max <font color='#5555FF'>=</font> std::numeric_limits<font color='#5555FF'>&lt;</font><font color='#0000FF'><u>double</u></font><font color='#5555FF'>&gt;</font>::<font color='#BB00BB'>infinity</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l,reference_point<font face='Lucida Console'>)</font> <font color='#5555FF'>&lt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            l <font color='#5555FF'>=</font> <font color='#BB00BB'>reverse</font><font face='Lucida Console'>(</font>l<font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'><u>size_t</u></font> cnt <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+        <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> p : pts<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'><u>double</u></font> dist <font color='#5555FF'>=</font> <font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l,p<font face='Lucida Console'>)</font>;
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font>dist_thresh_min <font color='#5555FF'>&lt;</font><font color='#5555FF'>=</font> dist <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> dist <font color='#5555FF'>&lt;</font><font color='#5555FF'>=</font> dist_thresh_max<font face='Lucida Console'>)</font>
+                <font color='#5555FF'>+</font><font color='#5555FF'>+</font>cnt;
+        <b>}</b>
+        <font color='#0000FF'>return</font> cnt;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>template</font> <font color='#5555FF'>&lt;</font><font color='#0000FF'>typename</font> T<font color='#5555FF'>&gt;</font>
+    <font color='#0000FF'>inline</font> <font color='#0000FF'><u>double</u></font> <b><a name='count_points_between_lines'></a>count_points_between_lines</b><font face='Lucida Console'>(</font>
+        line l1,
+        line l2,
+        <font color='#0000FF'>const</font> dpoint<font color='#5555FF'>&amp;</font> reference_point,
+        <font color='#0000FF'>const</font> std::vector<font color='#5555FF'>&lt;</font>vector<font color='#5555FF'>&lt;</font>T,<font color='#979000'>2</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> pts
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l1,reference_point<font face='Lucida Console'>)</font> <font color='#5555FF'>&lt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            l1 <font color='#5555FF'>=</font> <font color='#BB00BB'>reverse</font><font face='Lucida Console'>(</font>l1<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l2,reference_point<font face='Lucida Console'>)</font> <font color='#5555FF'>&lt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+            l2 <font color='#5555FF'>=</font> <font color='#BB00BB'>reverse</font><font face='Lucida Console'>(</font>l2<font face='Lucida Console'>)</font>;
+
+        <font color='#0000FF'><u>size_t</u></font> cnt <font color='#5555FF'>=</font> <font color='#979000'>0</font>;
+        <font color='#0000FF'>for</font> <font face='Lucida Console'>(</font><font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> p : pts<font face='Lucida Console'>)</font>
+        <b>{</b>
+            <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l1,p<font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font> <font color='#5555FF'>&amp;</font><font color='#5555FF'>&amp;</font> <font color='#BB00BB'>signed_distance_to_line</font><font face='Lucida Console'>(</font>l2,p<font face='Lucida Console'>)</font> <font color='#5555FF'>&gt;</font> <font color='#979000'>0</font><font face='Lucida Console'>)</font>
+                <font color='#5555FF'>+</font><font color='#5555FF'>+</font>cnt;
+        <b>}</b>
+        <font color='#0000FF'>return</font> cnt;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>inline</font> <font color='#0000FF'><u>double</u></font> <b><a name='angle_between_lines'></a>angle_between_lines</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> a,
+        <font color='#0000FF'>const</font> line<font color='#5555FF'>&amp;</font> b
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>auto</font> tmp <font color='#5555FF'>=</font> <font color='#BB00BB'>put_in_range</font><font face='Lucida Console'>(</font><font color='#979000'>0.0</font>, <font color='#979000'>1.0</font>, std::<font color='#BB00BB'>abs</font><font face='Lucida Console'>(</font><font color='#BB00BB'>dot</font><font face='Lucida Console'>(</font>a.<font color='#BB00BB'>normal</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>,b.<font color='#BB00BB'>normal</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>; 
+        <font color='#0000FF'>return</font> std::<font color='#BB00BB'>acos</font><font face='Lucida Console'>(</font>tmp<font face='Lucida Console'>)</font><font color='#5555FF'>*</font><font color='#979000'>180</font><font color='#5555FF'>/</font>pi;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+    <font color='#0000FF'>struct</font> <b><a name='no_convex_quadrilateral'></a>no_convex_quadrilateral</b> : dlib::error
+    <b>{</b>
+        <b><a name='no_convex_quadrilateral'></a>no_convex_quadrilateral</b><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font> : dlib::error<font face='Lucida Console'>(</font>"<font color='#CC0000'>Lines given to find_convex_quadrilateral() don't form any convex quadrilateral.</font>"<font face='Lucida Console'>)</font> <b>{</b><b>}</b>
+    <b>}</b>;
+
+    <font color='#0000FF'>inline</font> std::array<font color='#5555FF'>&lt;</font>dpoint,<font color='#979000'>4</font><font color='#5555FF'>&gt;</font> <b><a name='find_convex_quadrilateral'></a>find_convex_quadrilateral</b> <font face='Lucida Console'>(</font>
+        <font color='#0000FF'>const</font> std::array<font color='#5555FF'>&lt;</font>line,<font color='#979000'>4</font><font color='#5555FF'>&gt;</font><font color='#5555FF'>&amp;</font> lines
+    <font face='Lucida Console'>)</font>
+    <b>{</b>
+        <font color='#0000FF'>const</font> dpoint v01 <font color='#5555FF'>=</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>lines[<font color='#979000'>0</font>],lines[<font color='#979000'>1</font>]<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>const</font> dpoint v02 <font color='#5555FF'>=</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>lines[<font color='#979000'>0</font>],lines[<font color='#979000'>2</font>]<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>const</font> dpoint v03 <font color='#5555FF'>=</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>lines[<font color='#979000'>0</font>],lines[<font color='#979000'>3</font>]<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>const</font> dpoint v12 <font color='#5555FF'>=</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>lines[<font color='#979000'>1</font>],lines[<font color='#979000'>2</font>]<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>const</font> dpoint v13 <font color='#5555FF'>=</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>lines[<font color='#979000'>1</font>],lines[<font color='#979000'>3</font>]<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>const</font> dpoint v23 <font color='#5555FF'>=</font> <font color='#BB00BB'>intersect</font><font face='Lucida Console'>(</font>lines[<font color='#979000'>2</font>],lines[<font color='#979000'>3</font>]<font face='Lucida Console'>)</font>;
+        <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> v10 <font color='#5555FF'>=</font> v01;
+        <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> v20 <font color='#5555FF'>=</font> v02;
+        <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> v30 <font color='#5555FF'>=</font> v03;
+        <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> v21 <font color='#5555FF'>=</font> v12;
+        <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> v31 <font color='#5555FF'>=</font> v13;
+        <font color='#0000FF'>const</font> <font color='#0000FF'>auto</font><font color='#5555FF'>&amp;</font> v32 <font color='#5555FF'>=</font> v23;
+
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>is_convex_quadrilateral</font><font face='Lucida Console'>(</font><b>{</b><b>{</b>v01, v12, v23, v30<b>}</b><b>}</b><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                             <font color='#0000FF'>return</font> <b>{</b><b>{</b>v01, v12, v23, v30<b>}</b><b>}</b>;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>is_convex_quadrilateral</font><font face='Lucida Console'>(</font><b>{</b><b>{</b>v01, v13, v32, v20<b>}</b><b>}</b><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                             <font color='#0000FF'>return</font> <b>{</b><b>{</b>v01, v13, v32, v20<b>}</b><b>}</b>;
+
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>is_convex_quadrilateral</font><font face='Lucida Console'>(</font><b>{</b><b>{</b>v02, v23, v31, v10<b>}</b><b>}</b><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                             <font color='#0000FF'>return</font> <b>{</b><b>{</b>v02, v23, v31, v10<b>}</b><b>}</b>;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>is_convex_quadrilateral</font><font face='Lucida Console'>(</font><b>{</b><b>{</b>v02, v21, v13, v30<b>}</b><b>}</b><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                             <font color='#0000FF'>return</font> <b>{</b><b>{</b>v02, v21, v13, v30<b>}</b><b>}</b>;
+
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>is_convex_quadrilateral</font><font face='Lucida Console'>(</font><b>{</b><b>{</b>v03, v32, v21, v10<b>}</b><b>}</b><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                             <font color='#0000FF'>return</font> <b>{</b><b>{</b>v03, v32, v21, v10<b>}</b><b>}</b>;
+        <font color='#0000FF'>if</font> <font face='Lucida Console'>(</font><font color='#BB00BB'>is_convex_quadrilateral</font><font face='Lucida Console'>(</font><b>{</b><b>{</b>v03, v31, v12, v20<b>}</b><b>}</b><font face='Lucida Console'>)</font><font face='Lucida Console'>)</font>
+                             <font color='#0000FF'>return</font> <b>{</b><b>{</b>v03, v31, v12, v20<b>}</b><b>}</b>;
+
+        <font color='#0000FF'>throw</font> <font color='#BB00BB'>no_convex_quadrilateral</font><font face='Lucida Console'>(</font><font face='Lucida Console'>)</font>;
+    <b>}</b>
+
+<font color='#009900'>// ----------------------------------------------------------------------------------------
+</font>
+<b>}</b>
+
+<font color='#0000FF'>#endif</font> <font color='#009900'>// DLIB_LInE_H_
+</font>
+
+</pre></body></html>
