@@ -161,7 +161,7 @@ toolkit by sourcing the "setupvars.sh" script.
 
 [source,bash]
 ----
-source  /opt/intel/computer_vision_sdk/bin/setupvars.sh
+source /opt/intel/computer_vision_sdk/bin/setupvars.sh
 ----
 
 **3.** Change to the top git repository:
