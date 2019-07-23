@@ -17,16 +17,27 @@ Status]]
 toc::[]
 
 == Foreword
-This is a follow-up on the OpenVino's inference tutorials samples:
+This is a follow-up on the OpenVino's inference tutorials:
 
-https://docs.openvinotoolkit.org/latest/_inference_engine_samples_interactive_face_detection_demo_README.html
+Version 2019 R1.0
 
-We will focus on the "Interactive face detection" sample, and we will work on and extend this tutorial as a demo app aimed to the automotive industry.
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_2019_r1_0
+
+Version 2018 R5.0
+
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_r5_0
+
+Version 2018 R4.0
+
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_r4_0
+
+We will work on and extend this tutorial as a demo app for smart cities,
+specifically for near misses detection.
 
 [quote]
 Caution!
 
-As of OpenVINO's Release 2019 R1, the model's binaries are not included in the toolkit, as they are part of the https://github.com/opencv/open_model_zoo[model zoo]. You are supposed to download them manually as described in the https://docs.openvinotoolkit.org/latest/_inference_engine_samples_interactive_face_detection_demo_README.html[tutorial]. Be aware that if you choose to download them in a different path than the default, our `scripts/setupenv.sh` will not fully work and you will have to add the path to the models yourself when running the program.
+As of OpenVINO's Release 2019 R1, the model's binaries are not included in the toolkit, as they are part of the https://github.com/opencv/open_model_zoo[model zoo]. You are supposed to download them manually as described in the https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_2019_r1_0/car_detection_tutorial#downloading-the-inference-models-from-the-open-model-zoo[tutorial]. Be aware that if you choose to download them in a different path than the default, our `scripts/setupenv.sh` will not fully work and you will have to add the path to the models yourself when running the program.
 
 == Introduction
 
