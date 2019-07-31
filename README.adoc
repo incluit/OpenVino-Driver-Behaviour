@@ -190,6 +190,18 @@ mkdir build
 cd build
 ----
 
+[quote]
+In case of using the OpenVINO’s 2019 R1.0 or greater, before continuing, if you have not manually downloaded all the models before, it is necessary to download the following models.
+[source,bash]
+----
+cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
+sudo ./downloader.py --name face-detection-adas-0001
+sudo ./downloader.py --name face-reidentification-retail-0095 
+sudo ./downloader.py --name landmarks-regression-retail-0009
+sudo ./downloader.py --name face-detection-retail-0004
+sudo ./downloader.py --name head-pose-estimation-adas-0001
+----
+
 **5.** Before running each of the following sections, be sure to source the
 helper script. That will make it easier to use environment variables
 instead of long names to the models:
