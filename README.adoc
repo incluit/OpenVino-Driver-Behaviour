@@ -402,7 +402,7 @@ python3 create_list.py ../drivers/
 
 You should now see a file named `faces_gallery.json` with your name and the path to your photo there.
 
-Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../../../scripts/faces_gallery.json`. The final commando would be as follows:
+Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../../../scripts/faces_gallery.json`. The final command would be as follows:
 
 [source,bash]
 ----
