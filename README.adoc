@@ -402,11 +402,11 @@ python3 create_list.py ../drivers/
 
 You should now see a file named `faces_gallery.json` with your name and the path to your photo there.
 
-Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../../../scripts/faces_gallery.json`. We automatically copy this file to the executable's path after compilation, so if you created the gallery before compiling everything should be ready, if not, copy it to that path manually. (`cp faces_gallery.json ../build/intel64/Release/`). The final commando would be as follows:
+Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../../../scripts/faces_gallery.json`. The final commando would be as follows:
 
 [source,bash]
 ----
-./driver_behavior -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg faces_gallery.json
+./driver_behavior -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../../../scripts/faces_gallery.json
 ----
 
 It will wait there until an authorized driver sits in front of the camera for a couple of seconds and then will continue with the previous features.
