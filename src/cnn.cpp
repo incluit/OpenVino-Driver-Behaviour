@@ -79,14 +79,6 @@ void CnnDLSDKBase::InferBatch(
     }
 }
 
-void CnnDLSDKBase::PrintPerformanceCounts() const {
-    if (!config_.enabled) {
-        return;
-    }
-    std::cout << "Performance counts for " << config_.path_to_model << std::endl << std::endl;
-    ::printPerformanceCounts(infer_request_.GetPerformanceCounts(), std::cout, false);
-}
-
 void CnnDLSDKBase::Infer(const cv::Mat& frame,
                          std::function<void(const InferenceEngine::BlobMap&, size_t)> fetch_results) const {
     InferBatch({frame}, fetch_results);

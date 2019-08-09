@@ -149,11 +149,4 @@ public:
         return enabledFlag;
     }
 
-    void PrintPerformanceCounts() {
-        if (!enabled()) {
-            return;
-        }
-        std::cout << "Performance counts for " << topoName << std::endl << std::endl;
-        ::printPerformanceCounts(request->GetPerformanceCounts(), std::cout, false);
-    }
 };

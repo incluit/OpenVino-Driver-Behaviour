@@ -57,7 +57,6 @@ struct BaseDetection {
     virtual void submitRequest();
     virtual void wait();
     bool enabled() const;
-    void printPerformanceCounts();
 };
 
 struct FaceDetection : BaseDetection {

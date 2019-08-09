@@ -1086,12 +1086,6 @@ int main(int argc, char *argv[])
         slog::info << "Number of processed frames: " << framesCounter << slog::endl;
         slog::info << "Total image throughput: " << framesCounter * (1000.f / timer["total"].getTotalDuration()) << " fps" << slog::endl;
 
-        // Show performace results.
-        if (FLAGS_pc)
-        {
-            faceDetector.printPerformanceCounts();
-            headPoseDetector.printPerformanceCounts();
-        }
         // -----------------------------------------------------------------------------------------------------
     }
     catch (const std::exception &error)

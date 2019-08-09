@@ -67,15 +67,6 @@ bool BaseDetection::enabled() const  {
     return _enabled;
 }
 
-void BaseDetection::printPerformanceCounts() {
-    if (!enabled()) {
-        return;
-    }
-    slog::info << "Performance counts for " << topoName << slog::endl << slog::endl;
-    ::printPerformanceCounts(request->GetPerformanceCounts(), std::cout, false);
-}
-
-
 FaceDetection::FaceDetection(const std::string &pathToModel,
                              const std::string &deviceForInference,
                              int maxBatch, bool isBatchDynamic, bool isAsync,
