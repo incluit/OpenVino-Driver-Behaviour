@@ -32,13 +32,15 @@ struct CnnConfig {
     std::string path_to_model;
     /** @brief Path to model weights */
     std::string path_to_weights;
+    /** @device where to load the network */
+    std::string deviceName;
     /** @brief Maximal size of batch */
     int max_batch_size{1};
     /** @brief Enabled/disabled status */
     bool enabled{true};
 
     /** @brief Plugin to use for inference */
-    InferenceEngine::InferencePlugin plugin;
+    InferenceEngine::Core plugin;
 };
 
 /**

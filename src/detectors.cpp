@@ -346,8 +346,8 @@ CNNNetwork AgeGenderDetection::read() {
     slog::info << "Age layer: " << ageCreatorLayer->name<< slog::endl;
     slog::info << "Gender layer: " << genderCreatorLayer->name<< slog::endl;
 
-    outputAge = ptrAgeOutput->name;
-    outputGender = ptrGenderOutput->name;
+    outputAge = ptrAgeOutput->getName();
+    outputGender = ptrGenderOutput->getName();
 
     slog::info << "Loading Age Gender model to the "<< deviceForInference << " plugin" << slog::endl;
     _enabled = true;
@@ -666,7 +666,7 @@ CNNNetwork EmotionsDetection::read() {
     }
     slog::info << "Emotions layer: " << emotionsCreatorLayer->name<< slog::endl;
 
-    outputEmotions = emotionsOutput->name;
+    outputEmotions = emotionsOutput->getName();
 
     slog::info << "Loading Emotions Recognition model to the "<< deviceForInference << " plugin" << slog::endl;
     _enabled = true;
@@ -713,7 +713,7 @@ std::vector<float> FacialLandmarksDetection::operator[] (int idx) const {
     std::vector<float> normedLandmarks;
 
     auto landmarksBlob = request->GetBlob(outputFacialLandmarksBlobName);
-    auto n_lm = landmarksBlob->dims()[0];
+    auto n_lm = landmarksBlob->getTensorDesc().getDims()[0];
     const float *normed_coordinates = request->GetBlob(outputFacialLandmarksBlobName)->buffer().as<float *>();
 
     for (auto i = 0UL; i < n_lm; ++i)
@@ -792,13 +792,13 @@ CNNNetwork FacialLandmarksDetection::read() {
 Load::Load(BaseDetection& detector) : detector(detector) {
 }
 
-void Load::into(InferencePlugin & plg, bool enable_dynamic_batch) const {
+void Load::into(Core & plg, const std::string& deviceName, bool enable_dynamic_batch) const {
     if (detector.enabled()) {
         std::map<std::string, std::string> config;
         if (enable_dynamic_batch) {
             config[PluginConfigParams::KEY_DYN_BATCH_ENABLED] = PluginConfigParams::YES;
         }
-        detector.net = plg.LoadNetwork(detector.read(), config);
+        detector.net = plg.LoadNetwork(detector.read(), deviceName, config);
         detector.plugin = &plg;
     }
 }

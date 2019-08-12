@@ -576,7 +576,7 @@ int main(int argc, char *argv[])
         }
         // -----------------------------------------------------------------------------------------------------
         // --------------------------- 1. Load Plugin for inference engine -------------------------------------
-        std::map<std::string, InferencePlugin> pluginsForDevices;
+        std::map<std::string, Core> pluginsForDevices;
         std::vector<std::pair<std::string, std::string>> cmdOptions = {
             {FLAGS_d, FLAGS_m}, {FLAGS_d_ag, FLAGS_m_ag}, {FLAGS_d_hp, FLAGS_m_hp}, {FLAGS_d_em, FLAGS_m_em}};
         FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
@@ -589,7 +589,7 @@ int main(int argc, char *argv[])
         auto lm_model_path = FLAGS_m_lm;
         auto lm_weights_path = fileNameNoExt(FLAGS_m_lm) + ".bin";
 
-        std::map<std::string, InferencePlugin> plugins_for_devices;
+        std::map<std::string, Core> plugins_for_devices;
         std::vector<std::string> devices = {FLAGS_d_lm, FLAGS_d_reid};
 
         for (const auto &device : devices)
@@ -599,35 +599,26 @@ int main(int argc, char *argv[])
                 continue;
             }
             slog::info << "Loading plugin " << device << slog::endl;
-            InferencePlugin plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(device);
-            printPluginVersion(plugin, std::cout);
+            InferenceEngine::Core core;
             /** Load extensions for the CPU plugin **/
             if ((device.find("CPU") != std::string::npos))
             {
-                plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
-                if (!FLAGS_l.empty())
-                {
-                    // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
-                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
-                    plugin.AddExtension(extension_ptr);
-                    slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
-                }
+                core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), "CPU");
+
             }
             else if (!FLAGS_c.empty())
             {
-                // Load Extensions for other plugins not CPU
-                plugin.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}});
+                core.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}}, device);
             }
-            plugin.SetConfig({{PluginConfigParams::KEY_DYN_BATCH_ENABLED, PluginConfigParams::YES}});
-            if (FLAGS_pc)
-                plugin.SetConfig({{PluginConfigParams::KEY_PERF_COUNT, PluginConfigParams::YES}});
-            plugins_for_devices[device] = plugin;
+            core.SetConfig({{PluginConfigParams::KEY_DYN_BATCH_ENABLED, PluginConfigParams::YES}},device);
+            plugins_for_devices[device] = core;
         }
 
         CnnConfig reid_config(fr_model_path, fr_weights_path);
         reid_config.max_batch_size = 16;
         reid_config.enabled = /*face_config.enabled*/ true && !fr_model_path.empty() && !lm_model_path.empty();
         reid_config.plugin = plugins_for_devices[FLAGS_d_reid];
+        reid_config.deviceName = FLAGS_d_reid;
         VectorCNN face_reid(reid_config);
 
         // Load landmarks detector
@@ -635,6 +626,7 @@ int main(int argc, char *argv[])
         landmarks_config.max_batch_size = 16;
         landmarks_config.enabled = /*face_config.enabled*/ true && reid_config.enabled && !lm_model_path.empty();
         landmarks_config.plugin = plugins_for_devices[FLAGS_d_lm];
+        landmarks_config.deviceName = FLAGS_d_lm;
         VectorCNN landmarks_detector(landmarks_config);
 
         double t_reid = 0.4; // Cosine distance threshold between two vectors for face reidentification.
@@ -646,55 +638,26 @@ int main(int argc, char *argv[])
             auto networkName = option.second;
 
             if (deviceName == "" || networkName == "")
-            {
                 continue;
-            }
 
             if (pluginsForDevices.find(deviceName) != pluginsForDevices.end())
-            {
                 continue;
-            }
             slog::info << "Loading plugin " << deviceName << slog::endl;
-            InferencePlugin plugin = PluginDispatcher({"../../../lib/intel64", ""}).getPluginByDevice(deviceName);
-
-            /** Printing plugin version **/
-            printPluginVersion(plugin, std::cout);
-
+            Core core;
             /** Load extensions for the CPU plugin **/
             if ((deviceName.find("CPU") != std::string::npos))
-            {
-                plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
-
-                if (!FLAGS_l.empty())
-                {
-                    // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
-                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
-                    plugin.AddExtension(extension_ptr);
-                    slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
-                }
-            }
+                core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), "CPU");
             else if (!FLAGS_c.empty())
-            {
-                // Load Extensions for other plugins not CPU
-                plugin.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}});
-            }
-            pluginsForDevices[deviceName] = plugin;
+                core.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}}, deviceName);
+            pluginsForDevices[deviceName] = core;
         }
 
-        /** Per layer metrics **/
-        if (FLAGS_pc)
-        {
-            for (auto &&plugin : pluginsForDevices)
-            {
-                plugin.second.SetConfig({{PluginConfigParams::KEY_PERF_COUNT, PluginConfigParams::YES}});
-            }
-        }
         // -----------------------------------------------------------------------------------------------------
 
         // --------------------------- 2. Read IR models and load them to plugins ------------------------------
         // Disable dynamic batching for face detector as long it processes one image at a time.
-        Load(faceDetector).into(pluginsForDevices[FLAGS_d], false);
-        Load(headPoseDetector).into(pluginsForDevices[FLAGS_d_hp], FLAGS_dyn_hp);
+        Load(faceDetector).into(pluginsForDevices[FLAGS_d], FLAGS_d, false);
+        Load(headPoseDetector).into(pluginsForDevices[FLAGS_d_hp], FLAGS_d_hp, FLAGS_dyn_hp);
         // -----------------------------------------------------------------------------------------------------
 
         // --------------------------- 3. Do inference ---------------------------------------------------------
@@ -805,6 +768,10 @@ int main(int argc, char *argv[])
                 timer.start("video frame decoding");
                 frameReadStatus = cap.read(next_frame);
                 timer.finish("video frame decoding");
+            }
+            if (!frameReadStatus) {
+                timer.finish("total");
+                break;
             }
 
             timer.start("face analytics wait");
