@@ -803,6 +803,13 @@ int main(int argc, char *argv[])
                 cv::putText(prev_frame, out.str(), cv::Point2f(10, 45), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                             cv::Scalar(255, 0, 0));
 
+                out.str("");
+                out << "Total image throughput: "          
+                    << framesCounter * (1000.f / timer["total"].getSmoothedDuration())
+                    << " FPS";
+                cv::putText(prev_frame, out.str(), cv::Point2f(10, 65), cv::FONT_HERSHEY_TRIPLEX, 0.4,
+                            cv::Scalar(255, 0, 0));
+
                 if (isFaceAnalyticsEnabled)
                 {
                     out.str("");
@@ -818,7 +825,7 @@ int main(int argc, char *argv[])
                                          timer["face analytics wait"].getSmoothedDuration())
                             << " fps)";
                     }
-                    cv::putText(prev_frame, out.str(), cv::Point2f(10, 65), cv::FONT_HERSHEY_TRIPLEX, 0.4,
+                    cv::putText(prev_frame, out.str(), cv::Point2f(10, 85), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                                 cv::Scalar(255, 0, 0));
                 }
 
