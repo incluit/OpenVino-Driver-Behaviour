@@ -6,9 +6,9 @@ before_install:
   - sudo apt-get update
 
 before_script:
-  - docker pull openvinoincluit/openvino:driver || true
+  - docker pull openvinoincluit/openvino:latest || true
 script:
-  - docker run --name openvinocont -t -d openvinoincluit/openvino:driver
+  - docker run --name openvinocont -t -d openvinoincluit/openvino:latest
   - docker exec openvinocont git clone https://github.com/incluit/OpenVino-Driver-Behaviour
   - docker exec openvinocont bash -c 'source /opt/intel/computer_vision_sdk/bin/setupvars.sh && cd /app/OpenVino-Driver-Behaviour && git checkout "OpenVINO<=2019R1" && mkdir build && cd build && source /app/OpenVino-Driver-Behaviour/scripts/setupenv.sh && cmake .. && make'
   - docker exec openvinocont bash -c 'cd /app/OpenVino-Driver-Behaviour/build && build-wrapper-linux-x86-64 --out-dir bw-output make clean all'
