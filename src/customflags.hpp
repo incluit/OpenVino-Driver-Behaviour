@@ -39,7 +39,7 @@ std::string GetEnv( const std::string & var ) {
      }
 }
 
-const std::string DEFAULT_PATH = GetEnv("INTEL_CVSDK_DIR");
+const std::string DEFAULT_PATH = GetEnv("PROJECT_PATH");
 
 /// @brief message for help argument
 static const char help_message[] = "Print a usage message.";
@@ -159,15 +159,12 @@ DEFINE_string(m_em, "", emotions_model_message);
 
 /// \brief Define parameter for facial landmarks detection model file <br>
 /// It is an optional parameter
-//std::string fp_lm = (INTEL_CVSDK_VER <= 5 ? DEFAULT_PATH + std::string("/deployment_tools/intel_models/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml") : DEFAULT_PATH + std::string("/deployment_tools/tools/model_downloader/Retail/object_attributes/landmarks_regression/0009/dldt/landmarks-regression-retail-0009.xml"));
-std::string fp_lm = "/opt/intel/openvino_2019.2.242/deployment_tools/open_model_zoo/tools/downloader/Retail/object_attributes/landmarks_regression/0009/dldt/FP32/landmarks-regression-retail-0009.xml";
+std::string fp_lm = DEFAULT_PATH + std::string("models/FP16/landmarks-regression-retail-0009.xml");
 DEFINE_string(m_lm, fp_lm, facial_landmarks_model_message);
 
 /// \brief Define parameter for facial landmarks detection model file <br>
 /// It is an optional parameter
-
-//std::string fp_reid = ((INTEL_CVSDK_VER == 5) ? DEFAULT_PATH + std::string("/deployment_tools/intel_models/face-reidentification-retail-0095/FP32/face-reidentification-retail-0095.xml") : (INTEL_CVSDK_VER == 4 ) ? DEFAULT_PATH + std::string("/deployment_tools/intel_models/face-reidentification-retail-0071/FP32/face-reidentification-retail-0071.xml") : DEFAULT_PATH + std::string("/deployment_tools/tools/model_downloader/Retail/object_reidentification/face/mobilenet_based/dldt/face-reidentification-retail-0095.xml"));
-std::string fp_reid = "/opt/intel/openvino_2019.2.242/deployment_tools/open_model_zoo/tools/downloader/Retail/object_reidentification/face/mobilenet_based/dldt/FP32/face-reidentification-retail-0095.xml";
+std::string fp_reid = DEFAULT_PATH + std::string("models/FP32/face-reidentification-retail-0095.xml");
 DEFINE_string(m_reid, fp_reid, facial_landmarks_model_message);
 
 /// \brief target device for face detection <br>
