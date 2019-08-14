@@ -10,7 +10,7 @@ before_script:
 script:
   - docker run --name openvinocont -t -d openvinoincluit/openvino:driver
   - docker exec openvinocont git clone https://github.com/incluit/OpenVino-Driver-Behaviour
-  - docker exec openvinocont bash -c 'source /opt/intel/computer_vision_sdk/bin/setupvars.sh && cd /app/OpenVino-Driver-Behaviour && mkdir build && cd build && source /app/OpenVino-Driver-Behaviour/scripts/setupenv.sh && cmake .. && make'
+  - docker exec openvinocont bash -c 'source /opt/intel/computer_vision_sdk/bin/setupvars.sh && cd /app/OpenVino-Driver-Behaviour && git checkout "OpenVINO<=2019R1" && mkdir build && cd build && source /app/OpenVino-Driver-Behaviour/scripts/setupenv.sh && cmake .. && make'
   - docker exec openvinocont bash -c 'cd /app/OpenVino-Driver-Behaviour/build && build-wrapper-linux-x86-64 --out-dir bw-output make clean all'
   - docker exec openvinocont bash -c 'cd /app/OpenVino-Driver-Behaviour/build &&sonar-scanner -Dsonar.projectKey=incluit_OpenVino-Driver-Behaviour -Dsonar.organization=incluit -Dsonar.sources=. -Dsonar.cfamily.build-wrapper-output=bw-output -Dsonar.host.url=https://sonarcloud.io -Dsonar.projectBaseDir=../src -Dproject.home=../src -Dsonar.login=58310463a5a3250d402fff5007a5df2e228d46e9'
 
