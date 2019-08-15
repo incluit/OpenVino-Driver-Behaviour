@@ -453,6 +453,13 @@ cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
 sudo ./downloader.py --name <detectionModelName>
 ----
 
+If using OpenVINO's Release R2 you will need to execute the following script
+
+[source,bash]
+----
+bash download_models.sh
+----
+
 After, the user will be able to initiate the building process and to start using Driver Assistance System
 
 === Problems with compilation process
@@ -511,7 +518,6 @@ sudo apt-get install libblas-dev
 ----
 
 With that, DLib shouldn't compile the file that's causing the trouble.
-
 
 == To Do
 
