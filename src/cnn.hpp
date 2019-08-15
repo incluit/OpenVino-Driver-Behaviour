@@ -10,14 +10,8 @@
 #include <vector>
 #include <functional>
 
-#define INTEL_LAST_VER 5
-
-#if (INTEL_CVSDK_VER >= INTEL_LAST_VER)
 #include <samples/ocv_common.hpp>
-#endif
-
 #include <samples/common.hpp>
-
 #include <inference_engine.hpp>
 
 /**

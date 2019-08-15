@@ -70,7 +70,6 @@ add_executable(${TARGET_NAME} ${MAIN_SRC} ${MAIN_HEADERS})
 
 add_dependencies(${TARGET_NAME} gflags)
 add_definitions(-DBOOST_LOG_DYN_LINK)
-add_definitions(-DINTEL_CVSDK_VER=$ENV{INTEL_CVSDK_VER})
 if( SIMULATOR )
   add_definitions(-DSIMULATOR)
 endif()
