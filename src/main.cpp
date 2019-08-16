@@ -798,14 +798,14 @@ int main(int argc, char *argv[])
                 out << "Face detection time: " << std::fixed << std::setprecision(2)
                     << timer["detection"].getSmoothedDuration()
                     << " ms ("
-                    << 1000.f / (timer["detection"].getSmoothedDuration())
+                    << 1000.F / (timer["detection"].getSmoothedDuration())
                     << " fps)";
                 cv::putText(prev_frame, out.str(), cv::Point2f(10, 45), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                             cv::Scalar(255, 0, 0));
 
                 out.str("");
                 out << "Total image throughput: "          
-                    << framesCounter * (1000.f / timer["total"].getSmoothedDuration())
+                    << framesCounter * (1000.F / timer["total"].getSmoothedDuration())
                     << " FPS";
                 cv::putText(prev_frame, out.str(), cv::Point2f(10, 65), cv::FONT_HERSHEY_TRIPLEX, 0.4,
                             cv::Scalar(255, 0, 0));
@@ -821,7 +821,7 @@ int main(int argc, char *argv[])
                     if (!prev_detection_results.empty())
                     {
                         out << "("
-                            << 1000.f / (timer["face analytics call"].getSmoothedDuration() +
+                            << 1000.F / (timer["face analytics call"].getSmoothedDuration() +
                                          timer["face analytics wait"].getSmoothedDuration())
                             << " fps)";
                     }
@@ -839,8 +839,10 @@ int main(int argc, char *argv[])
                     cv::rectangle(prev_frame, cv::Rect(width - (x + 20), y_driver_i, x, y_driver), cv::Scalar(255, 255, 255), 2);
 
                     // For every detected face.
-                    int i = 0;
-                    std::vector<cv::Point2f> left_eye, right_eye, mouth;
+                    int ii = 0;
+                    std::vector<cv::Point2f> left_eye;
+                    std::vector<cv::Point2f> right_eye;
+                    std::vector<cv::Point2f> mouth;
                     for (auto &result : prev_detection_results)
                     {
                         cv::Rect rect = result.location;
@@ -927,7 +929,6 @@ int main(int argc, char *argv[])
                             }
 
                             cv::putText(prev_frame, "Blinks: " + std::to_string(blinl_total), cv::Point2f(x_truck_i, y_driver_i + 60), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 1);
-                            //cv::putText(frame, "EAR: " + std::to_string(ear_avg), cv::Point2f(300, 100), cv::FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2);
 
                             //Yawn detection
                             float ear_mouth = (distanceAtoB(mouth[1], mouth[5]) + distanceAtoB(mouth[2], mouth[4])) / (2 * distanceAtoB(mouth[0], mouth[3]));
@@ -961,21 +962,21 @@ int main(int argc, char *argv[])
                                     0.8,
                                     cv::Scalar(0, 0, 255));
 
-                        if (headPoseDetector.enabled() && i < headPoseDetector.maxBatch)
+                        if (headPoseDetector.enabled() && ii < headPoseDetector.maxBatch)
                         {
                             if (FLAGS_r)
                             {
                                 std::cout << "Head pose results: yaw, pitch, roll = "
-                                          << headPoseDetector[i].angle_y << ";"
-                                          << headPoseDetector[i].angle_p << ";"
-                                          << headPoseDetector[i].angle_r << std::endl;
+                                          << headPoseDetector[ii].angle_y << ";"
+                                          << headPoseDetector[ii].angle_p << ";"
+                                          << headPoseDetector[ii].angle_r << std::endl;
                             }
                             cv::Point3f center(rect.x + rect.width / 2, rect.y + rect.height / 2, 0);
-                            headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[i], 50);
-                            pitch.push_front(headPoseDetector[i].angle_p);
+                            headPoseDetector.drawAxes(prev_frame, center, headPoseDetector[ii], 50);
+                            pitch.push_front(headPoseDetector[ii].angle_p);
                             headbutt = headbuttDetection(&pitch);
 
-                            int is_dist = isDistracted(headPoseDetector[i].angle_y, headPoseDetector[i].angle_p, headPoseDetector[i].angle_r);
+                            int is_dist = isDistracted(headPoseDetector[ii].angle_y, headPoseDetector[ii].angle_p, headPoseDetector[ii].angle_r);
 
                             // Alarm Label
                             int x_alarm = width - (x + 20) - 20;
@@ -994,7 +995,7 @@ int main(int argc, char *argv[])
                             thread_drowsiness.join();
                             thread_distraction.join();
                         }
-                        i++;
+                        ii++;
                     }
 
                     // Truck Label
@@ -1058,7 +1059,7 @@ int main(int argc, char *argv[])
         processing_finished = true;
         beep_thread.join();
         slog::info << "Number of processed frames: " << framesCounter << slog::endl;
-        slog::info << "Total image throughput: " << framesCounter * (1000.f / timer["total"].getTotalDuration()) << " fps" << slog::endl;
+        slog::info << "Total image throughput: " << framesCounter * (1000.F / timer["total"].getTotalDuration()) << " fps" << slog::endl;
 
         // -----------------------------------------------------------------------------------------------------
     }
