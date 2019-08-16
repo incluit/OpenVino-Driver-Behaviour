@@ -182,7 +182,15 @@ source /opt/intel/computer_vision_sdk/bin/setupvars.sh
 cd OpenVino-Driver-Behaviour
 ----
 
-**4.** Create a directory to build the tutorial in and change to it.
+**4.** OpenVINO's Release R2 compatibility
+If using OpenVINO's Release R2 you will need to execute the following script
+
+[source,bash]
+----
+bash download_models.sh
+----
+
+**5.** Create a directory to build the tutorial in and change to it.
 
 [source,bash]
 ----
@@ -202,7 +210,7 @@ sudo ./downloader.py --name face-detection-retail-0004
 sudo ./downloader.py --name head-pose-estimation-adas-0001
 ----
 
-**5.** Before running each of the following sections, be sure to source the
+**6.** Before running each of the following sections, be sure to source the
 helper script. That will make it easier to use environment variables
 instead of long names to the models:
 
@@ -211,7 +219,7 @@ instead of long names to the models:
 source ../scripts/setupenv.sh
 ----
 
-**6.** Compile:
+**7.** Compile:
 
 [source,bash]
 ----
@@ -219,7 +227,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ../
 make
 ----
 
-**7.** Move to the executable's dir:
+**8.** Move to the executable's dir:
 
 [source,bash]
 ----
@@ -445,6 +453,13 @@ cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
 sudo ./downloader.py --name <detectionModelName>
 ----
 
+If using OpenVINO's Release R2 you will need to execute the following script
+
+[source,bash]
+----
+bash download_models.sh
+----
+
 After, the user will be able to initiate the building process and to start using Driver Assistance System
 
 === Problems with compilation process
@@ -476,7 +491,33 @@ In third place, it is fundamental for the building process to configure de build
 
 Finally, before executing the compilation process be sure to source the helper script. That will make it easier to use environment variables instead of long names to the models: source ../scripts/setupenv.sh
 
+=== Dlib Compilation Process
+DLib has its own BLAS library which tries to compile if it can't find any of them installed (openblas, intel mkl, libblas). When this happens, it needs to compile its own libjpeg and throws the error mentioned above. There are 2 ways to solve this:
 
+Lightweight solution, install another libjpeg (on Ubuntu):
+
+[source,bash]
+----
+sudo apt-get install libjpeg8-dev OR sudo apt-get install libjpeg9-dev
+----
+
+Recommended solution, install a full BLAS library as it will boost the program's performance a bit. We recommend installing Intel's MKL as it works faster and takes advantage of your Intel's hardware.
+
+You could also install openblas:
+
+[source,bash]
+----
+sudo apt-get install libopenblas-dev
+----
+
+or libblas (untested):
+
+[source,bash]
+----
+sudo apt-get install libblas-dev
+----
+
+With that, DLib shouldn't compile the file that's causing the trouble.
 
 == To Do
 
