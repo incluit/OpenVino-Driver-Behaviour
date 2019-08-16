@@ -603,7 +603,14 @@ int main(int argc, char *argv[])
             /** Load extensions for the CPU plugin **/
             if ((device.find("CPU") != std::string::npos))
             {
-                core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), "CPU");
+                if (!FLAGS_l.empty())
+                {
+                    // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
+                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+                    core.AddExtension(extension_ptr, device);
+                    slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
+                }
+                core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), device);
 
             }
             else if (!FLAGS_c.empty())
@@ -645,8 +652,16 @@ int main(int argc, char *argv[])
             slog::info << "Loading plugin " << deviceName << slog::endl;
             Core core;
             /** Load extensions for the CPU plugin **/
-            if ((deviceName.find("CPU") != std::string::npos))
-                core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), "CPU");
+            if ((deviceName.find("CPU") != std::string::npos)) {
+                if (!FLAGS_l.empty())
+                {
+                    // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
+                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+                    core.AddExtension(extension_ptr, deviceName);
+                    slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
+                }
+                core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), deviceName);
+            }
             else if (!FLAGS_c.empty())
                 core.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}}, deviceName);
             pluginsForDevices[deviceName] = core;
