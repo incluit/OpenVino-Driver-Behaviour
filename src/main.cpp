@@ -806,6 +806,10 @@ int main(int argc, char *argv[])
                 frameReadStatus = cap.read(next_frame);
                 timer.finish("video frame decoding");
             }
+            if (!frameReadStatus) {
+                timer.finish("total");
+                break;
+            }
 
             timer.start("face analytics wait");
             if (isFaceAnalyticsEnabled)
