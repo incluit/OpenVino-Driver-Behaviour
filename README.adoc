@@ -187,7 +187,7 @@ If using OpenVINO's Release R2 you will need to execute the following script
 
 [source,bash]
 ----
-bash download_models.sh
+bash scripts/download_models.sh
 ----
 
 **5.** Create a directory to build the tutorial in and change to it.
