@@ -1,7 +1,11 @@
 #pragma once
+
+#ifndef NO_SOUND
 #include <ao/ao.h>
 #include <signal.h>
 #include <sndfile.h>
+#endif
+
 #include <string>
 
 #ifdef SIMULATOR
@@ -70,6 +74,7 @@ public:
 #endif
 };
 
+#ifndef NO_SOUND
 class Player
 {
 private:
@@ -106,3 +111,4 @@ public:
 	int init();
 	void play();
 };
+#endif

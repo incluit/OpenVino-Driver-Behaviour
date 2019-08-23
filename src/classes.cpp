@@ -14,6 +14,7 @@ void Truck::ros_callback(const ets_msgs::msg::Truck::SharedPtr msg)
 }
 #endif
 
+#ifndef NO_SOUND
 void Player::clean() {
 
     if (this->device != NULL)
@@ -90,3 +91,4 @@ void Player::play() {
 		}
 	}
 }
+#endif
