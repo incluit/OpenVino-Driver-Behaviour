@@ -443,6 +443,14 @@ If you compiled with the simulator, you may run all together. We consider the ne
 
 image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/fullsimulator.gif[simulator]
 
+=== Performance analysis
+
+We integrated our program to the Intel® IoT DevCloud platform. This developer tool enabled us to run the inference proccess on different hardware targets. The following is the comparison graph where greater is better:
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/fps.png[FPS DevCloud, width=600]
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/times.png[Times DevCloud, width=600]
+
 == FAQs
 === OpenVINO's releases compatibility
 Driver Assistance has been optimized for having compatibility with OpenVINO’s releases 2018’s (R4, R5) and 2019’s (Lastest version tested 2019 R1.0.1). It is important for the user to be aware that some changes regarding detection models had been introduced between releases from 2018 and 2019. In first instance, 2019 releases do not have the detection model’s binaries included within the toolkit; the user will have to follow the instructions described in the Open Model Zoo link suggested at the “Foreword” section of this installation guide. Be aware that if you choose to download them in a different path than the default, our “scripts/setupenv.sh” will not fully work and you will have to add the path to the models yourself when running the program. In case of using the OpenVINO’s 2019 R1.0 or greater, before continuing, it is necessary to manually download all the models.
