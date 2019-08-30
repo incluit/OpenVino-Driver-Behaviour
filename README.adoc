@@ -457,7 +457,7 @@ If using OpenVINO's Release R2 you will need to execute the following script
 
 [source,bash]
 ----
-bash download_models.sh
+bash scripts/download_models.sh
 ----
 
 After, the user will be able to initiate the building process and to start using Driver Assistance System
