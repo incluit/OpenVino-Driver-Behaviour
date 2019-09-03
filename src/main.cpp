@@ -606,7 +606,8 @@ int main(int argc, char *argv[])
             }
             else if (!FLAGS_c.empty())
                 core.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}}, deviceName);
-            core.SetConfig({{PluginConfigParams::KEY_DYN_BATCH_ENABLED, PluginConfigParams::YES}},deviceName);
+            if (deviceName == "CPU" or deviceName == "GPU")
+                core.SetConfig({{PluginConfigParams::KEY_DYN_BATCH_ENABLED, PluginConfigParams::YES}},deviceName);
             pluginsForDevices[deviceName] = core;
         }
 

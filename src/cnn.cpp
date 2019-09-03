@@ -68,7 +68,8 @@ void CnnDLSDKBase::InferBatch(
             matU8ToBlob<uint8_t>(frames[batch_i + b], input, b);
         }
 
-        infer_request_.SetBatch(current_batch_size);
+        if (batch_size != 1)
+            infer_request_.SetBatch(current_batch_size);
         infer_request_.Infer();
 
         InferenceEngine::BlobMap blobs;
