@@ -37,7 +37,8 @@ specifically for near misses detection.
 [quote]
 Caution!
 
-As of OpenVINO's Release 2019 R1, the model's binaries are not included in the toolkit, as they are part of the https://github.com/opencv/open_model_zoo[model zoo]. You are supposed to download them manually as described in the https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_2019_r1_0/car_detection_tutorial#downloading-the-inference-models-from-the-open-model-zoo[tutorial]. Be aware that if you choose to download them in a different path than the default, our `scripts/setupenv.sh` will not fully work and you will have to add the path to the models yourself when running the program.
+* As of OpenVINO's Release 2019 R1, the model's binaries are not included in the toolkit, as they are part of the https://github.com/opencv/open_model_zoo[model zoo]. You are supposed to download them manually as described in the https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_2019_r1_0/car_detection_tutorial#downloading-the-inference-models-from-the-open-model-zoo[tutorial]. Be aware that if you choose to download them in a different path than the default, our `scripts/setupenv.sh` will not fully work and you will have to add the path to the models yourself when running the program.
+* The API got broken since 2019 R2, if you're using an older OpenVINO version, run `git checkout OpenVINO\<\=2019R1` and work from there.
 
 == Introduction
 
@@ -118,9 +119,9 @@ A summary of what is needed:
 
 === Software
 
-* OpenVINO™ toolkit supported Linux operating system. This tutorial was run on 64-bit Ubuntu 16.04.1 LTS updated to kernel 4.15.0-43 following the OpenVINO™ toolkit installation instructions.
+* OpenVINO™ toolkit supported Linux operating system. This tutorial was run on 64-bit Ubuntu 16.04.1 LTS updated to kernel 4.15.0-43 following the OpenVINO™ toolkit installation instructions. Also tested on Ubuntu 18.04.
 
-* The latest OpenVINO™ toolkit installed and verified. Supported versions +2018 R4.0. (Lastest version supported 2019 R1.0.1).
+* The latest OpenVINO™ toolkit installed and verified. Supported versions 2019 R2. (Older versions are supported on another branch).
 
 * Git(git) for downloading from the GitHub repository.
 
@@ -172,7 +173,7 @@ toolkit by sourcing the "setupvars.sh" script.
 
 [source,bash]
 ----
-source /opt/intel/computer_vision_sdk/bin/setupvars.sh
+source /opt/intel/openvino/bin/setupvars.sh
 ----
 
 **3.** Change to the top git repository:
@@ -199,7 +200,7 @@ cd build
 ----
 
 [quote]
-In case of using the OpenVINO’s 2019 R1.0 or greater, before continuing, if you have not manually downloaded all the models before, it is necessary to download the following models.
+In case of using the OpenVINO’s 2019 R1.0, before continuing, if you have not manually downloaded all the models before, it is necessary to download the following models.
 [source,bash]
 ----
 cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
@@ -261,12 +262,6 @@ working we can build or program.
 source /opt/intel/openvino/bin/setupvars.sh
 source /opt/ros/<ros-version>/setup.bash
 source <ros2_ws>/src/ets_ros2/OpenVino-Driver-Behaviour/scripts/setupenv.sh
-----
-
-The OpenVino path may vary depending on the version installed. If it's a 2018 Release or older, the path should be:
-[source,bash]
-----
-source /opt/intel/computer_vision_sdk/bin/setupvars.sh
 ----
 
 **3.** Change to <ros2_ws> location and compile:
@@ -471,9 +466,11 @@ bash scripts/download_models.sh
 After, the user will be able to initiate the building process and to start using Driver Assistance System
 
 === Problems with compilation process
-Firstly, in order to successfully execute the building process, please make sure that all the declared prerequisites –hardware and software- has been met. In particular, regarding software prerequisites, is fundamental that the OpenVINO’s toolkit version had been downloaded by following the Intel’s intrucctions described in the following links:
+Firstly, in order to successfully execute the building process, please make sure that all the declared prerequisites –hardware and software- have been met. In particular, regarding software prerequisites, it is fundamental that the OpenVINO’s toolkit version had been downloaded by following the Intel’s intrucctions described in the following links:
 
-* Version 2019 R1.144 (latest) https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html
+* Version 2019 R2 (latest) https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html
+
+* Version 2019 R1.1 https://docs.openvinotoolkit.org/2019_R1.1/_docs_install_guides_installing_openvino_linux.html
 
 * Version 2019 R1.01 https://docs.openvinotoolkit.org/2019_R1.01/_docs_install_guides_installing_openvino_linux.html
 
@@ -533,8 +530,8 @@ With that, DLib shouldn't compile the file that's causing the trouble.
 
 * [x] Short README with usage examples
 * [x] Travis + Sonarcloud
-* [ ] Include diagrams and images
-* [ ] Elaborate on the wiki
+* [x] Include diagrams and images
+* [x] Elaborate on the wiki
 
 === Development
 
