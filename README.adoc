@@ -497,6 +497,23 @@ In third place, it is fundamental for the building process to configure de build
 Finally, before executing the compilation process be sure to source the helper script. That will make it easier to use environment variables instead of long names to the models: source ../scripts/setupenv.sh
 
 === Dlib Compilation Process
+If you encounter a problem like this:
+```
+Building CXX object dlib_build/dlib/CMakeFiles/dlib.dir/external/libjpeg/jdhuff.cpp.o
+/home/ieisw/OpenVino-Driver-Behaviour/third-party/dlib/dlib/external/libjpeg/jdhuff.cpp:23:32: error: unknown option after ‘#pragma GCC diagnostic’ kind [-Werror=pragmas]
+#pragma GCC diagnostic ignored "-Wshift-negative-value"
+^
+cc1plus: all warnings being treated as errors
+dlib_build/dlib/CMakeFiles/dlib.dir/build.make:1574: recipe for target 'dlib_build/dlib/CMakeFiles/dlib.dir/external/libjpeg/jdhuff.cpp.o' failed
+make[2]: *** [dlib_build/dlib/CMakeFiles/dlib.dir/external/libjpeg/jdhuff.cpp.o] Error 1
+CMakeFiles/Makefile2:193: recipe for target 'dlib_build/dlib/CMakeFiles/dlib.dir/all' failed
+make[1]: *** [dlib_build/dlib/CMakeFiles/dlib.dir/all] Error 2
+Makefile:127: recipe for target 'all' failed
+make: *** [all] Error 2
+```
+
+It's DLib.
+
 DLib has its own BLAS library which tries to compile if it can't find any of them installed (openblas, intel mkl, libblas). When this happens, it needs to compile its own libjpeg and throws the error mentioned above. There are 2 ways to solve this:
 
 Lightweight solution, install another libjpeg (on Ubuntu):
