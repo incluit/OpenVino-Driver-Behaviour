@@ -59,6 +59,9 @@ static const char plugin_message[] = "Plugin name. For example MKLDNNPlugin. If 
 "the demo will look for this plugin only.";
 
 /// @brief message for assigning face detection calculation to device
+static const char target_device_message_all[] = "Specify the target device for Every Model (CPU, GPU, FPGA, or MYRIAD).";
+
+/// @brief message for assigning face detection calculation to device
 static const char target_device_message[] = "Specify the target device for Face Detection (CPU, GPU, FPGA, or MYRIAD). " \
 "The demo will look for a suitable plugin for a specified device.";
 
@@ -171,6 +174,9 @@ std::string fp_reid = DEFAULT_PATH + std::string("models/FP32/face-reidentificat
 DEFINE_string(m_reid, fp_reid, facial_landmarks_model_message);
 
 /// \brief target device for face detection <br>
+DEFINE_string(d_all, "", target_device_message_all);
+
+/// \brief target device for face detection <br>
 DEFINE_string(d, "CPU", target_device_message);
 
 /// \brief target device for AgeGender net <br>
@@ -273,6 +279,7 @@ static void showUsage() {
     std::cout << "      -l \"<absolute_path>\"     " << custom_cpu_library_message << std::endl;
     std::cout << "          Or" << std::endl;
     std::cout << "      -c \"<absolute_path>\"     " << custom_cldnn_message << std::endl;
+    std::cout << "    -d_all \"<device>\"          " << target_device_message_all << std::endl;
     std::cout << "    -d \"<device>\"              " << target_device_message << std::endl;
     std::cout << "    -d_ag \"<device>\"           " << target_device_message_ag << std::endl;
     std::cout << "    -d_hp \"<device>\"           " << target_device_message_hp << std::endl;

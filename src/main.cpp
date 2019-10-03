@@ -533,6 +533,15 @@ int main(int argc, char *argv[])
             return 0;
         }
 
+        if (FLAGS_d_all != "") {
+		FLAGS_d = FLAGS_d_all;
+		FLAGS_d_ag = FLAGS_d_all;
+		FLAGS_d_hp = FLAGS_d_all;
+		FLAGS_d_em = FLAGS_d_all;
+		FLAGS_d_lm = FLAGS_d_all;
+		FLAGS_d_reid = FLAGS_d_all;
+	}
+
         slog::info << "Reading input" << slog::endl;
         cv::VideoCapture cap;
         const bool isCamera = FLAGS_i == "cam";
