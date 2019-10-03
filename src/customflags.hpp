@@ -131,6 +131,9 @@ static const char drecog_message[] = "Enable driver recognition mode";
 /// @brief message for asynchronous mode
 static const char async_message[] = "Enable asynchronous mode";
 
+/// @brief message for asynchronous mode
+static const char no_async_message[] = "Disable asynchronous mode in every model";
+
 // dlib facial landmarks detection
 static const char dlib_lm_message[] = "Enable dlib's facial landmark detections";
 
@@ -244,6 +247,7 @@ DEFINE_bool(d_recognition, false, drecog_message);
 /// It is an optional parameter
 DEFINE_bool(async, false, async_message);
 
+DEFINE_bool(no_async, false, no_async_message);
 ///Custom
 
 DEFINE_bool(dlib_lm, false, "Acti");
@@ -284,6 +288,7 @@ static void showUsage() {
     std::cout << "    -dyn_lm                    " << dyn_batch_lm_message << std::endl;
     std::cout << "    -dlib_lm                   " << dlib_lm_message << std::endl;
     std::cout << "    -async                     " << async_message << std::endl;
+    std::cout << "    -no_async                  " << no_async_message << std::endl;
     std::cout << "    -no_wait                   " << no_wait_for_keypress_message << std::endl;
     std::cout << "    -no_show                   " << no_show_processed_video << std::endl;
     std::cout << "    -pc                        " << performance_counter_message << std::endl;

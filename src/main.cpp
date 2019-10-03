@@ -612,6 +612,15 @@ int main(int argc, char *argv[])
             pluginsForDevices[deviceName] = core;
         }
 
+	int max_batch_size;
+	if (FLAGS_no_async) {
+		FLAGS_n_hp = 1;
+		FLAGS_dyn_hp = false;
+	        max_batch_size = 1;
+	} else {
+		max_batch_size = 16;
+	}
+
         FaceDetection faceDetector(FLAGS_m, FLAGS_d, 1, false, FLAGS_async, FLAGS_t, FLAGS_r);
         HeadPoseDetection headPoseDetector(FLAGS_m_hp, FLAGS_d_hp, FLAGS_n_hp, FLAGS_dyn_hp, FLAGS_async);
         //	FacialLandmarksDetection facialLandmarksDetector(FLAGS_m_lm, FLAGS_d_lm, FLAGS_n_lm, FLAGS_dyn_lm, FLAGS_async);
@@ -623,7 +632,7 @@ int main(int argc, char *argv[])
         auto lm_weights_path = fileNameNoExt(FLAGS_m_lm) + ".bin";
 
         CnnConfig reid_config(fr_model_path, fr_weights_path);
-        reid_config.max_batch_size = 16;
+        reid_config.max_batch_size = max_batch_size;
         reid_config.enabled = /*face_config.enabled*/ true && !fr_model_path.empty() && !lm_model_path.empty();
         reid_config.plugin = pluginsForDevices[FLAGS_d_reid];
         reid_config.deviceName = FLAGS_d_reid;
@@ -631,7 +640,7 @@ int main(int argc, char *argv[])
 
         // Load landmarks detector
         CnnConfig landmarks_config(lm_model_path, lm_weights_path);
-        landmarks_config.max_batch_size = 16;
+        landmarks_config.max_batch_size = max_batch_size;
         landmarks_config.enabled = /*face_config.enabled*/ true && reid_config.enabled && !lm_model_path.empty();
         landmarks_config.plugin = pluginsForDevices[FLAGS_d_lm];
         landmarks_config.deviceName = FLAGS_d_lm;
