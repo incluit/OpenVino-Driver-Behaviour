@@ -191,14 +191,6 @@ If using OpenVINO's Release R2 you will need to execute the following script
 bash scripts/download_models.sh
 ----
 
-**5.** Create a directory to build the tutorial in and change to it.
-
-[source,bash]
-----
-mkdir build
-cd build
-----
-
 [quote]
 In case of using the OpenVINO’s 2019 R1.0, before continuing, if you have not manually downloaded all the models before, it is necessary to download the following models.
 [source,bash]
@@ -209,6 +201,14 @@ sudo ./downloader.py --name face-reidentification-retail-0095
 sudo ./downloader.py --name landmarks-regression-retail-0009
 sudo ./downloader.py --name face-detection-retail-0004
 sudo ./downloader.py --name head-pose-estimation-adas-0001
+----
+
+**5.** Create a directory to build the tutorial in and change to it.
+
+[source,bash]
+----
+mkdir build
+cd build
 ----
 
 **6.** Before running each of the following sections, be sure to source the
