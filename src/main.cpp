@@ -27,7 +27,10 @@
 #include "classes.hpp"
 
 #include <ie_iextension.h>
+
+#if (OPENVINO_VER==2019)
 #include <ext_list.hpp>
+#endif
 
 #include <opencv2/opencv.hpp>
 
@@ -608,11 +611,17 @@ int main(int argc, char *argv[])
                 if (!FLAGS_l.empty())
                 {
                     // CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
-                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+                    #if (OPENVINO_VER==2019)
+                        auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+                    #else
+                        IExtensionPtr extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
+                    #endif
                     core.AddExtension(extension_ptr, deviceName);
                     slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
                 }
+                #if (OPENVINO_VER==2019)
                 core.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>(), deviceName);
+                #endif
             }
             else if (!FLAGS_c.empty())
                 core.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, FLAGS_c}}, deviceName);

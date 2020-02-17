@@ -19,7 +19,6 @@
 #include <samples/common.hpp>
 #include <samples/slog.hpp>
 #include <ie_iextension.h>
-#include <ext_list.hpp>
 
 #include <opencv2/opencv.hpp>
 

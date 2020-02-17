@@ -21,6 +21,9 @@ set(TARGET_NAME "driver_behavior")
 option(SIMULATOR  "Use ets/ats for truck data simulation" OFF)
 option(NO_SOUND  "Disable Beep" OFF)
 
+add_definitions(-DOPENVINO_VER=$ENV{OPENVINO_VER})
+message(STATUS "OpenVINO_Version=$ENV{OPENVINO_VER}")
+
 find_package(OpenCV)
 if(OpenCV_FOUND)
     message(STATUS "OPENCV is enabled")
@@ -80,7 +83,11 @@ endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES "CMAKE_CXX_FLAGS" "${CMAKE_CXX_FLAGS} -fPIE" COMPILE_PDB_NAME ${TARGET_NAME})
 
-target_link_libraries(${TARGET_NAME} format_reader IE::ie_cpu_extension ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
+if ("$ENV{OPENVINO_VER}" STREQUAL "2019")
+    target_link_libraries(${TARGET_NAME} format_reader IE::ie_cpu_extension ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
+else ()
+    target_link_libraries(${TARGET_NAME} format_reader ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         /home/h/incluit/OpenVino-Driver-Behaviour/aws-crt-cpp/build/deps/install/include)
