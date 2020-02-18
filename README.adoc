@@ -469,7 +469,7 @@ cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
 sudo ./downloader.py --name <detectionModelName>
 ----
 
-If using OpenVINO's Release R2 you will need to execute the following script
+If you are using OpenVINO's Release >= R2 and < R2020.1 you will need to execute the following script:
 
 [source,bash]
 ----
