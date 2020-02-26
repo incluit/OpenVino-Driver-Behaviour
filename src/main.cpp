@@ -439,7 +439,7 @@ void driver_recognition(cv::Mat prev_frame, std::vector<FaceDetection::Result> p
         firstTime = 1;
         timer.start("face_identified");
         //Take Photo
-        if (!face_identified && firstPhoto) // Only save the first picture of the "Not Authorized Driver".
+        if (!face_identified && firstPhoto && !face_save.empty()) // Only save the first picture of the "Not Authorized Driver".
         {
             cv::imwrite("../../../drivers/unknown/Unknown-Driver.jpg", face_save);
             firstPhoto = false;
