@@ -16,6 +16,10 @@
 
 #include <ie_iextension.h>
 
+#if (OPENVINO_VER==2019)
+    #include <ext_list.hpp>
+#endif
+
 #include <opencv2/opencv.hpp>
 
 #include "detectors.hpp"
