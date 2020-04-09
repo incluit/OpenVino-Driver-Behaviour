@@ -19,7 +19,6 @@ include(CMakeLists_common.cmake)
 set(TARGET_NAME "driver_behavior")
 
 option(SIMULATOR  "Use ets/ats for truck data simulation" OFF)
-option(NO_SOUND  "Disable Beep" OFF)
 
 add_definitions(-DOPENVINO_VER=$ENV{OPENVINO_VER})
 message(STATUS "OpenVINO_Version=$ENV{OPENVINO_VER}")
@@ -54,11 +53,15 @@ endif()
 
 file (GLOB MAIN_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
         )
 
 file (GLOB MAIN_HEADERS
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
         )
+
+link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # Create named folders for the sources within the .vcproj
 # Empty name lists them directly under the .vcproj
@@ -67,7 +70,7 @@ source_group("include" FILES ${MAIN_HEADERS})
 
 include_directories (${OpenCV_INCLUDE_DIRS})
 include_directories (${Boost_INCLUDE_DIRS})
-link_directories(${LIB_FOLDER})
+
 
 # Create library file from sources.
 add_executable(${TARGET_NAME} ${MAIN_SRC} ${MAIN_HEADERS})
@@ -76,9 +79,6 @@ add_dependencies(${TARGET_NAME} gflags)
 add_definitions(-DBOOST_LOG_DYN_LINK)
 if( SIMULATOR )
   add_definitions(-DSIMULATOR)
-endif()
-if( NO_SOUND )
-  add_definitions(-DNO_SOUND)
 endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES "CMAKE_CXX_FLAGS" "${CMAKE_CXX_FLAGS} -fPIE" COMPILE_PDB_NAME ${TARGET_NAME})
@@ -90,14 +90,13 @@ else ()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-        /home/h/incluit/OpenVino-Driver-Behaviour/aws-crt-cpp/build/deps/install/include)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>)
+
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(UNIX)
-if ( NO_SOUND )
-    target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib gomp)
-else ()
-    target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib ao sndfile gomp)
-endif()
+	target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib ao sndfile gps aws-crt-cpp AP_MENU GenericMCU UART)
 endif()
 
 add_custom_command(TARGET driver_behavior POST_BUILD
@@ -127,3 +126,4 @@ ament_target_dependencies(driver_behavior
 
 ament_package()
 endif()
+
