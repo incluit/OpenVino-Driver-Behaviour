@@ -93,7 +93,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(UNIX)
-	target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib ao sndfile gps aws-crt-cpp AP_MENU GenericMCU UART)
+	target_link_libraries( ${TARGET_NAME} ${LIB_DL} pthread ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} dlib::dlib ao sndfile)
 endif()
 
 add_custom_command(TARGET driver_behavior POST_BUILD
