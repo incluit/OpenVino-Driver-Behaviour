@@ -145,7 +145,7 @@ endif()
 # Properties->C/C++->General->Additional Include Directories
 include_directories (
     ${InferenceEngine_Samples_DIR}/cpp/common/format_reader
-    ${InferenceEngine_Samples_DIR}/cpp
+    ${InferenceEngine_Samples_DIR}
     ${InferenceEngine_Samples_DIR}/../include
     ${InferenceEngine_Samples_DIR}/cpp/thirdparty/gflags/include
     ${InferenceEngine_Samples_DIR}/cpp/common
