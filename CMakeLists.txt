@@ -83,11 +83,8 @@ endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES "CMAKE_CXX_FLAGS" "${CMAKE_CXX_FLAGS} -fPIE" COMPILE_PDB_NAME ${TARGET_NAME})
 
-if ("$ENV{OPENVINO_VER}" STREQUAL "2019")
-    target_link_libraries(${TARGET_NAME} format_reader IE::ie_cpu_extension ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
-else ()
-    target_link_libraries(${TARGET_NAME} format_reader ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
-endif()
+target_link_libraries(${TARGET_NAME} format_reader ${IE_LIBRARIES} ${InferenceEngine_LIBRARIES} gflags)
+
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
