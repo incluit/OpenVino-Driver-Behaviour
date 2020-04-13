@@ -141,7 +141,7 @@ set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
 
 # Make sure dependencies are present
 set(IE_SAMPLES_GFLAGS_DIR "${InferenceEngine_Samples_DIR}/cpp/thirdparty/gflags")
-set(IE_SAMPLES_FORMAT_READER_DIR "${InferenceEngine_Samples_DIR}/common/format_reader")
+set(IE_SAMPLES_FORMAT_READER_DIR "${InferenceEngine_Samples_DIR}/cpp/common/format_reader")
 
 if(NOT EXISTS "${IE_SAMPLES_GFLAGS_DIR}/CMakeLists.txt")
     message(FATAL_ERROR "The required 'gflags' library was not found in the Inference Engine's samples at: ${IE_SAMPLES_GFLAGS_DIR}")
@@ -152,11 +152,11 @@ endif()
 
 # Properties->C/C++->General->Additional Include Directories
 include_directories (
-    ${InferenceEngine_Samples_DIR}/common/format_reader
-    ${InferenceEngine_Samples_DIR}
+    ${InferenceEngine_Samples_DIR}/cpp/common/format_reader
+    ${InferenceEngine_Samples_DIR}/cpp
     ${InferenceEngine_Samples_DIR}/../include
     ${InferenceEngine_Samples_DIR}/cpp/thirdparty/gflags/include
-    ${InferenceEngine_Samples_DIR}/common
+    ${InferenceEngine_Samples_DIR}/cpp/common
 )
 
 set(GFLAGS_IS_SUBPROJECT TRUE)
