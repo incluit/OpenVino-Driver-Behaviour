@@ -149,6 +149,7 @@ include_directories (
     ${InferenceEngine_Samples_DIR}/../include
     ${InferenceEngine_Samples_DIR}/thirdparty/gflags/include
     ${InferenceEngine_Samples_DIR}/common
+    $ENV{InferenceEngine_DIR}/external/tbb/lib
 )
 
 set(GFLAGS_IS_SUBPROJECT TRUE)
