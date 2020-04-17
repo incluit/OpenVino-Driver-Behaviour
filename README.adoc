@@ -18,6 +18,7 @@ toc::[]
 
 == Docker
 docker build -t openvino-incluit . --rm
+
 docker run --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -ti openvino-incluit /bin/bash
 
 == Foreword
