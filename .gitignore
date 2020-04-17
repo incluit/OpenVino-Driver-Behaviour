@@ -1,4 +1,4 @@
-build/
+DriverBehavior/build/
 *.swp
 *.vscode/
-models/
+DriverBehavior/models/
