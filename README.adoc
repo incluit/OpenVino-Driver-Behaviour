@@ -16,6 +16,10 @@ Status]]
 
 toc::[]
 
+== Docker
+docker build -t openvino-incluit . --rm
+docker run --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -ti openvino-incluit /bin/bash
+
 == Foreword
 This is a follow-up on the OpenVino's inference tutorials:
 
