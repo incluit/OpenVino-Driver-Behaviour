@@ -1,0 +1,575 @@
+= OpenVino Driver Behaviour
+:idprefix:
+:idseparator: -
+:sectanchors:
+:sectlinks:
+:sectnumlevels: 6
+:sectnums:
+:toc: macro
+:toclevels: 6
+:toc-title: Table of Contents
+
+https://travis-ci.org/incluit/OpenVino-Driver-Behaviour#[image:https://travis-ci.org/incluit/OpenVino-Driver-Behaviour.svg?branch=master[Build
+Status]]
+https://sonarcloud.io/dashboard?id=incluit_OpenVino-Driver-Behaviour[image:https://sonarcloud.io/api/project_badges/measure?project=incluit_OpenVino-Driver-Behaviour&metric=alert_status[Sonarcloud
+Status]]
+
+toc::[]
+
+== Foreword
+This is a follow-up on the OpenVino's inference tutorials:
+
+Version 2019 R1.0
+
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_2019_r1_0
+
+Version 2018 R5.0
+
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_r5_0
+
+Version 2018 R4.0
+
+https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_r4_0
+
+We will work on and extend this tutorial as a demo app for smart cities,
+specifically for near misses detection.
+
+[quote]
+Caution!
+
+* As of OpenVINO's Release 2019 R1, the model's binaries are not included in the toolkit, as they are part of the https://github.com/opencv/open_model_zoo[model zoo]. You are supposed to download them manually as described in the https://github.com/intel-iot-devkit/inference-tutorials-generic/tree/openvino_toolkit_2019_r1_0/car_detection_tutorial#downloading-the-inference-models-from-the-open-model-zoo[tutorial]. Be aware that if you choose to download them in a different path than the default, our `scripts/setupenv.sh` will not fully work and you will have to add the path to the models yourself when running the program.
+* The API got broken since 2019 R2, if you're using an older OpenVINO version, run `git checkout OpenVINO\<\=2019R1` and work from there.
+
+== Introduction
+
+This project consists on showcasing the advantages of the Intel's OpenVINO toolkit. We will develop a __Driver Behaviour__ case scenario, where we will detect drowsiness based on blinking and yawning and gaze direction. For that, we will use the OpenVINO toolkit and OpenCV, all written in `{cpp}`.
+
+As mentioned previously, we will take the https://software.intel.com/en-us/articles/OpenVINO-IE-Samples#interactive-face-detection[Interactive face detection sample] as a starting point, as it provides us with the options to run and stack different models synchronously or asynchronously. We will develop the following features based on computer vision:
+
+.  Sleep/Drowsiness Detection:
+.. Counting frecuency of blinking.
+.. Yawn detection.
+. Gaze detection.
+
+=== [Optional] Simulator
+
+To test our system with data closer to reality we added support for https://store.steampowered.com/app/227300/Euro_Truck_Simulator_2/[ETS] or https://store.steampowered.com/app/270880/American_Truck_Simulator/[ATS]. As the simulator is not free, you can opt whether to compile the project with this feature or not. The communication between the simulator and our program is done via a ROS2 client and it provides the following info:
+
+. Engine Status (On/Off)
+. Trailer Status (Connected/Disconnected).
+. Speed.
+. RPM.
+. Acceleration.
+. Position (Coordinates).
+. Gear (-1 for Reverse, >0 the rest).
+
+=== [Optional] AWS (In Progress)
+
+We also plan to send the data through MQTT using AWS IoT-Core, to produce a dashboard with the trucks positions, alarms, etc. Again, using AWS may incur in a cost, so this will also be optional for you to compile with/without it.
+
+== Bussines Logic
+
+Using OpenVino's model detection we can easily detect faces with great accuracy. We are currently using for testing 2 different face detection models that are included with OpenVino out-of-the-box:
+
+. face-detection-adas-0001
+. face-detection-retail-0004
+
+=== Blink/Yawn detection
+
+Using the image detected inside the face ROI (region of interest), we feed a facial landmarks detector to identify points of iterest. Using 6 points for each eye and 6 points for the mouth it is possible to calculate 'Eye Aspect Ratio (EAR)' that gives 2 values for eye/mouth open or closed (based on http://vision.fe.uni-lj.si/cvww2016/proceedings/papers/05.pdf[this paper]).
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink_detection_6_landmarks.jpg[EAR]
+
+At the moment of writing this guide, the facial landmarks detection model included with OpenVino (facial-landmarks-35-adas-0001) has not enough points to run this calculations. We are using dlib's facial landmarks detector instead.
+
+Once we have a positive detection for blink/yawn, we count frames of those events and trigger an alarm when they hit a threshold.
+
+=== 'Eyes on the road' detection
+
+Using the face's ROI, we feed a head-pose detector model provided by OpenVino (head-pose-estimation-adas-0001).
+Analizing the output of that model we can easily detect when the face is not centered or not looking to the front.
+ 
+== Prerequisites
+
+To run the application in this tutorial, the OpenVINO™ toolkit and its dependencies must already be installed and verified using the included demos. Installation instructions may be found at: https://software.intel.com/en-us/articles/OpenVINO-Install-Linux
+
+If to be used, any optional hardware must also be installed and verified including:
+
+* USB camera - Standard USB Video Class (UVC) camera.
+
+* Intel® Core™ CPU with integrated graphics.
+
+* VPU - USB Intel® Movidius™ Neural Compute Stick and what is being referred to as "Myriad"
+
+A summary of what is needed:
+
+=== Hardware
+
+* Target and development platforms meeting the requirements described in the "System Requirements" section of the OpenVINO™ toolkit documentation which may be found at: https://software.intel.com/openvino-toolkit[https://software.intel.com/en-us/openvino-toolkit]
+
+**Note**: While writing this tutorial, an Intel® i7-8550U with Intel® HD graphics 520 GPU was used as both the development and target platform.
+
+* Optional:
+
+** Intel® Movidius™ Neural Compute Stick
+
+** USB UVC camera
+
+** Intel® Core™ CPU with integrated graphics.
+
+=== Software
+
+* OpenVINO™ toolkit supported Linux operating system. This tutorial was run on 64-bit Ubuntu 16.04.1 LTS updated to kernel 4.15.0-43 following the OpenVINO™ toolkit installation instructions. Also tested on Ubuntu 18.04.
+
+* The latest OpenVINO™ toolkit installed and verified. Supported versions 2019 R2. (Older versions are supported on another branch).
+
+* Git(git) for downloading from the GitHub repository.
+
+* BOOST library. To install on Ubuntu, run:
+
+[source,bash]
+----
+apt-get install libboost-dev
+----
+
+* LibAO and libsndfile to play some beeping sounds. On Ubuntu, run:
+
+[source,bash]
+----
+apt-get install libao-dev libsndfile1-dev
+----
+
+* [Optional] ETS or ATS simulator. Install it through Steam on Ubuntu.
+
+* [Optional] https://github.com/awslabs/aws-crt-cpp[AWS Crt Cpp]
+
+=== Checks
+
+By now you should have completed the Linux installation guide for the OpenVINO™ toolkit, however before continuing, please ensure:
+
+* That after installing the OpenVINO™ toolkit you have run the supplied demo samples 
+
+* If you have and intend to use a GPU: You have installed and tested the GPU drivers 
+
+* If you have and intend to use a USB camera: You have connected and tested the USB camera 
+
+* If you have and intend to use a Myriad: You have connected and tested the USB Intel® Movidius™ Neural Compute Stick
+
+* That your development platform is connected to a network and has Internet access. To download all the files for this tutorial, you will need to access GitHub on the Internet. 
+
+== Building
+
+=== Basic Build
+
+**1.** Clone the repository at desired location:
+
+[source,bash]
+----
+git clone https://github.com/incluit/OpenVino-Driver-Behaviour.git
+----
+
+**2.** The first step is to configure the build environment for the OpenCV
+toolkit by sourcing the "setupvars.sh" script.
+
+[source,bash]
+----
+source  /opt/intel/openvino/bin/setupvars.sh
+----
+
+For older versions than 2019 R1, OpenVINO was installed in a different dir, run
+this instead:
+
+[source,bash]
+----
+source  /opt/intel/computer_vision_sdk/bin/setupvars.sh
+----
+
+**3.** Change to the top git repository:
+
+[source,bash]
+----
+cd OpenVino-Driver-Behaviour
+----
+
+**4.** OpenVINO's Release R2020.1 or greater compatibility
+
+If you are using OpenVINO's Release R2020.1 or greater you don't need download the models.
+
+[quote]
+If you are using OpenVINO's Release >= R2 and < R2020.1 you will need to execute the following script:
+
+[source,bash]
+----
+bash scripts/download_models.sh
+----
+
+[quote]
+In case of using the OpenVINO’s 2019 R1.0, before continuing, if you have not manually downloaded all the models before, it is necessary to download the following models.
+[source,bash]
+----
+cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
+sudo ./downloader.py --name face-detection-adas-0001
+sudo ./downloader.py --name face-reidentification-retail-0095 
+sudo ./downloader.py --name landmarks-regression-retail-0009
+sudo ./downloader.py --name face-detection-retail-0004
+sudo ./downloader.py --name head-pose-estimation-adas-0001
+----
+
+**5.** Create a directory to build the tutorial in and change to it.
+
+[source,bash]
+----
+mkdir build
+cd build
+----
+
+**6.** Before running each of the following sections, be sure to source the
+helper script. That will make it easier to use environment variables
+instead of long names to the models:
+
+[source,bash]
+----
+source ../scripts/setupenv.sh
+----
+
+**7.** Compile:
+
+[source,bash]
+----
+cmake -DCMAKE_BUILD_TYPE=Release ../
+make
+----
+
+**8.** Move to the executable's dir:
+
+[source,bash]
+----
+cd intel64/Release
+----
+
+=== Simulator Build
+
+In order to run the simulator you will need to install:
+
+* **ROS2** following https://index.ros.org/doc/ros2/Installation/Linux-Install-Debians/[Installing ROS2 via Debian Packages].
+* **colcon** following https://index.ros.org/doc/ros2/Tutorials/Colcon-Tutorial/[Colcon Tutorial].
+* **ETS or ATS** using Steam.
+* **ets_ros2-plugin** from this https://github.com/brunodmt/ets_ros2[repo].
+
+Follow the plugin's instructions to install everything, you can test the ros
+client is working through the sample application provided there. Once that is
+working we can build or program.
+
+**1.** Clone the repository at <ros2_workspace>/src/ets_ros2 location:
+
+[source,bash]
+----
+<ros2_ws>/src/ets_ros2$ git clone https://github.com/incluit/OpenVino-Driver-Behaviour.git
+----
+
+**2.** Source everything!
+
+[source,bash]
+----
+source /opt/intel/openvino/bin/setupvars.sh
+source /opt/ros/<ros-version>/setup.bash
+source <ros2_ws>/src/ets_ros2/OpenVino-Driver-Behaviour/scripts/setupenv.sh
+----
+
+**3.** Change to <ros2_ws> location and compile:
+
+[source,bash]
+----
+colcon build --symlink-install --parallel-workers N --cmake-args -DSIMULATOR=ON
+----
+
+N being the number of cores to build (like make's `-jN` flag). We recommend
+using 1 as it is a bit memory intensive.
+
+**4.** Copy the plugin to the corresponding folder as described in the https://github.com/brunodmt/ets_ros2[plugin repo]:
+
+[source,bash]
+----
+   mkdir  ~/.local/share/Steam/steamapps/common/Euro\ Truck\ Simulator\ 2/bin/linux_x64/plugins
+   cp install/ets_plugin/lib/ets_plugin/libetsros2.so ~/.local/share/Steam/steamapps/common/Euro\ Truck\ Simulator\ 2/bin/linux_x64/plugins/
+----
+
+or the ATS folder:
+
+[source,bash]
+----
+   mkdir ~/.local/share/Steam/steamapps/common/American\ Truck\ Simulator/bin/linux_x64/plugins
+   cp install/ets_plugin/lib/ets_plugin/libetsros2.so ~/.local/share/Steam/steamapps/common/American\ Truck\ Simulator/bin/linux_x64/plugins/
+----
+
+**5.** Lastly, source our workspace:
+
+[source,bash]
+----
+source <ros2_ws>/install/setup.bash
+cd <ros2_ws>/install/driver_behavior/bin
+----
+
+== Usage
+
+=== Run
+
+==== Face Detection
+
+**1.** First, let us see how face detection works on a single image file using the default
+synchronous mode.
+
+[source,bash]
+----
+./driver_behavior -m $face132 -i ../../../data/img_1.jpg
+----
+
+**2.** For video files:
+
+[source,bash]
+----
+./driver_behavior -m $face132 -i ../../../data/video1.mp4
+----
+
+**3.** You can also run the command in asynchronous mode using the option
+"-async":
+
+[source,bash]
+----
+./driver_behavior -m $face132 -i ../../../data/video1.mp4 -async
+----
+
+**4.** You can also load the models into the **GPU** or **MYRIAD**:
+
+**Note**: In order to run this section, the **GPU** and/or **MYRIAD** are required to be present and correctly configured.
+
+[source,bash]
+----
+./driver_behavior -m $face132 -d GPU -i ../../../data/video1.mp4
+----
+
+[source,bash]
+----
+./driver_behavior -m $face132 -d MYRIAD -i ../../../data/video1.mp4
+----
+
+===== Other models
+
+You can also experiment by using different face detection models, being the ones available up to now:
+
+. face-detection-adas-0001:
+** `-m $face1{16,32}`
+. face-detection-retail-0004:
+** `-m $face2{16,32}`
+
+By default they will be loaded into the CPU, so remember to pass the corresponding argument:
+
+* `-d {CPU,GPU,MYRIAD}`
+
+
+==== Drowsiness detection
+
+In order to enable drowsiness and yawn detection, we add to the pipeline a face landmarks detection.
+
+[source,bash]
+----
+./driver_behavior -m $face232 -dlib_lm -i ../../../data/video2.mp4
+----
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/blink.gif[blinking]
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/yawning.gif[yawning]
+
+==== Driver 'eyes on the road' detection
+
+To analize if the driver is paying attention to the road, we enable the head/pose model and work with that information:
+
+[source,bash]
+----
+./driver_behavior -m $face232 -m_hp $hp32 -i ../../../data/video3.mp4
+----
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/gaze.gif[gaze]
+
+==== Realtime feed
+
+Removing the '-i' flag, if the computer has a video camera enabled, the programs uses its feed to run the face detection models and the following calculations.
+
+[source,bash]
+----
+./driver_behavior -m $face232
+./driver_behavior -m $face232 -dlib_lm
+./driver_behavior -m $face232 -d GPU -dlib_lm -async
+./driver_behavior -m $face232 -m_hp $hp32
+----
+
+==== Driver recognition
+
+We could also detect if the person sitting in front of the camera is actually an authorized driver. For that matter, we added a first stage of driver recognition that works as follows:
+
+In `drivers/` there are pictures of "authorized drivers", you can add yours by taking a picture of yourself and cropping your face as you can see in the sample pictures, name the file as `name.N.png`. Then navigate to the `scripts/` and generate the .json.
+
+[source,bash]
+----
+cd scripts/
+python3 create_list.py ../drivers/
+----
+
+You should now see a file named `faces_gallery.json` with your name and the path to your photo there.
+
+Now we can run the program with the flag `-d_recognition` and the path to the .json file `-fg ../../../scripts/faces_gallery.json`. The final command would be as follows:
+
+[source,bash]
+----
+./driver_behavior -m $face232 -d CPU -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../../../scripts/faces_gallery.json
+----
+
+It will wait there until an authorized driver sits in front of the camera for a couple of seconds and then will continue with the previous features.
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/driver_recognition.gif[driver_recognition]
+
+For this feature we are making use of the next models that are available within OpenVINO's distribution:
+
+. face-reidentification-retail-0095: For R5
+. face-reidentification-retail-0071: For R4
+
+==== Simulator
+
+If you compiled with the simulator, you may run all together. We consider the next use-cases to show on the screen:
+
+. System off if Engine = Off.
+. "Eyes out of the road" enable (inferred by Head Position) when [GearStatus = Driving] and [VehicleSpeed > 5 kmh].
+. "Eyes out of the road" disabled (inferred by Head Position) when Gear Status = Reverse.
+. "Eyes out of the road" disabled (inferred by Head Position) when Gear Status = Parking.
+. "Stop looking at (...)" detection (inferred by Head Position) when [GearStatus = Driving] and [VehicleSpeed > 2 kmh].
+. "Stop looking at (...)" disabled (inferred by Head Position) when [GearStatus = Reverse].
+. "Stop looking at (...)" disabled (inferred by Head Position) when [GearStatus = Parking].
+. "Drowsiness state" detection (inferred by Blink and Yawn detection) when [GearStatus = Driving].
+. "Drowsiness state" detection (inferred by Blink and Yawn detection) when [GearStatus = Reverse].
+. "Drowsiness state" disabled (inferred by Blink and Yawn detection) when [GearStatus = Parking].
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/fullsimulator.gif[simulator]
+
+
+=== Performance analysis
+
+We integrated our program to the Intel® IoT DevCloud platform. This developer tool enabled us to run the inference proccess on different hardware targets. The following is the comparison graph where greater is better:
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/fps.png[FPS DevCloud, width=600]
+
+image::https://github.com/incluit/OpenVino-Driver-Behaviour/blob/master/img/times.png[Times DevCloud, width=600]
+
+== FAQs
+=== OpenVINO's releases compatibility
+Driver Assistance has been optimized for having compatibility with OpenVINO’s releases 2018’s (R4, R5) and 2019’s (Lastest version tested 2019 R1.0.1). It is important for the user to be aware that some changes regarding detection models had been introduced between releases from 2018 and 2019. In first instance, 2019 releases do not have the detection model’s binaries included within the toolkit; the user will have to follow the instructions described in the Open Model Zoo link suggested at the “Foreword” section of this installation guide. Be aware that if you choose to download them in a different path than the default, our “scripts/setupenv.sh” will not fully work and you will have to add the path to the models yourself when running the program. In case of using the OpenVINO’s 2019 R1.0 or greater, before continuing, it is necessary to manually download all the models.
+
+[source,bash]
+----
+cd /opt/intel/<openvino_path>/deployment_tools/tools/model_downloader/
+sudo ./downloader.py --name <detectionModelName>
+----
+
+If you are using OpenVINO's Release >= R2 and < R2020.1 you will need to execute the following script:
+
+[source,bash]
+----
+bash scripts/download_models.sh
+----
+
+After, the user will be able to initiate the building process and to start using Driver Assistance System
+
+=== Problems with compilation process
+Firstly, in order to successfully execute the building process, please make sure that all the declared prerequisites –hardware and software- have been met. In particular, regarding software prerequisites, it is fundamental that the OpenVINO’s toolkit version had been downloaded by following the Intel’s intrucctions described in the following links:
+
+* Version 2019 R2 (latest) https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html
+
+* Version 2019 R1.1 https://docs.openvinotoolkit.org/2019_R1.1/_docs_install_guides_installing_openvino_linux.html
+
+* Version 2019 R1.01 https://docs.openvinotoolkit.org/2019_R1.01/_docs_install_guides_installing_openvino_linux.html
+
+* Version 2019 R1.0 https://docs.openvinotoolkit.org/2019_R1/_docs_install_guides_installing_openvino_linux.html
+
+* Version 2018 R5.0 https://docs.openvinotoolkit.org/2018_R5/_docs_install_guides_installing_openvino_linux.html
+
+Secondly, make sure that “BOOST” library has been downloaded. If not, execute the following commands:
+
+[source,bash]
+----
+apt-get install libboost-dev
+apt-get install libboost-log-dev
+----
+
+In third place, it is fundamental for the building process to configure de build environment for the OpenCV toolkit by executing the following command:
+
+[source,bash]
+----
+2019 R1.X     source  /opt/intel/openvino/bin/setupvars.sh
+2018 R4-R5    source  /opt/intel/computer_vision_sdk/bin/setupvars.sh
+----
+
+Finally, before executing the compilation process be sure to source the helper script. That will make it easier to use environment variables instead of long names to the models: source ../scripts/setupenv.sh
+
+=== Dlib Compilation Process
+If you encounter a problem like this:
+```
+Building CXX object dlib_build/dlib/CMakeFiles/dlib.dir/external/libjpeg/jdhuff.cpp.o
+/home/ieisw/OpenVino-Driver-Behaviour/third-party/dlib/dlib/external/libjpeg/jdhuff.cpp:23:32: error: unknown option after ‘#pragma GCC diagnostic’ kind [-Werror=pragmas]
+#pragma GCC diagnostic ignored "-Wshift-negative-value"
+^
+cc1plus: all warnings being treated as errors
+dlib_build/dlib/CMakeFiles/dlib.dir/build.make:1574: recipe for target 'dlib_build/dlib/CMakeFiles/dlib.dir/external/libjpeg/jdhuff.cpp.o' failed
+make[2]: *** [dlib_build/dlib/CMakeFiles/dlib.dir/external/libjpeg/jdhuff.cpp.o] Error 1
+CMakeFiles/Makefile2:193: recipe for target 'dlib_build/dlib/CMakeFiles/dlib.dir/all' failed
+make[1]: *** [dlib_build/dlib/CMakeFiles/dlib.dir/all] Error 2
+Makefile:127: recipe for target 'all' failed
+make: *** [all] Error 2
+```
+
+It's DLib.
+
+DLib has its own BLAS library which tries to compile if it can't find any of them installed (openblas, intel mkl, libblas). When this happens, it needs to compile its own libjpeg and throws the error mentioned above. There are 2 ways to solve this:
+
+Lightweight solution, install another libjpeg (on Ubuntu):
+
+[source,bash]
+----
+sudo apt-get install libjpeg8-dev OR sudo apt-get install libjpeg9-dev
+----
+
+Recommended solution, install a full BLAS library as it will boost the program's performance a bit. We recommend installing Intel's MKL as it works faster and takes advantage of your Intel's hardware.
+
+You could also install openblas:
+
+[source,bash]
+----
+sudo apt-get install libopenblas-dev
+----
+
+or libblas (untested):
+
+[source,bash]
+----
+sudo apt-get install libblas-dev
+----
+
+With that, DLib shouldn't compile the file that's causing the trouble.
+
+== To Do
+
+=== README
+
+* [x] Short README with usage examples
+* [x] Travis + Sonarcloud
+* [x] Include diagrams and images
+* [x] Elaborate on the wiki
+
+=== Development
+
+* [x] Try with different models
+* [x] Face detection
+* [x] Dlib landmark idetification integration
+* [x] Blink/Yawn detection
+* [x] Blink/Yawn time
+* [x] 'Eye out of road' detection
+* [x] Face identification
+* [ ] Heart rate + speed/acceleration patterns risk
