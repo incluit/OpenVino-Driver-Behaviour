@@ -37,5 +37,8 @@ RUN chmod +x /app/DriverBehavior/scripts/setupenv.sh
 RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/DriverBehavior/scripts/setupenv.sh && cmake -DCMAKE_BUILD_TYPE=Release ../ && make'
 RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/DriverBehavior/scripts/download_models.sh'
 
+COPY ActionRecognition/* app/
+WORKDIR /app/ActionRecognition
+RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/ActionRecognition/scripts/download_models.sh'
 
 CMD ["/bin/bash"]
