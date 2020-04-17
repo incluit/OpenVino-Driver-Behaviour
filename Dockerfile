@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM openvino/ubuntu18_dev:2019_R3.1
 
 ADD . /app
 WORKDIR /app
@@ -13,6 +13,7 @@ RUN apt-get install -y --no-install-recommends \
         apt-utils \
         cpio \
         curl \
+        vim \
         git \
         lsb-release \
         pciutils \
@@ -23,21 +24,5 @@ RUN apt-get install -y --no-install-recommends \
 
 RUN pip3 install --upgrade pip setuptools wheel
 
-# installing OpenVINO dependencies
-RUN cd /app/l_openvino_toolkit* && \
-    ./install_cv_sdk_dependencies.sh
-
-## installing OpenVINO itself
-RUN cd /app/l_openvino_toolkit* && \
-    sed -i 's/decline/accept/g' silent.cfg && \
-    ./install.sh --silent silent.cfg
-
-RUN cd $INSTALL_DIR/deployment_tools/model_optimizer/install_prerequisites/ && \
-    ./install_prerequisites_tf.sh
-
-RUN /bin/bash -c "source $INSTALL_DIR/bin/setupvars.sh"
-
-RUN cd /app && \
-    rm -rf l_openvino_toolkit*
 
 CMD ["/bin/bash"]
