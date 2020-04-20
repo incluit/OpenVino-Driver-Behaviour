@@ -1,0 +1,5 @@
+[2020-04-14 15:20:36.848000] [info] [1] - Parsing input parameters
+[2020-04-14 15:20:36.848231] [info] [2] - Incluit - Openvino-for-Smartcity
+[2020-04-14 15:20:36.848244] [info] [3] - InferenceEngine: 0x7f37d115c040
+[2020-04-14 15:20:36.848258] [info] [4] - Reading input
+[2020-04-14 15:20:36.971482] [error] [5] - Cannot open input file or camera: /home/fpriotti/Videos/Alvear y Mendoza.mp4

@@ -1,0 +1,22 @@
+[2020-04-16 13:18:26.239047] [info] [1] - Parsing input parameters
+[2020-04-16 13:18:26.239165] [info] [2] - Incluit - Openvino-for-Smartcity
+[2020-04-16 13:18:26.239171] [info] [3] - InferenceEngine: 0x7fbe67d76040
+[2020-04-16 13:18:26.239178] [info] [4] - Reading input
+[2020-04-16 13:18:26.371119] [info] [5] - FLAGS_n_async=1, inference pipeline will operate synchronously
+[2020-04-16 13:18:26.371254] [info] [6] - Yolo Detection DISABLED
+[2020-04-16 13:18:26.371284] [info] [7] - Vehicle Detection DISABLED
+[2020-04-16 13:18:26.371305] [info] [8] - Loading plugin CPU
+[2020-04-16 13:18:26.430659] [info] [9] - Pedestrians Detection DISABLED
+[2020-04-16 13:18:26.430716] [info] [10] - Loading network files for Pedestrians Detection
+[2020-04-16 13:18:26.464276] [info] [11] - Batch size is set to 1 for Pedestrians Detection
+[2020-04-16 13:18:26.469949] [info] [12] - Checking Pedestrians Detection inputs
+[2020-04-16 13:18:26.470001] [info] [13] - Checking Pedestrians Detection outputs
+[2020-04-16 13:18:26.470009] [info] [14] - Loading Pedestrians Detection model to the CPU plugin
+[2020-04-16 13:18:26.979911] [info] [15] - Start inference 
+[2020-04-16 13:18:26.979937] [info] [16] - Press 's' key to save a snapshot, press any other key to stop
+[2020-04-16 13:18:27.048370] [info] [17] - Target ID : 0 is now been tracked
+[2020-04-16 13:18:29.255591] [info] [18] - Press 's' key to save a snapshot, press any other key to exit
+[2020-04-16 13:18:31.186963] [info] [19] -      Total main-loop time:2275.65 ms 
+[2020-04-16 13:18:31.186996] [info] [20] -            Total # frames:32
+[2020-04-16 13:18:31.186999] [info] [21] -    Average time per frame:71.11 ms (14.06 fps)
+[2020-04-16 13:18:31.204244] [info] [22] - Execution successful

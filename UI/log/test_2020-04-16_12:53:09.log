@@ -1,0 +1,11 @@
+[2020-04-16 12:53:09.840072] [info] [1] - Parsing input parameters
+[2020-04-16 12:53:09.840188] [info] [2] - Incluit - Openvino-for-Smartcity
+[2020-04-16 12:53:09.840196] [info] [3] - InferenceEngine: 0x7f637e6ac040
+[2020-04-16 12:53:09.840205] [info] [4] - Reading input
+[2020-04-16 12:53:09.926304] [info] [5] - FLAGS_n_async=1, inference pipeline will operate synchronously
+[2020-04-16 12:53:09.926332] [info] [6] - Yolo Detection DISABLED
+[2020-04-16 12:53:09.926335] [info] [7] - Vehicle Detection DISABLED
+[2020-04-16 12:53:09.926338] [info] [8] - Loading plugin CPU
+[2020-04-16 12:53:09.955690] [info] [9] - Pedestrians Detection DISABLED
+[2020-04-16 12:53:09.955712] [info] [10] - Loading network files for Pedestrians Detection
+[2020-04-16 12:53:09.957785] [error] [11] - Could not allocate memory

@@ -1,0 +1,311 @@
+{% extends "template.html" %}
+{% block title %}
+{{ title }}
+{% endblock %}
+{% block avatar %}
+<i class="nav-icon fas fa-id-card"></i>
+{% endblock %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0 text-dark"> {{ title }} </h1>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Options</h3>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <form id="command_form">
+                                    <div class="card card-success collapsed-card">
+                                        <div class=" card-header">
+                                            <h3 class="card-title">Driver Behaviour</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool"
+                                                    data-card-widget="collapse"><i class="fas fa-plus"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="camera"
+                                                                onclick="$(this).next().val(this.checked?1:0);cam_event();" checked/>
+                                                            <input type="hidden" id="camera_checkbox" name="camera"
+                                                                value="1" />
+                                                            <label class="custom-control-label"
+                                                                for="camera">Camera</label>
+                                                        </div>
+                                                        <br>
+                                                        <label>Upload video/image</label><br>
+                                                        <div class="custom-file">
+                                                            <input type="file" name="file" class="custom-file-input"
+                                                                id="customFile" disabled>
+                                                            <label class="custom-file-label" for="customFile">Choose
+                                                                file</label>
+                                                        </div>
+                                                        </br>
+                                                        </br>
+                                                        <label>Face Detection: Target Device</label>
+                                                        <select class="form-control" name="target"
+                                                            onChange="target_change(this)">
+                                                            <option selected="selected">CPU</option>
+                                                            <option>GPU</option>
+                                                            <option>MYRIAD</option>
+                                                        </select>
+                                                        <br>
+                                                        <label>Face Detection: Model</label>
+                                                        <select class="form-control" name="model">
+                                                            <option selected="selected">
+                                                                face-detection-adas-0001</option>
+                                                            <option>face-detection-retail-0004</option>
+                                                        </select>
+                                                        <br>
+                                                        <label>Face Detection: Precision</label>
+                                                        <select class="form-control" name="precision">
+                                                            <option>FP16</option>
+                                                            <option selected="selected">FP32</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card card-success collapsed-card">
+                                        <div class=" card-header">
+                                            <h3 class="card-title">Driver Actions</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool"
+                                                    data-card-widget="collapse"><i class="fas fa-plus"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="camera_actions"
+                                                                onclick="$(this).next().val(this.checked?1:0);cam_event_actions();" />
+                                                            <input type="hidden" id="camera_checkbox_actions" name="camera_actions"
+                                                                value="0" />
+                                                            <label class="custom-control-label"
+                                                                for="camera_actions">Camera</label>
+                                                        </div>
+                                                        <br>
+                                                        <label>Upload video/image</label><br>
+                                                        <div class="custom-file">
+                                                            <input type="file" name="file_actions" class="custom-file-input"
+                                                                id="customFile_actions">
+                                                            <label class="custom-file-label" for="customFile_actions">Choose
+                                                                file</label>
+                                                        </div>
+                                                        <br><br>
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input" id="aws_actions"
+                                                                onclick="$(this).next().val(this.checked?1:0);" checked />
+                                                            <input type="hidden" id="aws_actions_checkbox" name="aws_actions" value="1" />
+                                                            <label class="custom-control-label" for="aws_actions"> Send Data to AWS</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>    
+                            </div>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="rosbag"
+                                    onclick="$(this).next().val(this.checked?1:0);" checked />
+                                <input type="hidden" id="rosbag_checkbox" name="rosbag" value="1" />
+                                <label class="custom-control-label" for="rosbag"> Simulated Data (Rosbag)</label>
+                            </div>
+                            <br>
+                            <b>Please, once you run it, wait a moment without doing anything.</b><br>
+                            Press "Stop" button to finish.
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success"><i class="nav-icon fas fa-play"></i> Run
+                                {{ title }}</button>
+                            </form>
+                            <button type=sumbit id="buttonTest" class="btn btn-default"><i
+                                    class="nav-icon fas fa-stop"></i>
+                                Stop</button>
+                            <span id="stop_result"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="embed_video" class="col-lg-6"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<textarea id="div_model" style="position: absolute; bottom: 0; left: 0; right: 0; 
+         width: 100%; margin: 0; padding-left: 10px; padding-top: 10px; border-width: 0; visibility: hidden;" rows="2"" disabled></textarea>
+
+<script src=" https://code.jquery.com/jquery-1.12.0.min.js"> </script> <script type="text/javascript">
+
+    $('#command_form').submit(function (e) {
+        e.preventDefault();
+        var data = {};
+        var Form = this;
+        $.each(this.elements, function (i, v) {
+            var input = $(v);
+            data[input.attr("name")] = input.val();
+            delete data["undefined"];
+        });
+        data["file"] = $('input[name=file]').val().split('\\').pop(); // Delete C:\\fakepath\\
+        data["file_actions"] = $('input[name=file_actions]').val().split('\\').pop();
+        $.ajax({
+            type: 'POST',
+            success: function () {
+                $('#embed_video').html(
+                    "<div class='card card-success'>" +
+                    "<div class='card-header'>" +
+                    "<h3 class='card-title'>Output</h3>" +
+                    "<div class='card-tools'>" +
+                    "<button type='button' class='btn btn-tool' data-card-widget='maximize'><i class='fas fa-expand'></i></button>" +
+                    "<button type='button' class='btn btn-tool' data-card-widget='collapse'><i class='fas fa-minus'></i></button>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='card-body'>" +
+                    "<h5>Output in Terminal</h5>" +
+                    "</div>" +
+                    "</div>");
+            }
+        });
+        // Upload File
+        var form_data = new FormData($('#command_form')[0]);
+        $.ajax({
+            type: 'POST',
+            url: '/upload_file',
+            data: form_data,
+            contentType: false,
+            cache: false,
+            processData: false,
+            context: Form
+        }); 
+        $.ajax({
+            type: 'POST',
+            url: '/run_driver_management',
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(data),
+            context: Form,
+            success: function (callback) {
+                console.log(callback);
+                $('#div_model').html(callback.out);
+            },
+            error: function () {
+                $('#div_model').html("Command not found");
+            }
+        });
+    });
+
+    $(function () {
+        $('#buttonTest').bind('click', function () {
+            $.getJSON('/stop_driver_management',
+                function (callback) {
+                    $('#stop_result').html("<small> &nbsp;" + callback.out + "</small>");
+                });
+            return false;
+        });
+    });
+
+    $(function () {
+        $(document).ready(function () {
+            bsCustomFileInput.init();
+        });
+
+        $('#probability').ionRangeSlider({
+            skin: "flat",
+            min: 0,
+            max: 100,
+            from: 50,
+            type: 'single',
+            step: 1,
+            postfix: ' %',
+            prettify: false,
+            hasGrid: true
+        })
+    })
+
+    function cam_event() {
+        if (document.getElementById('camera_checkbox').value == "1") {
+            $('#customFile').prop('disabled', true);
+            // $('#terminal').prop('checked', true);
+            // $('#terminal').prop('disabled', true);
+            // $('#terminal_checkbox').prop('value', "1");
+        } else {
+            $('#customFile').prop('disabled', false);
+            // $('#terminal').prop('checked', false);
+            // $('#terminal').prop('disabled', false);
+            // $('#terminal_checkbox').prop('value', "0");
+        }
+    }
+
+    function cam_event_actions() {
+        if (document.getElementById('camera_checkbox_actions').value == "1") {
+            $('#customFile_actions').prop('disabled', true);
+            // $('#terminal').prop('checked', true);
+            // $('#terminal').prop('disabled', true);
+            // $('#terminal_checkbox').prop('value', "1");
+        } else {
+            $('#customFile_actions').prop('disabled', false);
+            // $('#terminal').prop('checked', false);
+            // $('#terminal').prop('disabled', false);
+            // $('#terminal_checkbox').prop('value', "0");
+        }
+    }
+
+</script>
+
+<style>
+    /* Style Switch Box */
+    .custom-control-input:checked~.custom-control-label::before {
+        border-color: #28a745;
+        background-color: #28a745;
+    }
+    .custom-switch .custom-control-input:disabled:checked~.custom-control-label::before {
+        background-color: rgba(40, 167, 69, 0.5);
+    }
+    /* Style Range Bar */
+    .irs--flat .irs-bar {
+        background-color: #28a745;
+    }
+    .irs--flat .irs-single {
+        background-color: #28a745;
+    }
+    .irs--flat .irs-single:before {
+        border-top-color: #28a745;
+    }
+    .irs--flat .irs-handle>i:first-child {
+        background-color: #28a745;
+    }
+    .irs--flat .irs-handle.state_hover>i:first-child {
+        background-color: #28a745;
+    }
+</style>
+
+{% endblock %}

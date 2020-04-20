@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+  <title>Driver Management</title>
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="{{ url_for('static', filename='dist/img/logo.png') }}">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/fontawesome-free/css/all.min.css') }}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/adminlte.min.css') }}">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet"
+    href="{{ url_for('static', filename='plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
+  <!-- Ion Slider -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/ion-rangeslider/css/ion.rangeSlider.min.css') }}">
+
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+  <div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-dark navbar-gray-dark" style="background: linear-gradient(90deg, #725cbb 0%, rgba(0,78,255,1) 100%);">
+      <!-- Left navbar links -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
+        </li>
+      </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4" style="background: white;">
+      <!-- Brand Logo -->
+      <a href="/" class="brand-link" style="background: #725cbb;">
+        <img src="static/dist/img/logo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+          style="opacity: .8">
+        <span class="brand-text font-weight">Driver Management</span>
+      </a>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu"
+            data-accordion="false">
+            <li class="nav-item has-treeview menu-open">
+              <a href="#" class="nav-link" style="color:black;">
+                <i class="nav-icon fas fa-th"></i>
+                <p>
+                  Application
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{{ url_for('home') }}"
+                    class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="nav-icon far fa-circle text-success"></i>
+                    <p>
+                      Run Driver Management
+                    </p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{{ url_for('dashboard') }}"
+                    class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+                    <i class="nav-icon far fa-circle text-success"></i>
+                    <p>Dashboard</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/"
+                    class="nav-link ">
+                    <i class="nav-icon far fa-circle text-success"></i>
+                    <p>Drivers</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{{ url_for('newdriver_management') }}"
+                    class="nav-link {% if request.path == '/new-driver-management' %}active{% endif %}">
+                    <i class="nav-icon far fa-circle text-success"></i>
+                    <p>Add New Driver</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{{ url_for('configuration') }}"
+                    class="nav-link {% if request.path == '/config' %}active{% endif %}">
+                    <i class="nav-icon far fa-circle text-success"></i>
+                    <p>
+                      Configuration
+                    </p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            
+          </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+      </div>
+      <!-- /.sidebar -->
+    </aside>
+
+    {% block content %}
+    {% endblock %}
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+  </div>
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="float-right d-none d-sm-inline">
+      OpenVINO GUI
+    </div>
+    <!-- Default to the left -->
+    <strong>Copyright &copy; 2020 <a href="https://incluit.com/">Incluit</a>.</strong> All rights reserved.
+  </footer>
+  </div>
+  <!-- ./wrapper -->
+
+  <!-- REQUIRED SCRIPTS -->
+
+  <!-- jQuery -->
+  <script src="static/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="static/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap Switch -->
+  <script src="static/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="static/dist/js/adminlte.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="static/dist/js/demo.js"></script>
+  <!-- overlayScrollbars -->
+  <script src="static/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+  <!-- bs-custom-file-input -->
+  <script src="static/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
+  <!-- Ion Slider -->
+  <script src="static/plugins/ion-rangeslider/js/ion.rangeSlider.min.js"></script>
+
+  <style>
+  .nav-sidebar .nav-treeview>.nav-item>.nav-link>.nav-icon {
+    color: black !important;
+  }
+  [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link {
+    color: #000000;
+  }
+  [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link:hover {
+    color: #666666;
+  }
+  [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
+    border-radius: 0;
+    background: linear-gradient(90deg, #725cbb 0%, #9579f4 100%);
+    color: white;
+  }
+  .content-wrapper {
+    background: #ffffff;
+}
+  </style>
+
+</body>
+
+</html>

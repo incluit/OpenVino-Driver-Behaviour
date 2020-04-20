@@ -1,0 +1,162 @@
+{% extends "template.html" %}
+{% block title %}
+{{ title }}
+{% endblock %}
+{% block avatar %}
+<i class="nav-icon fas fa-wrench"></i>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0 text-dark"> {{ title }} </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Local Configuration</h3>
+                        </div>
+                        <form id="config_form">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label>OpenVINO Source</label>
+                                        <input type="text" name="openvino_source" id="openvino_source"
+                                            class="form-control" value="{{ openvino_source }}" disabled></br>
+                                        <label>Driver Management (ROS2 Workspace Path)</label>
+                                        <input type="text" name="ros_path" id="ros_path" class="form-control"
+                                            value="{{ ros_path }}" disabled></br>
+                                        <label>Driver Management (Repository Folder)</label>
+                                        <input type="text" name="dmanagement_repository" id="dmanagement_repository" class="form-control"
+                                            value="{{ dmanagement_repository }}" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary" id="save_button" disabled><i
+                                        class="nav-icon fas fa-save"></i>
+                                    Save
+                                    {{ title }}</button>&nbsp;&nbsp;&nbsp;<a id="change_result"></a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Enable Edition</h3>
+                        </div>
+                        <form id="enable_form">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label>Password</label>
+                                        <input type="password" name="password" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary"><i class="nav-icon fas fa-edit"></i>
+                                    Edit</button>&nbsp;&nbsp;&nbsp;<a id="pass_result"></a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src=" https://code.jquery.com/jquery-1.12.0.min.js"> </script>
+
+<script type="text/javascript">
+    $('#enable_form').submit(function (e) {
+        e.preventDefault();
+        var data = {};
+        var Form = this;
+        var output = "";
+        $.each(this.elements, function (i, v) {
+            var input = $(v);
+            data[input.attr("name")] = input.val();
+            delete data["undefined"];
+        });
+        $.ajax({
+            type: 'POST',
+            url: '/check_pass',
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(data),
+            context: Form,
+            success: function (callback) {
+                if (callback.out) {
+                    $('#pass_result').html("Configuration Enabled");
+                    $('#video_output').prop('disabled', false);
+                    $('#openvino_source').prop('disabled', false);
+                    $('#blindspot_path').prop('disabled', false);
+                    $('#smart_path').prop('disabled', false);
+                    $('#driver_path').prop('disabled', false);
+                    $('#ros_path').prop('disabled', false);
+                    $('#dmanagement_repository').prop('disabled', false);
+                    $('#save_button').prop('disabled', false);
+                }
+                else {
+                    $('#pass_result').html("Wrong Password");
+                    $('#video_output').prop('disabled', true);
+                    $('#openvino_source').prop('disabled', true);
+                    $('#blindspot_path').prop('disabled', true);
+                    $('#smart_path').prop('disabled', true);
+                    $('#driver_path').prop('disabled', true);
+                    $('#ros_path').prop('disabled', true);
+                    $('#dmanagement_repository').prop('disabled', true);
+                    $('#save_button').prop('disabled', true);
+                }
+            }
+        });
+    });
+
+    $('#config_form').submit(function (e) {
+        e.preventDefault();
+        var data = {};
+        var Form = this;
+        var output = "";
+        $.each(this.elements, function (i, v) {
+            var input = $(v);
+            data[input.attr("name")] = input.val();
+            delete data["undefined"];
+        });
+        $.ajax({
+            type: 'POST',
+            url: '/change_config',
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(data),
+            context: Form,
+            success: function (callback) {
+                if (callback.out) {
+                    $('#change_result').html("Changes done!");
+                    $('#video_output').prop('disabled', true);
+                    $('#openvino_source').prop('disabled', true);
+                    $('#blindspot_path').prop('disabled', true);
+                    $('#smart_path').prop('disabled', true);
+                    $('#driver_path').prop('disabled', true);
+                    $('#ros_path').prop('disabled', true);
+                    $('#dmanagement_repository').prop('disabled', true);
+                    $('#save_button').prop('disabled', true);
+                }
+                else {
+                    $('#change_result').html("Error");
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "template.html" %}
+{% block title %}
+{{ title }}
+{% endblock %}
+{% block avatar %}
+<i class="nav-icon fas fa-user-plus"></i>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0 text-dark"> {{ title }} (Driver Management)</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card  card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Options</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <form id="command_form">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label>Driver's name</label>
+                                            <input type="text" name="driver" class="form-control" value="">
+                                            </br>
+                                            <label>Driver's picture</label>
+                                            <small>(Only *.jpg or *.png files)</small>
+                                            <div class="custom-file">
+                                                <input type="file" name="file" class="custom-file-input"
+                                                    id="customFile">
+                                                <label class="custom-file-label" for="customFile">Choose
+                                                    file</label>
+                                            </div>
+                                            <br><br>
+                                            Make sure the photo is only of the face, as it's shown in the following:
+                                            <div class="text-center">
+                                                <img src="static/dist/img/face.png" alt="New Driver Face" width="60%">
+                                            </div>
+                                            <div id="div_model"></div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button type="submit" class="btn btn-success"><i class="nav-icon fas fa-user"></i> Create
+                                {{ title }}</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src=" https://code.jquery.com/jquery-1.12.0.min.js"> </script>
+<script type="text/javascript">
+
+    $('#command_form').submit(function (e) {
+        e.preventDefault();
+        var data = {};
+        var Form = this;
+        var output = "";
+        $.each(this.elements, function (i, v) {
+            var input = $(v);
+            data[input.attr("name")] = input.val();
+            delete data["undefined"];
+        });
+        var form_data = new FormData($('#command_form')[0]);
+        $.ajax({
+            type: 'POST',
+            url: '/create_driver_management',
+            data: form_data,
+            contentType: false,
+            cache: false,
+            processData: false,
+            context: Form,
+            success: function (callback) {
+                console.log(callback);
+                $('#div_model').html(callback.out);
+            },
+            error: function () {
+                $('#div_model').html("Command not found");
+            }
+        });
+    });
+
+    $(function () {
+        $(document).ready(function () {
+            bsCustomFileInput.init();
+        });
+    })
+
+
+</script>
+
+{% endblock %}

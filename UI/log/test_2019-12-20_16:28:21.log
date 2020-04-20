@@ -1,0 +1,5 @@
+[2019-12-20 16:28:21.654457] [info] [1] - Parsing input parameters
+[2019-12-20 16:28:21.655490] [info] [2] - Incluit - Openvino-for-Smartcity
+[2019-12-20 16:28:21.655528] [info] [3] - InferenceEngine: 0x7f7aa75b3040
+[2019-12-20 16:28:21.655570] [info] [4] - Reading input
+[2019-12-20 16:28:23.189538] [error] [5] - Cannot open input file or camera: /home/fpriotti/Videos/yesicacasadoaragoneses.estebanurrutia.com-20191220-150556-279.wpress

@@ -2,3 +2,6 @@ DriverBehavior/build/
 *.swp
 *.vscode/
 DriverBehavior/models/
+UI/config.ini
+UI/log/
+UI/tmp/
