@@ -19,7 +19,9 @@ toc::[]
 == Docker
 docker build -t openvino-incluit . --rm
 
-docker run --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -ti openvino-incluit /bin/bash
+xhost +
+
+docker run --net=host --env="DISPLAY" --device=/dev/video0 --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -ti openvino-incluit /bin/bash
 
 == Foreword
 This is a follow-up on the OpenVino's inference tutorials:
