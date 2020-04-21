@@ -19,7 +19,7 @@ toc::[]
 == Docker
 docker build -t openvino-incluit . --rm
 
-xhost +
+"xhost +"
 
 docker run --net=host --env="DISPLAY" --device=/dev/video0 --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -ti openvino-incluit /bin/bash
 
