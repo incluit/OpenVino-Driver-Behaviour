@@ -27,7 +27,8 @@
   <div class="wrapper">
 
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-dark navbar-gray-dark" style="background: linear-gradient(90deg, #725cbb 0%, rgba(0,78,255,1) 100%);">
+    <nav class="main-header navbar navbar-expand navbar-dark navbar-gray-dark"
+      style="background: linear-gradient(90deg, #725cbb 0%, rgba(0,78,255,1) 100%);">
       <!-- Left navbar links -->
       <ul class="navbar-nav">
         <li class="nav-item">
@@ -38,7 +39,7 @@
     <!-- /.navbar -->
 
     <!-- Main Sidebar Container -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4" style="background: white;">
+    <aside class="main-sidebar sidebar-dark-primary elevation-4"">
       <!-- Brand Logo -->
       <a href="/" class="brand-link" style="background: #725cbb;">
         <img src="static/dist/img/logo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
@@ -46,76 +47,74 @@
         <span class="brand-text font-weight">Driver Management</span>
       </a>
 
-        <!-- Sidebar Menu -->
-        <nav class="mt-2">
-          <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu"
-            data-accordion="false">
-            <li class="nav-item has-treeview menu-open">
-              <a href="#" class="nav-link" style="color:black;">
-                <i class="nav-icon fas fa-th"></i>
-                <p>
-                  Application
-                  <i class="right fas fa-angle-left"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="{{ url_for('home') }}"
-                    class="nav-link {% if request.path == '/' %}active{% endif %}">
-                    <i class="nav-icon far fa-circle text-success"></i>
-                    <p>
-                      Run Driver Management
-                    </p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="{{ url_for('dashboard') }}"
-                    class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
-                    <i class="nav-icon far fa-circle text-success"></i>
-                    <p>Dashboard</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="/"
-                    class="nav-link ">
-                    <i class="nav-icon far fa-circle text-success"></i>
-                    <p>Drivers</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="{{ url_for('newdriver_management') }}"
-                    class="nav-link {% if request.path == '/new-driver-management' %}active{% endif %}">
-                    <i class="nav-icon far fa-circle text-success"></i>
-                    <p>Add New Driver</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="{{ url_for('configuration') }}"
-                    class="nav-link {% if request.path == '/config' %}active{% endif %}">
-                    <i class="nav-icon far fa-circle text-success"></i>
-                    <p>
-                      Configuration
-                    </p>
-                  </a>
-                </li>
-              </ul>
-            </li>
-            
-          </ul>
-        </nav>
-        <!-- /.sidebar-menu -->
-      </div>
-      <!-- /.sidebar -->
-    </aside>
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu"
+          data-accordion="false">
+          <li class="nav-item has-treeview menu-open">
+            <a href="#" class="nav-link" style="color:black;">
+              <i class="nav-icon fas fa-th"></i>
+              <p>
+                Application
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{ url_for('home') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>
+                    Run Driver Management
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}"
+                  class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>Dashboard</p>
+                </a>
+              </li>
+              <!-- <li class="nav-item">
+                <a href="/" class="nav-link ">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>Drivers</p>
+                </a>
+              </li> -->
+              <li class="nav-item">
+                <a href="{{ url_for('newdriver_management') }}"
+                  class="nav-link {% if request.path == '/new-driver-management' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>Add New Driver</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('configuration') }}"
+                  class="nav-link {% if request.path == '/config' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>
+                    Configuration
+                  </p>
+                </a>
+              </li>
+            </ul>
+          </li>
 
-    {% block content %}
-    {% endblock %}
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+  </div>
+  <!-- /.sidebar -->
+  </aside>
 
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here -->
-    </aside>
-    <!-- /.control-sidebar -->
+  {% block content %}
+  {% endblock %}
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Control sidebar content goes here -->
+  </aside>
+  <!-- /.control-sidebar -->
   </div>
 
   <!-- Main Footer -->
@@ -150,23 +149,60 @@
   <script src="static/plugins/ion-rangeslider/js/ion.rangeSlider.min.js"></script>
 
   <style>
-  .nav-sidebar .nav-treeview>.nav-item>.nav-link>.nav-icon {
-    color: black !important;
-  }
-  [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link {
-    color: #000000;
-  }
-  [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link:hover {
-    color: #666666;
-  }
-  [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
-    border-radius: 0;
-    background: linear-gradient(90deg, #725cbb 0%, #9579f4 100%);
-    color: white;
-  }
-  .content-wrapper {
-    background: #ffffff;
-}
+    .nav-sidebar .nav-treeview>.nav-item>.nav-link>.nav-icon {
+      color: black !important;
+    }
+
+    [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link {
+      color: #000000;
+    }
+
+    [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link:hover {
+      color: #666666;
+    }
+
+    [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active,
+    [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus,
+    [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
+      border-radius: 0;
+      background: linear-gradient(90deg, #725cbb 0%, #9579f4 100%);
+      color: white;
+    }
+
+    [class*=sidebar-dark] .brand-link {
+      color: white
+    }
+
+    .content-wrapper {
+      background: #ffffff;
+    }
+
+    .card-title {
+      color: white;
+    }
+
+    .btn-success {
+      background: linear-gradient(90deg, #725cbb 0%, rgba(0, 78, 255, 1) 100%);
+      border-radius: 0;
+      border: 0px;
+    }
+
+    .btn {
+      border-radius: 0;
+    }
+
+    .form-control {
+      border-radius: 0;
+    }
+
+    .layout-fixed .main-sidebar {
+      background: #f3f3f3;
+    }
+
+    .card:not(.card-outline)>.card-header {
+      background: linear-gradient(90deg, #725cbb 0%, rgba(0, 78, 255, 1) 100%);
+      border-radius: 0;
+    }
   </style>
 
 </body>
