@@ -140,6 +140,30 @@ static const char no_async_message[] = "Disable asynchronous mode in every model
 // dlib facial landmarks detection
 static const char dlib_lm_message[] = "Enable dlib's facial landmark detections";
 
+// AWS endpoint of the mqtt server
+static const char endpoint_message[] = "Endpoint of the mqtt server not including a port";
+
+// AWS client certificate
+static const char cert_message[] = "Path to your client certificate in PEM format";
+
+// AWS private key
+static const char key_message[] = "Path to your key in PEM format";
+
+// AWS mqtt topic to subscribe/publish
+static const char topic_message[] = "Topic to publish and to subscribe to";
+
+// AWS Client ID
+static const char client_id_message[] = "Client id to use (optional)";
+
+// AWS CA certificate
+static const char ca_file_message[] = "Path to a CA file in PEM format";
+
+static const char pid_da_message[] = "PID of driver_actions.py";
+
+static const char init_drow_message[] = "Start drowsiness vumeter with some value [0,100]";
+
+static const char init_dist_message[] = "Start distraction vumeter with some value [0,100]";
+
 /// \brief Define flag for showing help message <br>
 DEFINE_bool(h, false, help_message);
 
@@ -260,6 +284,11 @@ DEFINE_bool(dlib_lm, false, "Acti");
 
 DEFINE_string(fg, "", "Path to gallery");
 
+DEFINE_uint32(pid_da, 0, pid_da_message);
+
+DEFINE_uint32(init_drow, 0, init_drow_message);
+DEFINE_uint32(init_dist, 0, init_dist_message);
+
 /**
 * \brief This function shows a help message
 */
@@ -301,5 +330,14 @@ static void showUsage() {
     std::cout << "    -pc                        " << performance_counter_message << std::endl;
     std::cout << "    -r                         " << raw_output_message << std::endl;
     std::cout << "    -t                         " << thresh_output_message << std::endl;
+    std::cout << " AWS options [OPTIONAL]:       " << std::endl;
+    std::cout << "    -endpoint                  " << endpoint_message << std::endl;
+    std::cout << "    -cert                      " << cert_message << std::endl;
+    std::cout << "    -key                       " << key_message << std::endl;
+    std::cout << "    -topic                     " << topic_message << std::endl;
+    std::cout << "    -client_id                 " << client_id_message << std::endl;
+    std::cout << "    -ca_file                   " << ca_file_message << std::endl;
+    std::cout << "    -pid_da                    " << pid_da_message << std::endl;
+    std::cout << "    -init_drow                 " << init_drow_message << std::endl;
+    std::cout << "    -init_dist                 " << init_dist_message << std::endl;
 }
-

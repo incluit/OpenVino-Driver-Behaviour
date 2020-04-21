@@ -27,7 +27,7 @@ RUN apt-get install -y --no-install-recommends \
         libx11-dev \
         sudo 
 
-RUN pip3 install --upgrade pip setuptools wheel Flask==1.0.2
+RUN pip3 install --upgrade pip setuptools wheel Flask==1.0.2 AWSIoTPythonSDK
 
 COPY DriverBehavior/* app/
 WORKDIR /app/DriverBehavior
@@ -40,5 +40,12 @@ RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/Dri
 COPY ActionRecognition/* app/
 WORKDIR /app/ActionRecognition
 RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/ActionRecognition/scripts/download_models.sh'
+
+COPY UI/* app/
+WORKDIR /app/UI
+COPY entrypoint.sh /
+EXPOSE 5000
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["/bin/bash"]

@@ -35,20 +35,20 @@ def shell_communication_parallel(cmds):
     # --- Running in Parallel ---
     # Rosbag
     print(" --- Initializing Driver Management --- ")
-    print("Loading Rosbag")
-    rosbag = Popen(cmds[0], stdout=None, stderr=None,
-                   shell=True, executable="/bin/bash")
-    # Driver Actions
+    #print("Loading Rosbag")
+    # rosbag = Popen(cmds[0], stdout=None, stderr=None,
+    #                shell=True, executable="/bin/bash")
+    # # Driver Actions
     print("Loading Driver Actions")
-    driver_actions = Popen(cmds[1], stdout=None, stderr=None,
+    driver_actions = Popen(cmds[0], stdout=None, stderr=None,
                            shell=True, executable="/bin/bash")
     # Driver Behaviour
     print("Loading Driver Behaviour")
-    driver_behaviour = Popen(cmds[2] + str(driver_actions.pid), stdout=None, stderr=None,
+    driver_behaviour = Popen(cmds[1] + str(driver_actions.pid), stdout=None, stderr=None,
                              shell=True, executable="/bin/bash")
 
     print(" --- Ready! ---")
-    rosbag.wait()
+    #rosbag.wait()
     driver_actions.wait()
     driver_behaviour.wait()
 
@@ -102,8 +102,7 @@ def run_driver_management():
                           ros_path + " && while true; do ros2 bag play truck.bag; done;") if (json['rosbag'] == "1") else ("")
 
         # Driver Actions Command
-        command_driver_actions = "cd " + ros_path + "src/ets_ros2/aws-crt-cpp/samples/" + dmanagement_repository + \
-            "/python_utils/action_recognition && python3 action_recognition.py -m_en ../../models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de ../../models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -d GPU"
+        command_driver_actions = "source /opt/intel/openvino/bin/setupvars.sh && cd /app/ActionRecognition && python3 action_recognition.py -m_en models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU"
 
         if (json['camera_actions'] == "0"):
             command_driver_actions += " -i '" + \
@@ -111,12 +110,11 @@ def run_driver_management():
         else:
             command_driver_actions += " -i /dev/video1"
 
-        if (json['aws_actions']):
-            command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r aws-certificates/AmazonRootCA1.pem -c aws-certificates/a81867df13-certificate.pem.crt -k aws-certificates/a81867df13-private.pem.key -t actions/"
+        # if (json['aws_actions']):
+        #     command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r aws-certificates/AmazonRootCA1.pem -c aws-certificates/a81867df13-certificate.pem.crt -k aws-certificates/a81867df13-private.pem.key -t actions/"
 
         # Driver Behaviour Command
-        command_driver_behaviour = "source " + ros_path + "install/setup.bash && source " + ros_path + "src/ets_ros2/aws-crt-cpp/samples/" + dmanagement_repository + "/scripts/setupenv.sh && cd " + ros_path + \
-            "build/aws-crt-cpp/samples/" + dmanagement_repository + "/intel64/Release && ./driver_behavior -d " + \
+        command_driver_behaviour = "source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
             json['target'] + " -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + \
             dmanagement_repository + "/scripts/faces_gallery.json"
 
@@ -138,10 +136,11 @@ def run_driver_management():
                 else:
                     command_driver_behaviour += " -m $face232"
 
+        command_driver_behaviour += " -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so "
         command_driver_behaviour += " -pid_da "
 
-        commands = [command_rosbag, command_driver_actions,
-                    command_driver_behaviour]
+        # commands = [command_rosbag, command_driver_actions, command_driver_behaviour]
+        commands = [command_driver_actions, command_driver_behaviour]
         print(commands)
         if (json['camera'] == "0"):
             wait_for_file(file_input + json['file'])

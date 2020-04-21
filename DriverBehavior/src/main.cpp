@@ -531,6 +531,10 @@ int main(int argc, char *argv[])
         {
             return 0;
         }
+        // Init drowsiness and distraction levels
+		tDrowsiness = FLAGS_init_drow;
+		tDistraction = FLAGS_init_dist;
+		int pid_da = FLAGS_pid_da;
 
         if (FLAGS_d_all != "") {
 		FLAGS_d = FLAGS_d_all;
