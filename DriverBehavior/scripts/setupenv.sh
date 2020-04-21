@@ -7,7 +7,7 @@
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 PROJECT_PATH=$parent_path/../
-modelDir=$parent_path/../models/
+modelDir=$parent_path/../models
 
 ### OPENVINO VERSION TO COMPILE ###
 # 2019 = 2019
