@@ -102,7 +102,7 @@ def run_driver_management():
                           ros_path + " && while true; do ros2 bag play truck.bag; done;") if (json['rosbag'] == "1") else ("")
 
         # Driver Actions Command
-        command_driver_actions = "source /opt/intel/openvino/bin/setupvars.sh && cd /app/ActionRecognition && python3 action_recognition.py -m_en models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU"
+        command_driver_actions = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && cd /app/ActionRecognition && python3 action_recognition.py -m_en models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU"
 
         if (json['camera_actions'] == "0"):
             command_driver_actions += " -i '" + \
@@ -114,7 +114,7 @@ def run_driver_management():
         #     command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r aws-certificates/AmazonRootCA1.pem -c aws-certificates/a81867df13-certificate.pem.crt -k aws-certificates/a81867df13-private.pem.key -t actions/"
 
         # Driver Behaviour Command
-        command_driver_behaviour = "source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
+        command_driver_behaviour = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
             json['target'] + " -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + \
             dmanagement_repository + "/scripts/faces_gallery.json"
 

@@ -1,0 +1,16 @@
+rosbag2_bagfile_information:
+  version: 1
+  storage_identifier: sqlite3
+  relative_file_paths:
+    - truck.bag.db3
+  duration:
+    nanoseconds: 174653704488
+  starting_time:
+    nanoseconds_since_epoch: 1568990334493736636
+  message_count: 10235
+  topics_with_message_count:
+    - topic_metadata:
+        name: /truck
+        type: ets_msgs/Truck
+        serialization_format: cdr
+      message_count: 10235
