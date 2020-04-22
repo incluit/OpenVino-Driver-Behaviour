@@ -55,7 +55,16 @@ def shell_communication_parallel(cmds):
 
 app = Flask(__name__)  # Flask constructor
 
+# Check if there are MDX (MyriadX) or NCS (Neural Compute Stick).
+try:
+    subprocess.check_output('dmesg | grep Myriad', shell=True)
+    myriad = True
+except:
+    myriad = False
+print('Myriad Detected: ' + str(myriad))
 
+
+# Wait until 10 seconds to check if a file exists.
 def wait_for_file(file):
     print("Uploading file...")
     time_counter = 0
@@ -63,13 +72,14 @@ def wait_for_file(file):
         time.sleep(1)
         time_counter += 1
         if time_counter > 10:
-            break  # Wait until to 10 seconds
+            break
 
 # ----- Route Definitions -----
 @app.route("/", methods=['POST', 'GET'])
 def home():
     templateData = {  # Sending the data to the frontend
-        'title': "Driver Management"
+        'title': "Driver Management",
+        'myriad': myriad
     }
     return render_template("driver-management.html", **templateData)
 
@@ -116,8 +126,7 @@ def run_driver_management():
 
         # Driver Behaviour Command
         command_driver_behaviour = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
-            json['target'] + " -m_hp $hp32 -d_hp CPU -dlib_lm -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + \
-            dmanagement_repository + "/scripts/faces_gallery.json"
+            json['target'] + " -d_hp GPU "
 
         if (json['camera'] == "0"):
             command_driver_behaviour += " -i '" + \
@@ -136,6 +145,18 @@ def run_driver_management():
                     command_driver_behaviour += " -m $face216"
                 else:
                     command_driver_behaviour += " -m $face232"
+        # Recognition of the Driver
+        if (json['recognition'] == "1"):
+            command_driver_behaviour += " -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + dmanagement_repository + "/scripts/faces_gallery.json"
+        # Landmarks Detection
+        if (json['landmarks'] == "1"):
+            command_driver_behaviour += " -dlib_lm"
+        # Headpose Detection
+        if (json['head_pose'] == "1"):
+            command_driver_behaviour += " -m_hp $hp32"
+        # Synchronous / Asynchronous mode
+        if (json['async'] == "1"):
+            command_driver_behaviour += " -async"
 
         command_driver_behaviour += " -pid_da "
 

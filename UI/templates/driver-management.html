@@ -25,7 +25,7 @@
     <div class="content">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Options</h3>
@@ -34,7 +34,7 @@
                         <div class="card-body">
                             <div class="form-group">
                                 <form id="command_form">
-                                    <div class="card collapsed-card">
+                                    <div class="card">
                                         <div class=" card-header">
                                             <h3 class="card-title">Driver Behaviour</h3>
                                             <div class="card-tools">
@@ -71,7 +71,11 @@
                                                             onChange="target_change(this)">
                                                             <option selected="selected">CPU</option>
                                                             <option>GPU</option>
-                                                            <option>MYRIAD</option>
+                                                            {% if myriad == true %}
+                                                                <option>MYRIAD</option>
+                                                            {% else %}
+                                                                <option disabled>MYRIAD</option>
+                                                            {% endif %}
                                                         </select>
                                                         <br>
                                                         <label>Face Detection: Model</label>
@@ -86,13 +90,54 @@
                                                             <option>FP16</option>
                                                             <option selected="selected">FP32</option>
                                                         </select>
+                                                        </br>
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="recognition"
+                                                                onclick="$(this).next().val(this.checked?1:0)"
+                                                                checked />
+                                                            <input type="hidden" id="recognition_checkbox"
+                                                                name="recognition" value="1" />
+                                                            <label class="custom-control-label" for="recognition">
+                                                                Driver Recognition</label>
+                                                        </div>
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="landmarks"
+                                                                onclick="$(this).next().val(this.checked?1:0)"
+                                                                checked />
+                                                            <input type="hidden" id="landmarks_checkbox"
+                                                                name="landmarks" value="1" />
+                                                            <label class="custom-control-label" for="landmarks">
+                                                                Landmarks</label>
+                                                        </div>
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="head_pose"
+                                                                onclick="$(this).next().val(this.checked?1:0)"
+                                                                checked />
+                                                            <input type="hidden" id="head_pose_checkbox"
+                                                                name="head_pose" value="1" />
+                                                            <label class="custom-control-label" for="head_pose"> Head
+                                                                Pose</label>
+                                                        </div>
+                                                        <div class="custom-control custom-switch">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="async"
+                                                                onclick="$(this).next().val(this.checked?1:0)" />
+                                                            <input type="hidden" id="async_checkbox" name="async"
+                                                                value="0" />
+                                                            <label class="custom-control-label" for="async">
+                                                                Asynchronous
+                                                                mode</label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="card collapsed-card">
+                                    <div class="card">
                                         <div class=" card-header">
                                             <h3 class="card-title">Driver Actions</h3>
                                             <div class="card-tools">
