@@ -631,11 +631,7 @@ fSim = true;
 				if (!FLAGS_l.empty())
 				{
 					// CPU(MKLDNN) extensions are loaded as a shared library and passed as a pointer to base extension
-					#if (OPENVINO_VER==2019)
-                        auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
-                    #else
-                        IExtensionPtr extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
-                    #endif
+                    auto extension_ptr = make_so_pointer<IExtension>(FLAGS_l);
 					core.AddExtension(extension_ptr, deviceName);
 					slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
 				}
@@ -735,9 +731,9 @@ fSim = true;
 		Aws::Crt::ApiHandle apiHandle;
 
 		Aws::Crt::String endpoint("a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com");
-		Aws::Crt::String certificatePath("bee7694a31-certificate.pem.crt");
-		Aws::Crt::String keyPath("bee7694a31-private.pem.key");
-		Aws::Crt::String caFile("AmazonRootCA1.pem");
+		Aws::Crt::String certificatePath("/app/AWS/a81867df13-certificate.pem.crt");
+		Aws::Crt::String keyPath("/app/AWS/a81867df13-private.pem.key");
+		Aws::Crt::String caFile("/app/AWS/AmazonRootCA1.pem");
 		Aws::Crt::String topic("drivers/");
 		Aws::Crt::String clientId("NEXCOM_device");
 
