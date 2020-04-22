@@ -1,7 +1,9 @@
-DriverBehavior/build/
 *.swp
 *.vscode/
 DriverBehavior/models/
+DriverBehavior/build/
+ActionRecognition/aws-certificates/
+ActionRecognition/models/
 UI/config.ini
 UI/log/
 UI/tmp/

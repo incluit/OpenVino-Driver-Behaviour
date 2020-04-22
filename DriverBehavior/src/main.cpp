@@ -640,7 +640,7 @@ fSim = true;
 					slog::info << "CPU Extension loaded: " << FLAGS_l << slog::endl;
 				}
 				//core.SetConfig({{ CONFIG_KEY(CPU_THROUGHPUT_STREAMS), std::to_string(12) }}, deviceName);
-				core.SetConfig({{ CONFIG_KEY(CPU_THREADS_NUM), std::to_string(12) }},deviceName);
+				core.SetConfig({{ CONFIG_KEY(CPU_THREADS_NUM), std::to_string(4) }},deviceName);
 				core.SetConfig({{ CONFIG_KEY(CPU_BIND_THREAD), "YES" }}, deviceName);
 
 			}

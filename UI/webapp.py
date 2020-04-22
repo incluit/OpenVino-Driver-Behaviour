@@ -35,26 +35,25 @@ def shell_communication_parallel(cmds):
     # --- Running in Parallel ---
     # Rosbag
     print(" --- Initializing Driver Management --- ")
-    #print("Loading Rosbag")
-    # rosbag = Popen(cmds[0], stdout=None, stderr=None,
-    #                shell=True, executable="/bin/bash")
-    # # Driver Actions
+    print("Loading Rosbag")
+    rosbag = Popen(cmds[0], stdout=None, stderr=None,
+                   shell=True, executable="/bin/bash")
+    # Driver Actions
     print("Loading Driver Actions")
-    driver_actions = Popen(cmds[0], stdout=None, stderr=None,
+    driver_actions = Popen(cmds[1], stdout=None, stderr=None,
                            shell=True, executable="/bin/bash")
     # Driver Behaviour
     print("Loading Driver Behaviour")
-    driver_behaviour = Popen(cmds[1] + str(driver_actions.pid), stdout=None, stderr=None,
+    driver_behaviour = Popen(cmds[2] + str(driver_actions.pid), stdout=None, stderr=None,
                              shell=True, executable="/bin/bash")
 
     print(" --- Ready! ---")
-    #rosbag.wait()
+    rosbag.wait()
     driver_actions.wait()
     driver_behaviour.wait()
 
 
 app = Flask(__name__)  # Flask constructor
-
 
 
 def wait_for_file(file):
@@ -80,8 +79,10 @@ def home():
 def upload_file():
     if request.method == 'POST':
         if request.files:
-            file = request.files["file"]
-            file.save(os.path.join(file_input, file.filename))
+            file_driver = request.files.get('file', False)
+            if file_driver:
+                file = request.files["file"]
+                file.save(os.path.join(file_input, file.filename))
             # Detect if exists file_actions
             file_actions = request.files.get('file_actions', False)
             if file_actions:
@@ -110,8 +111,8 @@ def run_driver_management():
         else:
             command_driver_actions += " -i /dev/video1"
 
-        # if (json['aws_actions']):
-        #     command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r aws-certificates/AmazonRootCA1.pem -c aws-certificates/a81867df13-certificate.pem.crt -k aws-certificates/a81867df13-private.pem.key -t actions/"
+        if (json['aws_actions']):
+            command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r aws-certificates/AmazonRootCA1.pem -c aws-certificates/a81867df13-certificate.pem.crt -k aws-certificates/a81867df13-private.pem.key -t actions/"
 
         # Driver Behaviour Command
         command_driver_behaviour = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
@@ -136,12 +137,10 @@ def run_driver_management():
                 else:
                     command_driver_behaviour += " -m $face232"
 
-        command_driver_behaviour += " -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so "
         command_driver_behaviour += " -pid_da "
 
-        # commands = [command_rosbag, command_driver_actions, command_driver_behaviour]
-        commands = [command_driver_actions, command_driver_behaviour]
-        print(commands)
+        commands = [command_rosbag, command_driver_actions,
+                    command_driver_behaviour]
         if (json['camera'] == "0"):
             wait_for_file(file_input + json['file'])
             wait_for_file(file_input + json['file_actions'])
@@ -166,7 +165,8 @@ def killProcess(processes):
 # This function stop the bash command when the user runs Driver Behaviour Project in the interface.
 def stop_driver_management():
     processes = [
-        'ros2',
+        # If select "ros" mat be close the proccess of this program too (Because probably is inside the folder "ros2_ws")
+        'truck.bag',
         'action_recognition.py',
         'driver_behavior'
     ]
@@ -190,7 +190,7 @@ def create_driver_management():
         if request.files:
             file = request.files["file"]
             # Save the file with the Driver's name and add the same extension
-            file.save(os.path.join(ros_path + "/src/ets_ros2/aws-crt-cpp/samples/" + dmanagement_repository +
+            file.save(os.path.join(ros_path + "/src/ets_ros2/aws-crt-cpp/samples/OpenVino-Driver-Behaviour/" + dmanagement_repository +
                                    "/drivers/", request.values['driver'] + "." + file.filename.split('.')[-1]))
             # Generating the list with all the drivers
             print("Creating New Driver")
