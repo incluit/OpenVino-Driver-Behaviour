@@ -6,6 +6,7 @@ import os
 import shutil
 import hashlib
 import time
+from glob import glob
 
 # ----- Configuration -----
 config = configparser.SafeConfigParser()
@@ -126,7 +127,7 @@ def run_driver_management():
 
         # Driver Behaviour Command
         command_driver_behaviour = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
-            json['target'] + " -d_hp GPU "
+            json['target'] + " -d_hp " + json['target_hp']
 
         if (json['camera'] == "0"):
             command_driver_behaviour += " -i '" + \
@@ -147,7 +148,8 @@ def run_driver_management():
                     command_driver_behaviour += " -m $face232"
         # Recognition of the Driver
         if (json['recognition'] == "1"):
-            command_driver_behaviour += " -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + dmanagement_repository + "/scripts/faces_gallery.json"
+            command_driver_behaviour += " -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + \
+                dmanagement_repository + "/scripts/faces_gallery.json"
         # Landmarks Detection
         if (json['landmarks'] == "1"):
             command_driver_behaviour += " -dlib_lm"
@@ -229,6 +231,22 @@ def dashboard():
     return render_template("dashboard.html", **templateData)
 
 
+@app.route('/drivers')
+def drivers():
+    drivers_path = ros_path + "src/ets_ros2/aws-crt-cpp/samples/OpenVino-Driver-Behaviour/" + dmanagement_repository + "/drivers/"
+    driver_list = [f for f in os.listdir(os.path.join(drivers_path)) if os.path.isfile(os.path.join(drivers_path, f))]
+    driver_list.sort() # Order the list by name
+    
+    # Copy folder to static/drivers !!!
+    
+    templateData = {  # Sending the data to the frontend
+        'title': "Drivers",
+        'drivers': driver_list,
+        'path': os.path.join(drivers_path)
+    }
+    return render_template("drivers.html", **templateData)
+
+
 @app.route("/config")
 def configuration():
     templateData = {  # Sending the data to the frontend
@@ -238,6 +256,17 @@ def configuration():
         'dmanagement_repository': dmanagement_repository
     }
     return render_template("configuration.html", **templateData)
+
+
+@app.route("/certificates")
+def certificates():
+    templateData = {  # Sending the data to the frontend
+        'title': "Certificates Configuration",
+        'openvino_source': openvino_source,
+        'ros_path': ros_path,
+        'dmanagement_repository': dmanagement_repository
+    }
+    return render_template("certificates.html", **templateData)
 
 
 @app.route('/check_pass', methods=['POST', 'GET'])

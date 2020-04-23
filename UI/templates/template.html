@@ -52,7 +52,7 @@
         <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu"
           data-accordion="false">
           <li class="nav-item has-treeview menu-open">
-            <a href="#" class="nav-link" style="color:black;">
+            <a href="#" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
                 Application
@@ -69,18 +69,11 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{{ url_for('dashboard') }}"
-                  class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
-                  <i class="nav-icon far fa-circle text-success"></i>
-                  <p>Dashboard</p>
-                </a>
-              </li>
-              <!-- <li class="nav-item">
-                <a href="/" class="nav-link ">
+                <a href="{{ url_for('drivers') }}" class="nav-link {% if request.path == '/drivers' %}active{% endif %}">
                   <i class="nav-icon far fa-circle text-success"></i>
                   <p>Drivers</p>
                 </a>
-              </li> -->
+              </li> 
               <li class="nav-item">
                 <a href="{{ url_for('newdriver_management') }}"
                   class="nav-link {% if request.path == '/new-driver-management' %}active{% endif %}">
@@ -95,6 +88,31 @@
                   <p>
                     Configuration
                   </p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item has-treeview menu-open">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-cloud"></i>
+              <p>
+                Cloud Data
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}"
+                  class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>Dashboard</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('certificates') }}"
+                  class="nav-link {% if request.path == '/certificates' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>Certificates</p>
                 </a>
               </li>
             </ul>
@@ -191,10 +209,6 @@
       border-radius: 0;
     }
 
-    .form-control {
-      border-radius: 0;
-    }
-
     .layout-fixed .main-sidebar {
       background: #f3f3f3;
     }
@@ -216,6 +230,7 @@
       color: #725cbb !important;
       background-color: #bfbfbf59;
     }
+    
     .nav-sidebar .nav-link>p>.right {
         position: absolute;
         right: 1rem;

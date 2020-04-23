@@ -1,0 +1,65 @@
+{% extends "template.html" %}
+{% block title %}
+{{ title }}
+{% endblock %}
+{% block avatar %}
+<i class="nav-icon fas fa-tachometer-alt"></i>
+{% endblock %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0 text-dark">{{title}}</h1>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card  card-success">
+                        <div class="card-header">
+                            <h3 class="card-title">Verified Drivers</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <form id="command_form">
+                                    <div class="row">
+                                        {% for driver in drivers %}
+                                        <div class="col-md-4">
+                                            <div>
+                                                <center>
+                                                    <img src="{{ url_for('static', filename = 'drivers/' + driver )}}"
+                                                        alt="{{ driver }}" height="100px">
+                                                    <br>
+                                                    {% set name = driver.split('.')[0].capitalize() %}
+                                                    {{ name }}
+                                                </center>
+                                            </div>
+                                            </br>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.col-md-6 -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content -->
+</div>
+
+{% endblock %}

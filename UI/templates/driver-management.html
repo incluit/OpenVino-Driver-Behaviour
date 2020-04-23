@@ -25,118 +25,144 @@
     <div class="content">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-8">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Options</h3>
                         </div>
-
                         <div class="card-body">
-                            <div class="form-group">
-                                <form id="command_form">
-                                    <div class="card">
-                                        <div class=" card-header">
-                                            <h3 class="card-title">Driver Behaviour</h3>
-                                            <div class="card-tools">
-                                                <button type="button" class="btn btn-tool"
-                                                    data-card-widget="collapse"><i class="fas fa-plus"></i></button>
-                                            </div>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="form-group">
-                                                        <div class="custom-control custom-switch">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="camera"
-                                                                onclick="$(this).next().val(this.checked?1:0);cam_event();"
-                                                                checked />
-                                                            <input type="hidden" id="camera_checkbox" name="camera"
-                                                                value="1" />
-                                                            <label class="custom-control-label"
-                                                                for="camera">Camera</label>
-                                                        </div>
-                                                        <br>
-                                                        <label>Upload video/image</label><br>
-                                                        <div class="custom-file">
-                                                            <input type="file" name="file" class="custom-file-input"
-                                                                id="customFile" disabled>
-                                                            <label class="custom-file-label" for="customFile">Choose
-                                                                file</label>
-                                                        </div>
-                                                        </br>
-                                                        </br>
-                                                        <label>Face Detection: Target Device</label>
-                                                        <select class="form-control" name="target"
-                                                            onChange="target_change(this)">
-                                                            <option selected="selected">CPU</option>
-                                                            <option>GPU</option>
-                                                            {% if myriad == true %}
-                                                                <option>MYRIAD</option>
-                                                            {% else %}
-                                                                <option disabled>MYRIAD</option>
-                                                            {% endif %}
-                                                        </select>
-                                                        <br>
-                                                        <label>Face Detection: Model</label>
-                                                        <select class="form-control" name="model">
-                                                            <option selected="selected">
-                                                                face-detection-adas-0001</option>
-                                                            <option>face-detection-retail-0004</option>
-                                                        </select>
-                                                        <br>
-                                                        <label>Face Detection: Precision</label>
-                                                        <select class="form-control" name="precision">
-                                                            <option>FP16</option>
-                                                            <option selected="selected">FP32</option>
-                                                        </select>
-                                                        </br>
-                                                        <div class="custom-control custom-switch">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="recognition"
-                                                                onclick="$(this).next().val(this.checked?1:0)"
-                                                                checked />
-                                                            <input type="hidden" id="recognition_checkbox"
-                                                                name="recognition" value="1" />
-                                                            <label class="custom-control-label" for="recognition">
-                                                                Driver Recognition</label>
-                                                        </div>
-                                                        <div class="custom-control custom-switch">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="landmarks"
-                                                                onclick="$(this).next().val(this.checked?1:0)"
-                                                                checked />
-                                                            <input type="hidden" id="landmarks_checkbox"
-                                                                name="landmarks" value="1" />
-                                                            <label class="custom-control-label" for="landmarks">
-                                                                Landmarks</label>
-                                                        </div>
-                                                        <div class="custom-control custom-switch">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="head_pose"
-                                                                onclick="$(this).next().val(this.checked?1:0)"
-                                                                checked />
-                                                            <input type="hidden" id="head_pose_checkbox"
-                                                                name="head_pose" value="1" />
-                                                            <label class="custom-control-label" for="head_pose"> Head
-                                                                Pose</label>
-                                                        </div>
-                                                        <div class="custom-control custom-switch">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="async"
-                                                                onclick="$(this).next().val(this.checked?1:0)" />
-                                                            <input type="hidden" id="async_checkbox" name="async"
-                                                                value="0" />
-                                                            <label class="custom-control-label" for="async">
-                                                                Asynchronous
-                                                                mode</label>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <form id="command_form">
+                                            <div class="card">
+                                                <div class=" card-header">
+                                                    <h3 class="card-title">Driver Behaviour</h3>
+                                                    <div class="card-tools">
+                                                        <button type="button" class="btn btn-tool"
+                                                            data-card-widget="collapse"><i
+                                                                class="fas fa-plus"></i></button>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input"
+                                                                        id="camera"
+                                                                        onclick="$(this).next().val(this.checked?1:0);cam_event();"
+                                                                        checked />
+                                                                    <input type="hidden" id="camera_checkbox"
+                                                                        name="camera" value="1" />
+                                                                    <label class="custom-control-label"
+                                                                        for="camera">Camera</label>
+                                                                </div>
+                                                                <br>
+                                                                <label>Upload video/image</label><br>
+                                                                <div class="custom-file">
+                                                                    <input type="file" name="file"
+                                                                        class="custom-file-input" id="customFile"
+                                                                        disabled>
+                                                                    <label class="custom-file-label"
+                                                                        for="customFile">Choose
+                                                                        file</label>
+                                                                </div>
+                                                                </br>
+                                                                </br>
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <label>Face Detection: Target Device</label>
+                                                                        <select class="form-control" name="target"
+                                                                            onChange="target_change(this)">
+                                                                            <option selected="selected">CPU</option>
+                                                                            <option>GPU</option>
+                                                                            {% if myriad == true %}
+                                                                            <option>MYRIAD</option>
+                                                                            {% else %}
+                                                                            <option disabled>MYRIAD</option>
+                                                                            {% endif %}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <label>Head Pose: Target Device</label>
+                                                                        <select class="form-control" name="target_hp"
+                                                                            onChange="target_hp_change(this)">
+                                                                            <option selected="selected">CPU</option>
+                                                                            <option>GPU</option>
+                                                                            {% if myriad == true %}
+                                                                            <option>MYRIAD</option>
+                                                                            {% else %}
+                                                                            <option disabled>MYRIAD</option>
+                                                                            {% endif %}
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                </br>
+                                                                <label>Face Detection: Model</label>
+                                                                <select class="form-control" name="model">
+                                                                    <option selected="selected">
+                                                                        face-detection-adas-0001</option>
+                                                                    <option>face-detection-retail-0004</option>
+                                                                </select>
+                                                                <br>
+                                                                <label>Face Detection: Precision</label>
+                                                                <select class="form-control" name="precision">
+                                                                    <option>FP16</option>
+                                                                    <option selected="selected">FP32</option>
+                                                                </select>
+                                                                </br>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input"
+                                                                        id="recognition"
+                                                                        onclick="$(this).next().val(this.checked?1:0)"
+                                                                        checked />
+                                                                    <input type="hidden" id="recognition_checkbox"
+                                                                        name="recognition" value="1" />
+                                                                    <label class="custom-control-label"
+                                                                        for="recognition">
+                                                                        Driver Recognition</label>
+                                                                </div>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input"
+                                                                        id="landmarks"
+                                                                        onclick="$(this).next().val(this.checked?1:0)"
+                                                                        checked />
+                                                                    <input type="hidden" id="landmarks_checkbox"
+                                                                        name="landmarks" value="1" />
+                                                                    <label class="custom-control-label" for="landmarks">
+                                                                        Landmarks</label>
+                                                                </div>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input"
+                                                                        id="head_pose"
+                                                                        onclick="$(this).next().val(this.checked?1:0)"
+                                                                        checked />
+                                                                    <input type="hidden" id="head_pose_checkbox"
+                                                                        name="head_pose" value="1" />
+                                                                    <label class="custom-control-label" for="head_pose">
+                                                                        Head
+                                                                        Pose</label>
+                                                                </div>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input"
+                                                                        id="async"
+                                                                        onclick="$(this).next().val(this.checked?1:0)" />
+                                                                    <input type="hidden" id="async_checkbox"
+                                                                        name="async" value="0" />
+                                                                    <label class="custom-control-label" for="async">
+                                                                        Asynchronous
+                                                                        mode</label>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
 
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
                                     <div class="card">
                                         <div class=" card-header">
                                             <h3 class="card-title">Driver Actions</h3>
@@ -183,33 +209,36 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+
                             </div>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="rosbag"
                                     onclick="$(this).next().val(this.checked?1:0);" checked />
                                 <input type="hidden" id="rosbag_checkbox" name="rosbag" value="1" />
-                                <label class="custom-control-label" for="rosbag"> Simulated Data (Rosbag)</label>
+                                <label class="custom-control-label" for="rosbag"> Simulated Data
+                                    (Rosbag)</label>
                             </div>
                             <br>
                             <b>Please, once you run it, wait a moment without doing anything.</b><br>
                             Press "Stop" button to finish.
                         </div>
-                        <!-- /.card-body -->
-                        <div class="card-footer">
-                            <button type="submit" class="btn btn-success"><i class="nav-icon fas fa-play"></i> Run
-                                {{ title }}</button>
-                            </form>
-                            <button type=sumbit id="buttonTest" class="btn btn-default"><i
-                                    class="nav-icon fas fa-stop"></i>
-                                Stop</button>
-                            <span id="stop_result"></span>
-                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-success"><i class="nav-icon fas fa-play"></i> Run
+                            {{ title }}</button>
+                        </form>
+                        <button type=sumbit id="buttonTest" class="btn btn-default"><i class="nav-icon fas fa-stop"></i>
+                            Stop</button>
+                        <span id="stop_result"></span>
                     </div>
                 </div>
-                <div id="embed_video" class="col-lg-6"></div>
             </div>
+            <div id="embed_video" class="col-lg-6"></div>
         </div>
     </div>
+</div>
 </div>
 
 <textarea id="div_model" style="position: absolute; bottom: 0; left: 0; right: 0; 
@@ -228,24 +257,7 @@
         });
         data["file"] = $('input[name=file]').val().split('\\').pop(); // Delete C:\\fakepath\\
         data["file_actions"] = $('input[name=file_actions]').val().split('\\').pop();
-        $.ajax({
-            type: 'POST',
-            success: function () {
-                $('#embed_video').html(
-                    "<div class='card'>" +
-                    "<div class='card-header'>" +
-                    "<h3 class='card-title'>Output</h3>" +
-                    "<div class='card-tools'>" +
-                    "<button type='button' class='btn btn-tool' data-card-widget='maximize'><i class='fas fa-expand'></i></button>" +
-                    "<button type='button' class='btn btn-tool' data-card-widget='collapse'><i class='fas fa-minus'></i></button>" +
-                    "</div>" +
-                    "</div>" +
-                    "<div class='card-body'>" +
-                    "<h5>Output in Terminal</h5>" +
-                    "</div>" +
-                    "</div>");
-            }
-        });
+
         // Upload File
         var form_data = new FormData($('#command_form')[0]);
         $.ajax({
