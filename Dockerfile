@@ -77,6 +77,7 @@ WORKDIR /app/ActionRecognition
 RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/ActionRecognition/scripts/download_models.sh'
 
 COPY UI/* app/
+COPY AWS/* app/
 WORKDIR /app/UI
 COPY entrypoint.sh /
 EXPOSE 5000
