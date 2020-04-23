@@ -8,19 +8,24 @@ import hashlib
 import time
 from glob import glob
 
-# ----- Configuration -----
+# ----- CONFIGURATION -----
+
+# Constant Variables
+OPENVINO_SOURCE = '/opt/intel/openvino/bin/setupvars.sh'
+ROS_SOURCE = '/opt/ros/crystal/setup.bash'
+
+# Variables from file
 config = configparser.SafeConfigParser()
-config.read('config.ini')  # Take all the parameters from config.ini file
-# Local
+config.read('config.ini')  # Take The parameters from config.ini file
+# Driver Management (ROS2 Workspace)
+workspace = os.path.join(config['workspace']['path'], '')
+
+# Variables Initialization
 dirname = os.path.dirname(__file__)
 file_input = os.path.join(dirname, 'tmp', '')
-# OpenVino
-openvino_source = config['openvino']['source'].rstrip('/')
-# Driver Management (ROS2 Workspace)
-ros_path = os.path.join(config['ros']['path'], '')
-# Driver Management (Repository Folder)
-dmanagement_repository = os.path.join(config['management']['path'])
 
+driverbehavior_folder = workspace + "DriverBehavior/"
+actionrecognition_folder = workspace + "ActionRecognition/"
 
 def shell_communication(cmd):
     # This function allows to execute a bash command
@@ -62,7 +67,7 @@ try:
     myriad = True
 except:
     myriad = False
-print('Myriad Detected: ' + str(myriad))
+print(' * Myriad Detected: ' + str(myriad))
 
 
 # Wait until 10 seconds to check if a file exists.
@@ -110,28 +115,30 @@ def run_driver_management():
         json = request.get_json()
 
         # Rosbag Command
-        command_rosbag = ("source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && cd " +
-                          ros_path + " && while true; do ros2 bag play truck.bag; done;") if (json['rosbag'] == "1") else ("")
+        command_rosbag = ("source " + ROS_SOURCE + " && source " + driverbehavior_folder + "ets_ros2/install/setup.bash && cd " +
+                          driverbehavior_folder + " && while true; do ros2 bag play truck.bag; done;") if (json['rosbag'] == "1") else ("")
 
         # Driver Actions Command
-        command_driver_actions = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && cd /app/ActionRecognition && python3 action_recognition.py -m_en models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU"
+        command_driver_actions = "source " + ROS_SOURCE + " && source " + driverbehavior_folder + "ets_ros2/install/setup.bash && source " + OPENVINO_SOURCE + \
+            " && cd "+ actionrecognition_folder + " && python3 action_recognition.py -m_en models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU"
 
         if (json['camera_actions'] == "0"):
-            command_driver_actions += " -i '" + \
-                file_input + json['file_actions'] + "'"
+            command_driver_actions += " -i '" + file_input + json['file_actions'] + "'"
         else:
-            command_driver_actions += " -i /dev/video1"
+            if (json['camera'] == "0"):
+                command_driver_actions += " -i /dev/video1"
+            else:
+                command_driver_actions += " -i /dev/video0"
 
         if (json['aws_actions']):
-            command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r /app/AWS/AmazonRootCA1.pem -c /app/AWS/a81867df13-certificate.pem.crt -k /app/AWS/a81867df13-private.pem.key -t actions/"
+            command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r " + workspace + "AWS/AmazonRootCA1.pem -c " + workspace + "AWS/a81867df13-certificate.pem.crt -k " + workspace + "AWS/a81867df13-private.pem.key -t actions/"
 
         # Driver Behaviour Command
-        command_driver_behaviour = "source /opt/ros/crystal/setup.bash && source /app/DriverBehavior/ets_ros2/install/setup.bash && source /opt/intel/openvino/bin/setupvars.sh && source /app/" + dmanagement_repository + "/scripts/setupenv.sh && cd /app/" + dmanagement_repository + "/build/intel64/Release && ./driver_behavior -d " + \
+        command_driver_behaviour = "source " + ROS_SOURCE + " && source " + driverbehavior_folder + "ets_ros2/install/setup.bash && source " + OPENVINO_SOURCE + " && source " + driverbehavior_folder + "scripts/setupenv.sh && cd " + driverbehavior_folder + "build/intel64/Release && ./driver_behavior -d " + \
             json['target'] + " -d_hp " + json['target_hp']
 
         if (json['camera'] == "0"):
-            command_driver_behaviour += " -i '" + \
-                file_input + json['file'] + "'"
+            command_driver_behaviour += " -i '" + file_input + json['file'] + "'"
         else:
             command_driver_behaviour += " -i cam"
 
@@ -150,8 +157,7 @@ def run_driver_management():
         command_driver_behaviour += " -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so "
         # Recognition of the Driver
         if (json['recognition'] == "1"):
-            command_driver_behaviour += " -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + \
-                dmanagement_repository + "/scripts/faces_gallery.json"
+            command_driver_behaviour += " -d_recognition -fg " + driverbehavior_folder + "scripts/faces_gallery.json"
         # Landmarks Detection
         if (json['landmarks'] == "1"):
             command_driver_behaviour += " -dlib_lm"
@@ -163,10 +169,11 @@ def run_driver_management():
             command_driver_behaviour += " -async"
         command_driver_behaviour += " -pid_da "
 
-        commands = [command_rosbag, command_driver_actions, command_driver_behaviour]
-        print(commands)
+        commands = [command_rosbag, command_driver_actions,
+                    command_driver_behaviour]
         if (json['camera'] == "0"):
             wait_for_file(file_input + json['file'])
+        if (json['camera_actions'] == "0"):
             wait_for_file(file_input + json['file_actions'])
         print("Running Driver Management")
         shell_communication_parallel(cmds=commands)
@@ -214,12 +221,10 @@ def create_driver_management():
         if request.files:
             file = request.files["file"]
             # Save the file with the Driver's name and add the same extension
-            file.save(os.path.join(ros_path + "/src/ets_ros2/aws-crt-cpp/samples/OpenVino-Driver-Behaviour/" + dmanagement_repository +
-                                   "/drivers/", request.values['driver'] + "." + file.filename.split('.')[-1]))
+            file.save(os.path.join(driverbehavior_folder + "drivers/", request.values['driver'] + "." + file.filename.split('.')[-1]))
             # Generating the list with all the drivers
             print("Creating New Driver")
-            shell_communication("cd " + ros_path + "/src/ets_ros2/aws-crt-cpp/samples/" +
-                                dmanagement_repository + "/scripts/ && python3 create_list.py ../drivers/")
+            shell_communication("cd " + driverbehavior_folder + "scripts/ && python3 create_list.py ../drivers/")
             out = "New driver created!"
         return jsonify(out=out)
 
@@ -234,12 +239,13 @@ def dashboard():
 
 @app.route('/drivers')
 def drivers():
-    drivers_path = ros_path + "src/ets_ros2/aws-crt-cpp/samples/OpenVino-Driver-Behaviour/" + dmanagement_repository + "/drivers/"
-    driver_list = [f for f in os.listdir(os.path.join(drivers_path)) if os.path.isfile(os.path.join(drivers_path, f))]
-    driver_list.sort() # Order the list by name
-    
+    drivers_path = driverbehavior_folder + "/drivers/"
+    driver_list = [f for f in os.listdir(os.path.join(
+        drivers_path)) if os.path.isfile(os.path.join(drivers_path, f))]
+    driver_list.sort()  # Order the list by name
+
     # Copy folder to static/drivers !!!
-    
+
     templateData = {  # Sending the data to the frontend
         'title': "Drivers",
         'drivers': driver_list,
@@ -252,9 +258,7 @@ def drivers():
 def configuration():
     templateData = {  # Sending the data to the frontend
         'title': "Configuration",
-        'openvino_source': openvino_source,
-        'ros_path': ros_path,
-        'dmanagement_repository': dmanagement_repository
+        'workspace': workspace
     }
     return render_template("configuration.html", **templateData)
 
@@ -263,9 +267,7 @@ def configuration():
 def certificates():
     templateData = {  # Sending the data to the frontend
         'title': "Certificates Configuration",
-        'openvino_source': openvino_source,
-        'ros_path': ros_path,
-        'dmanagement_repository': dmanagement_repository
+        'workspace': workspace
     }
     return render_template("certificates.html", **templateData)
 
@@ -289,9 +291,7 @@ def change_config():
         out = False
         json = request.get_json()
 
-        config['openvino']['source'] = json['openvino_source']
-        config['ros']['path'] = json['ros_path']
-        config['management']['path'] = json['dmanagement_repository']
+        config['workspace']['path'] = json['workspace']
 
         # Saving variables in config.ini
         with open('config.ini', 'w') as configfile:
@@ -299,11 +299,9 @@ def change_config():
             out = True
 
         # Variables are updated with the new values.
-        global openvino_source, ros_path, dmanagement_repository
-        # Driver Management (ROS2 Wokspace)
-        ros_path = os.path.join(config['ros']['path'], '')
-        # Driver Management (Repository Folder)
-        dmanagement_repository = os.path.join(config['management']['path'])
+        global workspace
+        # Workspace
+        workspace = os.path.join(config['workspace']['path'], '')
 
     return jsonify(out=out)
 

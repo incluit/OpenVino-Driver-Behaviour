@@ -29,23 +29,36 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <label>OpenVINO Source</label>
-                                        <input type="text" name="openvino_source" id="openvino_source"
-                                            class="form-control" value="{{ openvino_source }}" disabled></br>
-                                        <label>Driver Management (ROS2 Workspace Path)</label>
-                                        <input type="text" name="ros_path" id="ros_path" class="form-control"
-                                            value="{{ ros_path }}" disabled></br>
-                                        <label>Driver Management (Repository Folder)</label>
-                                        <input type="text" name="dmanagement_repository" id="dmanagement_repository" class="form-control"
-                                            value="{{ dmanagement_repository }}" disabled>
+                                        <label>Certificate (*-certificate.pem.crt)</label>
+                                        <div class="custom-file">
+                                            <input type="file" name="file" class="custom-file-input" id="certificate" disabled>
+                                            <label class="custom-file-label" for="certificate">Choose file</label>
+                                        </div>
+                                        </br></br>
+                                        <label>Private Key (*-private.pem.key)</label>
+                                        <div class="custom-file">
+                                            <input type="file" name="file" class="custom-file-input" id="private_key" disabled>
+                                            <label class="custom-file-label" for="private_key">Choose file</label>
+                                        </div>
+                                        </br></br>
+                                        <label>Public Key (*-public.pem.key)</label>
+                                        <div class="custom-file">
+                                            <input type="file" name="file" class="custom-file-input" id="public_key" disabled>
+                                            <label class="custom-file-label" for="public_key">Choose file</label>
+                                        </div>
+                                        </br></br>
+                                        <label>RootCA (AmazonRootCA1.pem)</label>
+                                        <div class="custom-file">
+                                            <input type="file" name="file" class="custom-file-input" id="root_ca" disabled>
+                                            <label class="custom-file-label" for="root_ca">Choose file</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="card-footer">
                                 <button type="submit" class="btn btn-success" id="save_button" disabled><i
                                         class="nav-icon fas fa-save"></i>
-                                    Save
-                                    {{ title }}</button>&nbsp;&nbsp;&nbsp;<a id="change_result"></a>
+                                    Upload Certificates</button>&nbsp;&nbsp;&nbsp;<a id="change_result"></a>
                             </div>
                         </form>
                     </div>
@@ -99,24 +112,18 @@
             success: function (callback) {
                 if (callback.out) {
                     $('#pass_result').html("Configuration Enabled");
-                    $('#video_output').prop('disabled', false);
-                    $('#openvino_source').prop('disabled', false);
-                    $('#blindspot_path').prop('disabled', false);
-                    $('#smart_path').prop('disabled', false);
-                    $('#driver_path').prop('disabled', false);
-                    $('#ros_path').prop('disabled', false);
-                    $('#dmanagement_repository').prop('disabled', false);
+                    $('#certificate').prop('disabled', false);
+                    $('#private_key').prop('disabled', false);
+                    $('#public_key').prop('disabled', false);
+                    $('#root_ca').prop('disabled', false);
                     $('#save_button').prop('disabled', false);
                 }
                 else {
                     $('#pass_result').html("Wrong Password");
-                    $('#video_output').prop('disabled', true);
-                    $('#openvino_source').prop('disabled', true);
-                    $('#blindspot_path').prop('disabled', true);
-                    $('#smart_path').prop('disabled', true);
-                    $('#driver_path').prop('disabled', true);
-                    $('#ros_path').prop('disabled', true);
-                    $('#dmanagement_repository').prop('disabled', true);
+                    $('#certificate').prop('disabled', true);
+                    $('#private_key').prop('disabled', true);
+                    $('#public_key').prop('disabled', true);
+                    $('#root_ca').prop('disabled', true);
                     $('#save_button').prop('disabled', true);
                 }
             }
@@ -143,13 +150,10 @@
             success: function (callback) {
                 if (callback.out) {
                     $('#change_result').html("Changes done!");
-                    $('#video_output').prop('disabled', true);
-                    $('#openvino_source').prop('disabled', true);
-                    $('#blindspot_path').prop('disabled', true);
-                    $('#smart_path').prop('disabled', true);
-                    $('#driver_path').prop('disabled', true);
-                    $('#ros_path').prop('disabled', true);
-                    $('#dmanagement_repository').prop('disabled', true);
+                    $('#certificate').prop('disabled', true);
+                    $('#private_key').prop('disabled', true);
+                    $('#public_key').prop('disabled', true);
+                    $('#root_ca').prop('disabled', true);
                     $('#save_button').prop('disabled', true);
                 }
                 else {

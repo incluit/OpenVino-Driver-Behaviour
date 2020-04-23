@@ -7,4 +7,5 @@ ActionRecognition/models/
 UI/config.ini
 UI/log/
 UI/tmp/
+UI/static/drivers/
 AWS/
