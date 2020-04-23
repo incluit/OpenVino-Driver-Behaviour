@@ -146,11 +146,8 @@ def run_driver_management():
                     command_driver_behaviour += " -m $face216"
                 else:
                     command_driver_behaviour += " -m $face232"
-<<<<<<< HEAD
-        
+        # lib CPU extension
         command_driver_behaviour += " -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so "
-        #command_driver_behaviour += " -endpoint a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -ca_file /app/AWS/AmazonRootCA1.pem -cert /app/AWS/a81867df13-certificate.pem.crt -key /app/AWS/a81867df13-private.pem.key -topic drivers/"
-=======
         # Recognition of the Driver
         if (json['recognition'] == "1"):
             command_driver_behaviour += " -d_recognition -fg ../../../../../../src/ets_ros2/aws-crt-cpp/samples/" + \
@@ -164,8 +161,6 @@ def run_driver_management():
         # Synchronous / Asynchronous mode
         if (json['async'] == "1"):
             command_driver_behaviour += " -async"
-
->>>>>>> 4dd27b38b165eee7a22613bae2306f8aad5270d9
         command_driver_behaviour += " -pid_da "
 
         commands = [command_rosbag, command_driver_actions, command_driver_behaviour]
