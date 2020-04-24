@@ -1,0 +1,74 @@
+{% extends "template.html" %}
+{% block title %}
+{{ title }}
+{% endblock %}
+{% block avatar %}
+<i class="nav-icon fas fa-tachometer-alt"></i>
+{% endblock %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0 text-dark">{{title}}</h1>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <form id="enable_form">
+                            {% if file_exists == true %}
+                                <a href="{{ url_for('download_file') }}" class="button">
+                                    <i class="nav-icon fas fa-download"></i>&nbsp;&nbsp;&nbsp;Download Last Video
+                                </a>&nbsp;&nbsp;&nbsp;
+                                <a href="{{ url_for('delete_file') }}" class="button_delete">
+                                    <i class="nav-icon fas fa-trash"></i>&nbsp;&nbsp;&nbsp;Delete
+                                </a>
+                            {% else %}
+                                No files to download.
+                            {% endif %}
+                    </form>
+                </div>
+                <!-- /.row -->
+            </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content -->
+    </div>
+</div>
+
+<style>
+.button {
+    padding: 10px;
+    background: linear-gradient(90deg, #725cbb 0%, #9579f4 100%);
+    text-align: center;
+    color: white;
+    width: 200px;
+}
+.button:hover {
+    color: rgb(233, 233, 233);
+}
+.button_delete {
+    padding: 10px;
+    background: linear-gradient(90deg, #d10000 0%, #ff0000 100%);
+    text-align: center;
+    color: white;
+    width: 200px;
+}
+.button_delete:hover {
+    color: rgb(233, 233, 233);
+}
+</style>
+
+
+
+{% endblock %}

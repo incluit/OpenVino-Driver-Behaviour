@@ -83,6 +83,15 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="{{ url_for('downloads') }}"
+                  class="nav-link {% if request.path == '/downloads' %}active{% endif %}">
+                  <i class="nav-icon far fa-circle text-success"></i>
+                  <p>
+                    Downloads
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="{{ url_for('configuration') }}"
                   class="nav-link {% if request.path == '/config' %}active{% endif %}">
                   <i class="nav-icon far fa-circle text-success"></i>

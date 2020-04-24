@@ -1,7 +1,7 @@
 import subprocess
 import configparser
 from subprocess import Popen, PIPE
-from flask import Flask, render_template, redirect, url_for, request, jsonify, Response
+from flask import Flask, render_template, redirect, url_for, request, jsonify, Response, send_file
 import os
 import shutil
 import hashlib
@@ -72,14 +72,14 @@ except:
 print(' * Myriad Detected: ' + str(myriad))
 
 
-# Wait until 10 seconds to check if a file exists.
+# Wait until 60 seconds to check if a file exists.
 def wait_for_file(file):
     print("Uploading file...")
     time_counter = 0
     while not (os.path.exists(file)):
         time.sleep(1)
         time_counter += 1
-        if time_counter > 10:
+        if time_counter > 60:
             break
 
 # ----- Route Definitions -----
@@ -274,6 +274,31 @@ def configuration():
         'workspace': workspace
     }
     return render_template("configuration.html", **templateData)
+
+@app.route("/downloads")
+def downloads():
+    file_exists = False
+    file = driverbehavior_folder + 'build/intel64/Release/video_output.avi'
+    if (os.path.exists(file)):
+        file_exists = True
+    templateData = {  # Sending the data to the frontend
+        'title': "Downloads",
+        'file_exists': file_exists
+    }
+    return render_template("downloads.html", **templateData)
+
+@app.route('/download_file', methods=['POST', 'GET'])
+# This function allows download the video output file.
+def download_file():
+    video_file = driverbehavior_folder + 'build/intel64/Release/video_output.avi'
+    return send_file(video_file, as_attachment=True)
+
+@app.route('/delete_file', methods=['POST', 'GET'])
+# This function allows delete the video output file.
+def delete_file():
+    video_file = driverbehavior_folder + 'build/intel64/Release/video_output.avi'
+    os.remove(video_file)
+    return redirect(url_for('downloads'))
 
 
 @app.route("/certificates")
