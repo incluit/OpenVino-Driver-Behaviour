@@ -70,48 +70,84 @@
                                                                 </div>
                                                                 </br>
                                                                 </br>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <label>Face Detection: Target Device</label>
-                                                                        <select class="form-control" name="target"
-                                                                            onChange="target_change(this)">
-                                                                            <option selected="selected">CPU</option>
-                                                                            <option>GPU</option>
-                                                                            {% if myriad == true %}
-                                                                            <option>MYRIAD</option>
-                                                                            {% else %}
-                                                                            <option disabled>MYRIAD</option>
-                                                                            {% endif %}
-                                                                        </select>
+
+                                                                <div class="card card-info collapsed-card">
+                                                                    <div class="card-header">
+                                                                        <h3 class="card-title">Advanced Options</h3>
+                                                                        <div class="card-tools">
+                                                                            <button id="btn-minimize" type="button"
+                                                                                class="btn btn-tool"
+                                                                                data-card-widget="collapse"><i
+                                                                                    class="fas fa-plus"></i></button>
+                                                                        </div>
                                                                     </div>
-                                                                    <div class="col-md-6">
-                                                                        <label>Head Pose: Target Device</label>
-                                                                        <select class="form-control" name="target_hp"
-                                                                            onChange="target_hp_change(this)">
-                                                                            <option selected="selected">CPU</option>
-                                                                            <option>GPU</option>
-                                                                            {% if myriad == true %}
-                                                                            <option>MYRIAD</option>
-                                                                            {% else %}
-                                                                            <option disabled>MYRIAD</option>
-                                                                            {% endif %}
-                                                                        </select>
+                                                                    <div class="card-body">
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <div class="form-group">
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <label>Face Detection:
+                                                                                                Target Device</label>
+                                                                                            <select class="form-control"
+                                                                                                name="target"
+                                                                                                onChange="target_change(this)">
+                                                                                                <option
+                                                                                                    selected="selected">
+                                                                                                    CPU</option>
+                                                                                                <option>GPU</option>
+                                                                                                {% if myriad == true %}
+                                                                                                <option>MYRIAD</option>
+                                                                                                {% else %}
+                                                                                                <option disabled>MYRIAD
+                                                                                                </option>
+                                                                                                {% endif %}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <label>Head Pose: Target
+                                                                                                Device</label>
+                                                                                            <select class="form-control"
+                                                                                                name="target_hp"
+                                                                                                onChange="target_hp_change(this)">
+                                                                                                <option
+                                                                                                    selected="selected">
+                                                                                                    CPU</option>
+                                                                                                <option>GPU</option>
+                                                                                                {% if myriad == true %}
+                                                                                                <option>MYRIAD</option>
+                                                                                                {% else %}
+                                                                                                <option disabled>MYRIAD
+                                                                                                </option>
+                                                                                                {% endif %}
+                                                                                            </select>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    </br>
+                                                                                    <label>Face Detection: Model</label>
+                                                                                    <select class="form-control"
+                                                                                        name="model">
+                                                                                        <option selected="selected">
+                                                                                            face-detection-adas-0001
+                                                                                        </option>
+                                                                                        <option>
+                                                                                            face-detection-retail-0004
+                                                                                        </option>
+                                                                                    </select>
+                                                                                    <br>
+                                                                                    <label>Face Detection:
+                                                                                        Precision</label>
+                                                                                    <select class="form-control"
+                                                                                        name="precision">
+                                                                                        <option>FP16</option>
+                                                                                        <option selected="selected">FP32
+                                                                                        </option>
+                                                                                    </select>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                </br>
-                                                                <label>Face Detection: Model</label>
-                                                                <select class="form-control" name="model">
-                                                                    <option selected="selected">
-                                                                        face-detection-adas-0001</option>
-                                                                    <option>face-detection-retail-0004</option>
-                                                                </select>
-                                                                <br>
-                                                                <label>Face Detection: Precision</label>
-                                                                <select class="form-control" name="precision">
-                                                                    <option>FP16</option>
-                                                                    <option selected="selected">FP32</option>
-                                                                </select>
-                                                                </br>
                                                                 <div class="custom-control custom-switch">
                                                                     <input type="checkbox" class="custom-control-input"
                                                                         id="recognition"
@@ -223,22 +259,22 @@
                             <b>Please, once you run it, wait a moment without doing anything.</b><br>
                             Press "Stop" button to finish.
                         </div>
-                    </div>
-                    <!-- /.card-body -->
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-success"><i class="nav-icon fas fa-play"></i> Run
-                            {{ title }}</button>
-                        </form>
-                        <button type=sumbit id="buttonTest" class="btn btn-default"><i class="nav-icon fas fa-stop"></i>
-                            Stop</button>
-                        <span id="stop_result"></span>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success"><i class="nav-icon fas fa-play"></i> Run
+                                {{ title }}</button>
+                            </form>
+                            <button type=sumbit id="buttonTest" class="btn btn-default"><i
+                                    class="nav-icon fas fa-stop"></i>
+                                Stop</button>
+                            <span id="stop_result"></span>
+                        </div>
                     </div>
                 </div>
+                <div id="embed_video" class="col-lg-6"></div>
             </div>
-            <div id="embed_video" class="col-lg-6"></div>
         </div>
     </div>
-</div>
 </div>
 
 <textarea id="div_model" style="position: absolute; bottom: 0; left: 0; right: 0; 

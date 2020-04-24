@@ -31,25 +31,25 @@
                                     <div class="col-md-12">
                                         <label>Certificate (*-certificate.pem.crt)</label>
                                         <div class="custom-file">
-                                            <input type="file" name="file" class="custom-file-input" id="certificate" disabled>
+                                            <input type="file" name="certificate" class="custom-file-input" id="certificate" disabled>
                                             <label class="custom-file-label" for="certificate">Choose file</label>
                                         </div>
                                         </br></br>
                                         <label>Private Key (*-private.pem.key)</label>
                                         <div class="custom-file">
-                                            <input type="file" name="file" class="custom-file-input" id="private_key" disabled>
+                                            <input type="file" name="private_key" class="custom-file-input" id="private_key" disabled>
                                             <label class="custom-file-label" for="private_key">Choose file</label>
                                         </div>
                                         </br></br>
                                         <label>Public Key (*-public.pem.key)</label>
                                         <div class="custom-file">
-                                            <input type="file" name="file" class="custom-file-input" id="public_key" disabled>
+                                            <input type="file" name="public_key" class="custom-file-input" id="public_key" disabled>
                                             <label class="custom-file-label" for="public_key">Choose file</label>
                                         </div>
                                         </br></br>
                                         <label>RootCA (AmazonRootCA1.pem)</label>
                                         <div class="custom-file">
-                                            <input type="file" name="file" class="custom-file-input" id="root_ca" disabled>
+                                            <input type="file" name="root_ca" class="custom-file-input" id="root_ca" disabled>
                                             <label class="custom-file-label" for="root_ca">Choose file</label>
                                         </div>
                                     </div>
@@ -134,22 +134,29 @@
         e.preventDefault();
         var data = {};
         var Form = this;
-        var output = "";
         $.each(this.elements, function (i, v) {
             var input = $(v);
             data[input.attr("name")] = input.val();
             delete data["undefined"];
         });
+        data["certificate"] = $('input[name=certificate]').val().split('\\').pop(); // Delete C:\\fakepath\\
+        data["private_key"] = $('input[name=private_key]').val().split('\\').pop();
+        data["public_key"] = $('input[name=public_key]').val().split('\\').pop();
+        data["root_ca"] = $('input[name=root_ca]').val().split('\\').pop();
+
+        //Upload files
+        var form_data = new FormData($('#config_form')[0]);
         $.ajax({
             type: 'POST',
-            url: '/change_config',
-            dataType: 'json',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(data),
+            url: '/upload_certificates',
+            data: form_data,
+            contentType: false,
+            cache: false,
+            processData: false,
             context: Form,
             success: function (callback) {
                 if (callback.out) {
-                    $('#change_result').html("Changes done!");
+                    $('#change_result').html("Certificates uploaded!");
                     $('#certificate').prop('disabled', true);
                     $('#private_key').prop('disabled', true);
                     $('#public_key').prop('disabled', true);
@@ -157,10 +164,16 @@
                     $('#save_button').prop('disabled', true);
                 }
                 else {
-                    $('#change_result').html("Error");
+                    $('#change_result').html("Upload error");
                 }
             }
         });
     });
+
+    $(function () {
+        $(document).ready(function () {
+            bsCustomFileInput.init();
+        });
+    })
 </script>
 {% endblock %}

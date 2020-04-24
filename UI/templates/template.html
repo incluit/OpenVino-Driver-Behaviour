@@ -68,13 +68,14 @@
                   </p>
                 </a>
               </li>
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a href="{{ url_for('drivers') }}" class="nav-link {% if request.path == '/drivers' %}active{% endif %}">
                   <i class="nav-icon far fa-circle text-success"></i>
                   <p>Drivers</p>
                 </a>
               </li> 
-              <li class="nav-item">
+               -->
+               <li class="nav-item">
                 <a href="{{ url_for('newdriver_management') }}"
                   class="nav-link {% if request.path == '/new-driver-management' %}active{% endif %}">
                   <i class="nav-icon far fa-circle text-success"></i>
@@ -214,7 +215,7 @@
     }
 
     .card:not(.card-outline)>.card-header {
-      background: linear-gradient(90deg, #725cbb 0%, rgba(0, 78, 255, 1) 100%);
+      background: #725cbb;
       border-radius: 0;
     }
     .nav-sidebar.nav-child-indent .nav-treeview {
