@@ -28,6 +28,7 @@ aws_folder = workspace + "AWS/"
 driverbehavior_folder = workspace + "DriverBehavior/"
 actionrecognition_folder = workspace + "ActionRecognition/"
 
+
 def shell_communication(cmd):
     # This function allows to execute a bash command
     session = subprocess.Popen(

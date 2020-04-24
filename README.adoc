@@ -29,12 +29,44 @@ sudo snap install docker
 
 === Installation
 
+**1.** Clone the repository at desired location:
+
+[source,bash]
+----
+git clone https://github.com/incluit/OpenVino-Driver-Behaviour.git
+----
+
+**2.** Change to the top git repository:
+
+[source,bash]
+----
+cd OpenVino-Driver-Behaviour
+----
+
+**3.** Move to the "DriverManagement" branch_
+
+[source,bash]
+----
+git checkout DriverManagment 
+----
+
+**4.** Build the docker:
 [source,bash]
 ----
 docker build -t openvino-incluit . --rm
+----
 
+**5.** Configure the display output with the following command:
+
+[source,bash]
+----
 xhost local:root
+----
 
+**6.** Run the  docker:
+
+[source,bash]
+----
 docker run --net=host --env="DISPLAY" -it --device /dev/dri:/dev/dri --device-cgroup-rule='c 189:* rmw' -v /dev/bus/usb:/dev/bus/usb --device=/dev/video0 --volume="$HOME/.Xauthority:/root/.Xauthority:rw" openvino-incluit /bin/bash
 ----
 
