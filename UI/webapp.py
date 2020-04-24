@@ -155,7 +155,7 @@ def run_driver_management():
             else:
                 command_driver_behaviour += " -m $face132"
         else:
-            if (json['model'] == "face-detection-adas-0004"):
+            if (json['model'] == "face-detection-retail-0004"):
                 if (json['precision'] == "FP16"):
                     command_driver_behaviour += " -m $face216"
                 else:
