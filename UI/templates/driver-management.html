@@ -70,7 +70,6 @@
                                                                 </div>
                                                                 </br>
                                                                 </br>
-
                                                                 <div class="card card-info collapsed-card">
                                                                     <div class="card-header">
                                                                         <h3 class="card-title">Advanced Options</h3>
@@ -232,6 +231,40 @@
                                                                 file</label>
                                                         </div>
                                                         <br><br>
+                                                        <div class="card card-info collapsed-card">
+                                                            <div class="card-header">
+                                                                <h3 class="card-title">Advanced Options</h3>
+                                                                <div class="card-tools">
+                                                                    <button id="btn-minimize" type="button"
+                                                                        class="btn btn-tool"
+                                                                        data-card-widget="collapse"><i
+                                                                            class="fas fa-plus"></i></button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div class="row">
+                                                                    <div class="col-md-12">
+                                                                        <div class="form-group">
+                                                                            <label>Target
+                                                                                Device</label>
+                                                                            <select class="form-control"
+                                                                                name="target_actions"
+                                                                                onChange="target_actions_change(this)">
+                                                                                <option selected="selected">
+                                                                                    CPU</option>
+                                                                                <option>GPU</option>
+                                                                                {% if myriad == true %}
+                                                                                <option>MYRIAD</option>
+                                                                                {% else %}
+                                                                                <option disabled>MYRIAD
+                                                                                </option>
+                                                                                {% endif %}
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                         <div class="custom-control custom-switch">
                                                             <input type="checkbox" class="custom-control-input"
                                                                 id="aws_actions"
