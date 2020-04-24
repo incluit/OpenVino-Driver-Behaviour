@@ -43,7 +43,7 @@ git clone https://github.com/incluit/OpenVino-Driver-Behaviour.git
 cd OpenVino-Driver-Behaviour
 ----
 
-**3.** Move to the "DriverManagement" branch_
+**3.** Move to the "DriverManagement" branch:
 
 [source,bash]
 ----
