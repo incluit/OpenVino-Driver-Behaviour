@@ -140,6 +140,9 @@ static const char no_async_message[] = "Disable asynchronous mode in every model
 // dlib facial landmarks detection
 static const char dlib_lm_message[] = "Enable dlib's facial landmark detections";
 
+/// @brief message for video ouput
+static const char video_output_message[] = "Enable video output";
+
 // AWS endpoint of the mqtt server
 static const char endpoint_message[] = "Endpoint of the mqtt server not including a port";
 
@@ -278,6 +281,11 @@ DEFINE_bool(d_recognition, false, drecog_message);
 DEFINE_bool(async, false, async_message);
 
 DEFINE_bool(no_async, false, no_async_message);
+
+/// \brief Flag to enable video ouput<br>
+/// It is an optional parameter
+DEFINE_bool(o, false, video_output_message);
+
 ///Custom
 
 DEFINE_bool(dlib_lm, false, "Acti");
@@ -329,6 +337,7 @@ static void showUsage() {
     std::cout << "    -no_show                   " << no_show_processed_video << std::endl;
     std::cout << "    -pc                        " << performance_counter_message << std::endl;
     std::cout << "    -r                         " << raw_output_message << std::endl;
+    std::cout << "    -o                         " << video_output_message << std::endl;
     std::cout << "    -t                         " << thresh_output_message << std::endl;
     std::cout << " AWS options [OPTIONAL]:       " << std::endl;
     std::cout << "    -endpoint                  " << endpoint_message << std::endl;

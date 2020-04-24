@@ -124,14 +124,15 @@ def run_driver_management():
         command_driver_actions = "source " + ROS_SOURCE + " && source " + OPENVINO_SOURCE + \
             " && cd " + actionrecognition_folder + " && python3 action_recognition.py -m_en models/FP32/driver-action-recognition-adas-0002-encoder.xml -m_de models/FP32/driver-action-recognition-adas-0002-decoder.xml -lb driver_actions.txt -l /opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so -d CPU"
 
-        if (json['camera_actions'] == "0"):
+        if (json['camera_actions'] == "0" and json['file_actions'] != ""):
             command_driver_actions += " -i '" + \
                 file_input + json['file_actions'] + "'"
         else:
-            if (json['camera'] == "0"):
-                command_driver_actions += " -i /dev/video1"
-            else:
-                command_driver_actions += " -i /dev/video0"
+            if (json['camera_actions'] == "1"):
+                if (json['camera'] == "0"):
+                    command_driver_actions += " -i /dev/video1"
+                else:
+                    command_driver_actions += " -i /dev/video0"
 
         if (json['aws_actions']):
             command_driver_actions += " -e a1572pdc8tbdas-ats.iot.us-east-1.amazonaws.com -r " + aws_folder + "AmazonRootCA1.pem -c " + \
@@ -171,6 +172,9 @@ def run_driver_management():
         # Headpose Detection
         if (json['head_pose'] == "1"):
             command_driver_behaviour += " -m_hp $hp32"
+        # Save the ouput in a video file
+        if (json['save'] == "1"):
+            command_driver_behaviour += " -o "
         # Synchronous / Asynchronous mode
         if (json['async'] == "1"):
             command_driver_behaviour += " -async"

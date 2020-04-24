@@ -85,45 +85,38 @@
                                                                         <div class="row">
                                                                             <div class="col-md-12">
                                                                                 <div class="form-group">
-                                                                                    <div class="row">
-                                                                                        <div class="col-md-6">
-                                                                                            <label>Face Detection:
-                                                                                                Target Device</label>
-                                                                                            <select class="form-control"
-                                                                                                name="target"
-                                                                                                onChange="target_change(this)">
-                                                                                                <option
-                                                                                                    selected="selected">
-                                                                                                    CPU</option>
-                                                                                                <option>GPU</option>
-                                                                                                {% if myriad == true %}
-                                                                                                <option>MYRIAD</option>
-                                                                                                {% else %}
-                                                                                                <option disabled>MYRIAD
-                                                                                                </option>
-                                                                                                {% endif %}
-                                                                                            </select>
-                                                                                        </div>
-                                                                                        <div class="col-md-6">
-                                                                                            <label>Head Pose: Target
-                                                                                                Device</label>
-                                                                                            <select class="form-control"
-                                                                                                name="target_hp"
-                                                                                                onChange="target_hp_change(this)">
-                                                                                                <option
-                                                                                                    selected="selected">
-                                                                                                    CPU</option>
-                                                                                                <option>GPU</option>
-                                                                                                {% if myriad == true %}
-                                                                                                <option>MYRIAD</option>
-                                                                                                {% else %}
-                                                                                                <option disabled>MYRIAD
-                                                                                                </option>
-                                                                                                {% endif %}
-                                                                                            </select>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    </br>
+                                                                                    <label>Face Detection:
+                                                                                        Target Device</label>
+                                                                                    <select class="form-control"
+                                                                                        name="target"
+                                                                                        onChange="target_change(this)">
+                                                                                        <option selected="selected">
+                                                                                            CPU</option>
+                                                                                        <option>GPU</option>
+                                                                                        {% if myriad == true %}
+                                                                                        <option>MYRIAD</option>
+                                                                                        {% else %}
+                                                                                        <option disabled>MYRIAD
+                                                                                        </option>
+                                                                                        {% endif %}
+                                                                                    </select>
+                                                                                    <br>
+                                                                                    <label>Head Pose: Target
+                                                                                        Device</label>
+                                                                                    <select class="form-control"
+                                                                                        name="target_hp"
+                                                                                        onChange="target_hp_change(this)">
+                                                                                        <option selected="selected">
+                                                                                            CPU</option>
+                                                                                        <option>GPU</option>
+                                                                                        {% if myriad == true %}
+                                                                                        <option>MYRIAD</option>
+                                                                                        {% else %}
+                                                                                        <option disabled>MYRIAD
+                                                                                        </option>
+                                                                                        {% endif %}
+                                                                                    </select>
+                                                                                    <br>
                                                                                     <label>Face Detection: Model</label>
                                                                                     <select class="form-control"
                                                                                         name="model">
@@ -189,6 +182,15 @@
                                                                     <label class="custom-control-label" for="async">
                                                                         Asynchronous
                                                                         mode</label>
+                                                                </div>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input"
+                                                                        id="save"
+                                                                        onchange="$(this).next().val(this.checked?1:0);" />
+                                                                    <input type="hidden" id="save_checkbox" name="save"
+                                                                        value="0" />
+                                                                    <label class="custom-control-label" for="save"> Save
+                                                                        Output Video</label>
                                                                 </div>
                                                             </div>
                                                         </div>

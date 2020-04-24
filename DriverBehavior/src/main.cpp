@@ -589,10 +589,16 @@ fSim = true;
 		cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
 		cap.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
 		cap.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
-		cap.set(cv::CAP_PROP_FPS, 10);
+		// cap.set(cv::CAP_PROP_FPS, 10);
 
 		const size_t width = (size_t)cap.get(cv::CAP_PROP_FRAME_WIDTH);
 		const size_t height = (size_t)cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+
+		// Save the ouput
+        cv::VideoWriter video_output;
+        if (FLAGS_o) {
+            video_output = cv::VideoWriter("video_output.avi",cv::VideoWriter::fourcc('M','J','P','G'),cap.get(cv::CAP_PROP_FPS), cv::Size(width,height),true);
+        }
 
 		int x = 200;
 		int y = 155;
@@ -1237,6 +1243,10 @@ fSim = true;
 
                 // Sample of Results
                 cv::imshow("Detection results", prev_frame);
+				// Save the ouput
+                if (FLAGS_o) {
+                    video_output.write(prev_frame);
+                }
                 timer.finish("visualization");
             }
 
