@@ -597,7 +597,7 @@ fSim = true;
 		// Save the ouput
         cv::VideoWriter video_output;
         if (FLAGS_o) {
-            video_output = cv::VideoWriter("video_output.avi",cv::VideoWriter::fourcc('M','J','P','G'),cap.get(cv::CAP_PROP_FPS), cv::Size(width,height),true);
+            video_output = cv::VideoWriter("video_output.avi",cv::VideoWriter::fourcc('M','J','P','G'),10, cv::Size(width,height),true);
         }
 
 		int x = 200;

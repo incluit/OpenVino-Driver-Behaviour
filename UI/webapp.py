@@ -275,6 +275,7 @@ def configuration():
     }
     return render_template("configuration.html", **templateData)
 
+
 @app.route("/downloads")
 def downloads():
     file_exists = False
@@ -287,13 +288,15 @@ def downloads():
     }
     return render_template("downloads.html", **templateData)
 
-@app.route('/download_file', methods=['POST', 'GET'])
+
+@app.route('/download_file')
 # This function allows download the video output file.
 def download_file():
     video_file = driverbehavior_folder + 'build/intel64/Release/video_output.avi'
-    return send_file(video_file, as_attachment=True)
+    return send_file(video_file, as_attachment=True, cache_timeout=0)
 
-@app.route('/delete_file', methods=['POST', 'GET'])
+
+@app.route('/delete_file')
 # This function allows delete the video output file.
 def delete_file():
     video_file = driverbehavior_folder + 'build/intel64/Release/video_output.avi'
