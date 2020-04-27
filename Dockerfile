@@ -45,7 +45,6 @@ RUN chmod +x /app/DriverBehavior/scripts/setupenv.sh
 RUN locale-gen en_US en_US.UTF-8
 RUN update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 RUN export LANG=en_US.UTF-8
-RUN export LC_ALL=en_US.utf8
 RUN apt install curl gnupg2 lsb-release
 RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 RUN sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
@@ -77,12 +76,14 @@ COPY ActionRecognition/* app/
 WORKDIR /app/ActionRecognition
 RUN /bin/bash -c 'source /opt/intel/openvino/bin/setupvars.sh && source /app/ActionRecognition/scripts/download_models.sh'
 
+ENV LC_ALL=en_US.utf8
+
 COPY UI/* app/
 COPY AWS/* app/
 WORKDIR /app/UI
 COPY entrypoint.sh /
 EXPOSE 5000
 RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+# ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["/bin/bash"]
